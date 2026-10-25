@@ -827,3 +827,35 @@ html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:
 @media (max-width:820px){.cta-card.v2 .qr-wrap{width:min(230px,100%)}}
 @media (max-width:420px){.cta-card.v2 .qr-wrap{width:min(210px,100%)}}
 @media (hover:hover){.cta-qr:hover .qr-wrap{transform:translateY(-4px) scale(1.02) rotate(0)}}
+
+/* ===== v15: ulasan customer ===== */
+.ul-sec[hidden]{display:none}
+.ul-sec .lead{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.ul-avg{font-family:"Bricolage Grotesque",sans-serif;font-size:1.6rem;color:var(--text)}
+.ul-st{display:inline-flex;gap:2px;vertical-align:middle}
+.ul-st i{display:inline-grid;width:18px;height:18px}
+.ul-st svg{width:100%;height:100%;fill:none;stroke:var(--line);stroke-width:1.6;stroke-linejoin:round}
+.ul-st i.on svg{fill:#f5b301;stroke:#f5b301}
+.ul-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-top:28px}
+.ul-c{display:flex;flex-direction:column;gap:14px;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.ul-c p{margin:0;color:var(--text);line-height:1.6;overflow-wrap:anywhere;flex:1}
+.ul-c footer{display:flex;align-items:center;gap:12px;min-width:0}
+.ul-av{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.ul-c footer div{min-width:0;display:grid}
+.ul-c footer b{font-weight:600;overflow-wrap:anywhere}
+.ul-c footer small{color:var(--muted);font-size:.82rem;overflow-wrap:anywhere}
+
+/* v15b: halaman ulasan */
+.ul-sumcard{display:inline-flex;align-items:center;gap:18px;margin:6px 0 4px;padding:16px 24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.ul-sumcard[hidden]{display:none}
+.ul-sumcard .ul-avg{font-size:2.6rem;line-height:1}
+.ul-sumcard div{display:grid;gap:4px}
+.ul-sumcard small{color:var(--muted);font-size:.88rem}
+.ul-sumcard .ul-st i{width:20px;height:20px}
+.ul-page .ul-grid{margin-top:22px;margin-bottom:56px}
+.ul-empty{margin:24px 0 56px}
+
+/* v16: link Ulasan di navbar */
+.nav-star{width:15px;height:15px;flex:none;fill:#f5b301;stroke:#f5b301;stroke-width:1.5;stroke-linejoin:round;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.nav-ul:hover .nav-star{transform:rotate(72deg) scale(1.15)}
+.nav-rt{font-style:normal;font-size:.72rem;font-weight:600;line-height:1;padding:3px 7px;border-radius:99px;background:color-mix(in srgb,#f5b301 18%,transparent);color:var(--text)}

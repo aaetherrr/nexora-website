@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ulasan customer – NEXORA</title>
+<link rel="icon" type="image/png" href="../assets/img/logo.png">
+<link rel="apple-touch-icon" href="../assets/img/favicon.png">
+<meta name="theme-color" content="#7c5cff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<script src="../assets/js/script.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="../index.html"><span class="logo-card"><img src="../assets/img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span><span class="logo-name">NEXORA</span></a>
+    <nav id="menu" aria-label="Menu">
+        <a href="../index.html#proses">Cara Order</a>
+        <a href="../index.html#harga">Jasa Setup</a>
+        <a href="harga-hosting.html">Harga hosting</a>
+        <a class="nav-ul" href="ulasan.html" aria-current="page"><svg class="nav-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg> Ulasan</a>
+        <a href="faq.html">FAQ</a>
+        <a class="btn nav-dc k-dc" href="https://discord.gg/7bFYCRheRm"><i class="bi bi-discord"></i> Server Discord</a>
+      </nav>
+    <div class="nav-right">
+      <a class="btn btn-icon dc-icon k-dc" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener" aria-label="Server Discord" title="Server Discord"><i class="bi bi-discord"></i></a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="Ganti mode terang atau gelap"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <a class="btn ghost login-btn" href="../akun/masuk.html" aria-label="Masuk"><i class="bi bi-person"></i><span>Masuk</span></a>
+      <button class="icon-btn menu-btn" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap ul-page">
+  <div class="page-head">
+    <h1>Ulasan customer</h1>
+    <p>Penilaian dari customer yang sudah menyelesaikan pesanan di NEXORA.</p>
+  </div>
+  <div class="ul-sumcard" id="ul-sum" hidden></div>
+  <div class="ul-grid" id="ul-list"></div>
+  <p class="note ul-empty" id="ul-empty" hidden>Belum ada ulasan yang ditampilkan.</p>
+</div>
+
+<section id="kontak" class="cta-sec">
+  <div class="wrap">
+    <div class="cta-card v2">
+      <div class="cta-body">
+        <div class="cta-main">
+          <span class="cta-kicker">Join sekarang</span>
+          <h2>Join server Discord <span class="grad">NEXORA</span></h2>
+          <p class="cta-p">Dapatkan update seputar minecraft, hosting, dan lainnya.</p>
+          <div class="actions">
+            <a class="btn lg" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener"><i class="bi bi-discord"></i>Join Discord<span class="arr">&rarr;</span></a>
+          </div>
+        </div>
+        <div class="cta-qr">
+          <div class="qr-wrap">
+            <div class="qr-box"><img src="assets/img/qr-discord.png" alt="QR Discord NEXORA" onerror="this.parentNode.classList.add('empty');this.remove()"><span class="qr-ph">Foto QR<br>assets/img/qr-discord.png</span></div>
+            
+          </div>
+          <small>Scan untuk masuk ke Discord NEXORA</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <a class="logo" href="/index.html"><span class="logo-card"><img src="/assets/img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span><span class="logo-name">NEXORA</span></a>
+        <p>NEXORA - Menyediakan Jasa Setup Minecraft, Discord, serta layanan Hosting Minecraft untuk membantu Anda membangun server minecraft dan komunitas Discord yang sesuai dengan kebutuhan.</p>
+      </div>
+      <div>
+        <h4>Produk</h4>
+        <ul>
+          <li><a href="/index.html#harga">Jasa Setup Minecraft</a></li>
+          <li><a href="/index.html#harga">Jasa Setup Discord</a></li>
+          <li><a href="/pages/harga-hosting.html">Hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Bantuan</h4>
+        <ul>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="kontak.html">Hubungi Kami</a></li>
+          <li><a href="ulasan.html">Ulasan</a></li>
+          <li><a href="terms.html">Terms and Conditions</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Akun</h4>
+        <ul>
+          <li><a href="/akun/masuk.html">Masuk</a></li>
+          <li><a href="/akun/masuk.html#daftar">Buat akun</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2026 NEXORA. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

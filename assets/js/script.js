@@ -723,6 +723,8 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangKontak();
   pasangKontakPage();
   pasangSosmed();
+  pasangUlasan();
+  pasangNavUlasan();
   pasangToc();
   pasangReveal();
   pasangAkun();
@@ -780,6 +782,28 @@ function pasangSosmed() {
     return '<a href="' + escK(h) + '" target="_blank" rel="noopener" aria-label="' + lb + '" title="' + lb + '"><i class="bi bi-' + (SOSMED_ICON[k.tipe] || "link-45deg") + '"></i></a>';
   }).join("") + "</div>";
   b.appendChild(w);
+}
+
+/* ===== Ulasan customer (diatur admin: nx-ulasan) ===== */
+const UL_STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg>';
+function ulStars(n) { let h = ""; for (let i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? "on" : "") + '">' + UL_STAR + "</i>"; return '<span class="ul-st" role="img" aria-label="' + n + ' dari 5 bintang">' + h + "</span>"; }
+function pasangNavUlasan() {
+  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v; } catch (x) {}
+  if (!a.length || !a.some(function (r) { return r && r.tampil; })) return;
+  const avg = a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length;
+  document.querySelectorAll("nav a.nav-ul").forEach(function (l) { const em = document.createElement("em"); em.className = "nav-rt"; em.textContent = avg.toFixed(1).replace(".", ","); l.appendChild(em); });
+}
+function pasangUlasan() {
+  const list = document.getElementById("ul-list"); if (!list) return;
+  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v; } catch (x) {}
+  const tampil = a.filter(function (r) { return r && r.tampil; }).sort(function (x, y) { return (y.ts || 0) - (x.ts || 0); });
+  if (!tampil.length) { const em = document.getElementById("ul-empty"); if (em) em.hidden = false; return; }
+  const avg = a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length, sm = document.getElementById("ul-sum");
+  sm.innerHTML = '<b class="ul-avg">' + avg.toFixed(1).replace(".", ",") + "</b><div>" + ulStars(Math.round(avg)) + "<small>dari " + a.length + " ulasan customer</small></div>";
+  sm.hidden = false;
+  list.innerHTML = tampil.map(function (r) {
+    return '<article class="ul-c">' + ulStars(Number(r.bintang) || 0) + (r.teks ? "<p>" + escK(r.teks) + "</p>" : "") + '<footer><span class="ul-av">' + escK(String(r.user || "?").trim().charAt(0).toUpperCase()) + '</span><div><b>' + escK(r.user || "Customer") + "</b><small>Memesan " + escK(r.paket || "layanan NEXORA") + " · " + escK(r.tgl || "") + "</small></div></footer></article>";
+  }).join("");
 }
 
 /* ===== Halaman Hubungi kami ===== */
