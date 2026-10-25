@@ -151,6 +151,38 @@ function pasangTema() {
   });
 }
 
+/* Panel menu (tablet dan hp): grid ikon + kartu ulasan + tombol akun */
+function pasangPanelMenu() {
+  document.querySelectorAll(".topbar").forEach(function (bar) {
+    const nav = bar.querySelector("nav"), btn = bar.querySelector(".menu-btn"); if (!nav || nav.dataset.panel) return;
+    nav.dataset.panel = "1";
+    const faq = nav.querySelector('a[href$="faq.html"]'), pre = faq ? faq.getAttribute("href").replace("faq.html", "") : "pages/";
+    const IC = [["#proses", "signpost-split"], ["#harga", "box2"], ["harga-hosting", "hdd-stack"], ["ulasan", "star"], ["faq.html", "question-circle"]];
+    let n = 0;
+    nav.querySelectorAll("a:not(.btn)").forEach(function (a) {
+      const h = a.getAttribute("href") || "", t = IC.filter(function (x) { return h.indexOf(x[0]) > -1; })[0], star = a.querySelector(".nav-star");
+      const ic = document.createElement("span"); ic.className = "nv-i";
+      if (star) ic.appendChild(star); else ic.innerHTML = '<i class="bi bi-' + (t ? t[1] : "link-45deg") + '"></i>';
+      const tx = document.createElement("span"); tx.className = "nv-t"; while (a.firstChild) tx.appendChild(a.firstChild);
+      a.appendChild(ic); a.appendChild(tx); a.classList.add("nv"); a.style.setProperty("--i", n++);
+    });
+    const hub = document.createElement("a"); hub.className = "nv nv-m"; hub.href = pre + "kontak.html"; hub.style.setProperty("--i", n++);
+    hub.innerHTML = '<span class="nv-i"><i class="bi bi-chat-dots"></i></span><span class="nv-t">Hubungi Kami</span>';
+    const dc = nav.querySelector(".nav-dc"); nav.insertBefore(hub, dc);
+    let a2 = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a2 = v; } catch (x) {}
+    const adaTampil = a2.some(function (r) { return r && r.tampil; }), avg = a2.length ? a2.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a2.length : 0;
+    const card = document.createElement("a"); card.className = "nv-card nv-m"; card.href = pre + "ulasan.html"; card.style.setProperty("--i", n++);
+    card.innerHTML = '<span class="nv-ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg></span><b>Ulasan customer</b><p>' + (adaTampil ? "Rating " + avg.toFixed(1).replace(".", ",") + " dari " + a2.length + " ulasan. Lihat cerita mereka." : "Lihat penilaian jujur dari customer yang sudah order di NEXORA.") + '</p><span class="nv-cl">Lihat ulasan <i class="bi bi-arrow-right"></i></span>';
+    nav.insertBefore(card, dc);
+    let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
+    const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
+    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Buka dashboard</a>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html">Masuk</a><a class="btn ghost" href="' + ROOT + 'akun/masuk.html#daftar">Buat akun</a>';
+    nav.insertBefore(ac, dc);
+    if (dc) dc.style.setProperty("--i", n++);
+    if (btn) btn.innerHTML = '<svg class="mb-g" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><svg class="mb-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  });
+}
+
 function pasangMenu() {
   document.querySelectorAll(".topbar").forEach(function (bar) {
     const btn = bar.querySelector(".menu-btn");
@@ -712,6 +744,7 @@ document.addEventListener("DOMContentLoaded", function () {
   siapkanAnimasi(document);
   siapkanHero();
   pasangTema();
+  pasangPanelMenu();
   pasangMenu();
   pasangNavbar();
   const views = document.querySelectorAll("[data-view]");
