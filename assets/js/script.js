@@ -14,7 +14,7 @@ const KONTAK = {
 /* ===== Kontak yang bisa diedit dari dashboard admin (demo: tersimpan di browser) ===== */
 const KONTAK_TIPE = {
   email: ["Email", "envelope", "Kirim email"], whatsapp: ["WhatsApp", "whatsapp", "Chat WhatsApp"], discord: ["Discord", "discord", "Gabung Discord"],
-  instagram: ["Instagram", "instagram", "Buka Instagram"], telegram: ["Telegram", "telegram", "Buka Telegram"], youtube: ["YouTube", "youtube", "Buka YouTube"], lainnya: ["Link", "link-45deg", "Buka link"]
+  instagram: ["Instagram", "instagram", "Buka Instagram"], tiktok: ["TikTok", "tiktok", "Buka TikTok"], facebook: ["Facebook", "facebook", "Buka Facebook"], x: ["X", "twitter-x", "Buka X"], telegram: ["Telegram", "telegram", "Buka Telegram"], youtube: ["YouTube", "youtube", "Buka YouTube"], lainnya: ["Link", "link-45deg", "Buka link"]
 };
 function kontakBawaan() {
   return [
@@ -246,32 +246,14 @@ const ALUR = {
   tahu: [
     { j: "Masuk atau buat akun", d: "Klik Masuk di pojok kanan atas. Belum punya akun? Daftar gratis, cukup nama dan email.",
       v: "login" },
-    { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket lalu pilih jenis ticket: Order baru, Bantuan, atau Lainnya.",
-      v: "form", x: { f: 1 } },
-    { j: "Pilih layanan dan paket", d: "Pilih layanan (Setup Minecraft, Setup Discord, atau Hosting), lalu pilih paket dari daftar harga.",
-      v: "form", x: { f: 2 } },
-    { j: "Ceritakan kebutuhanmu", d: "Tulis subjek dan pesan: versi, jumlah pemain, plugin atau fitur yang diinginkan. Lalu klik Kirim ticket.",
+    { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket, pilih layanan dan paket, ceritakan kebutuhanmu, lalu Kirim ticket.",
       v: "form", x: { f: 3 } },
-    { j: "Admin membalas ticket kamu", d: "Admin membalas langsung di ticket dan status berubah jadi Terhubung dengan admin. Kalau masih bingung, tanya aja di sini.",
-      v: "chat", x: { cap: "T-1044 \u00b7 Terhubung dengan admin", m: [
-        ["me", "Aku mau pasang plugin untuk server survival, sekitar 20 pemain."],
-        ["us", "Hallo kak, pesananmu sudah kami terima. Kami cek detailnya dulu yaa."]
-      ] } },
-    { j: "Tagihan masuk di dashboard", d: "Admin mengirim tagihan dengan harga akhir. Tagihan muncul di tab Tagihan dan kamu dapat notifikasi.",
+    { j: "Admin balas, tagihan dikirim", d: "Admin membalas langsung di ticket, lalu mengirim tagihan dengan harga akhir. Tagihannya muncul di tab Tagihan.",
       v: "bill" },
-    { j: "Klik Bayar sekarang", d: "Transfer tepat sesuai nominal ke rekening atau e-wallet NEXORA yang tampil di sana. Tulis kode tagihan di catatan transfer.",
+    { j: "Bayar lewat dashboard", d: "Klik Bayar sekarang, transfer sesuai nominal ke rekening yang tampil, lalu kirim bukti transfer di ticket.",
       v: "bayar" },
-    { j: "Kirim bukti, tunggu konfirmasi", d: "Klik Saya sudah bayar, lalu kirim bukti transfer di ticket. Admin mengecek dan status berubah jadi Pembayaran Dikonfirmasi.",
-      v: "chat", x: { cap: "T-1044 \u00b7 Pembayaran Dikonfirmasi", m: [
-        ["me", "Sudah aku transfer ya min, ini bukti transfernya."],
-        ["us", "Terima kasih, pembayaran INV-1002 sudah kami konfirmasi. Pesananmu segera kami proses."]
-      ] } },
-    { j: "Pesanan diproses", d: "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu. Perkembangannya bisa kamu pantau dari ticket.",
-      v: "progres", x: { cap: "T-1044 \u00b7 Pesanan diproses" } },
-    { j: "Pesanan selesai", d: "Pesananmu selesai dan diserahkan lewat ticket. Kalau ada yang kurang, kamu masih bisa chat admin.",
-      v: "selesai", x: { ok: "Orderan selesai", t: ["Pesanan selesai disiapkan", "Pesanan dikirim lewat ticket", "Kamu menerima pesananmu"] } },
-    { j: "Ticket ditutup", d: "Kalau semua sudah beres, admin menutup ticket. Riwayatnya tetap bisa kamu lihat di dashboard.",
-      v: "selesai", x: { ok: "Ticket ditutup", closed: true, t: ["Pesananmu sudah beres", "Admin menutup ticket", "Terima kasih sudah order di NEXORA"] } }
+    { j: "Pesanan selesai", d: "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu dan menyerahkannya lewat ticket. Pantau semuanya dari dashboard.",
+      v: "selesai", x: { ok: "Orderan selesai", t: ["Pembayaran dikonfirmasi", "Pesanan diproses admin", "Pesanan dikirim lewat ticket"] } }
   ]
 };
 ALUR.bingung = ALUR.tahu;
@@ -740,6 +722,7 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangSpot();
   pasangKontak();
   pasangKontakPage();
+  pasangSosmed();
   pasangToc();
   pasangReveal();
   pasangAkun();
@@ -779,6 +762,25 @@ function pasangQr() {
   });
 }
 
+
+/* ===== Footer: Ikuti kami (diatur admin: nx-sosmed) ===== */
+const SOSMED_ICON = { instagram: "instagram", tiktok: "tiktok", youtube: "youtube", facebook: "facebook", x: "twitter-x", discord: "discord", telegram: "telegram", whatsapp: "whatsapp", email: "envelope", lainnya: "link-45deg" };
+function sosmedData() {
+  try { const v = localStorage.getItem("nx-sosmed"); if (v) { const a = JSON.parse(v); if (Array.isArray(a)) return a; } } catch (x) {}
+  return [{ tipe: "instagram", label: "Instagram", nilai: "https://instagram.com/nexora", aktif: true }, { tipe: "tiktok", label: "TikTok", nilai: "https://tiktok.com/@nexora", aktif: true }];
+}
+function pasangSosmed() {
+  const b = document.querySelector(".f-brand"); if (!b || b.querySelector(".f-follow")) return;
+  const a = sosmedData().filter(function (k) { return k.aktif !== false && k.nilai; }); if (!a.length) return;
+  const w = document.createElement("div"); w.className = "f-follow";
+  w.innerHTML = "<h4>Ikuti kami</h4><div class=\"f-soc\">" + a.map(function (k) {
+    let h = String(k.nilai);
+    if (k.tipe === "email") h = "mailto:" + h; else if (k.tipe === "whatsapp") h = "https://wa.me/" + h.replace(/\D/g, ""); else if (!/^https?:\/\//i.test(h)) h = "https://" + h;
+    const lb = escK(k.label || k.tipe);
+    return '<a href="' + escK(h) + '" target="_blank" rel="noopener" aria-label="' + lb + '" title="' + lb + '"><i class="bi bi-' + (SOSMED_ICON[k.tipe] || "link-45deg") + '"></i></a>';
+  }).join("") + "</div>";
+  b.appendChild(w);
+}
 
 /* ===== Halaman Hubungi kami ===== */
 function escK(x) { return String(x).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
