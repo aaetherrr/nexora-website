@@ -824,6 +824,7 @@ function pasangNavUlasan() {
   let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v; } catch (x) {}
   if (!a.length || !a.some(function (r) { return r && r.tampil; })) return;
   const avg = a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length;
+  const fr = document.querySelector(".f-ul-r"); if (fr) { fr.textContent = "★ " + avg.toFixed(1).replace(".", ",") + " · " + a.length + " ulasan"; fr.hidden = false; }
   document.querySelectorAll("nav a.nav-ul").forEach(function (l) { const em = document.createElement("em"); em.className = "nav-rt"; em.textContent = avg.toFixed(1).replace(".", ","); l.appendChild(em); });
 }
 function pasangUlasan() {
