@@ -28,7 +28,8 @@
     Teknisi: ["ringkasan", "tiket", "tagihan"]
   };
   var RC = { Founder: "b8", "Co-Founder": "b2", Teknisi: "b7" };
-  function STAFF() { return ld("nx-staff", []); }
+  function STAFF() { return window.NX && NX.live ? NX.staff : ld("nx-staff", []); }
+  function saveStaff(L) { if (window.NX && NX.live) { return NX.saveStaff(L).then(function () { draw(); }, function (er) { toast("Gagal menyimpan: " + er.message); draw(); }); } sv("nx-staff", L); }
   function staffBy(em) { em = String(em || "").toLowerCase(); return STAFF().filter(function (x) { return x.email === em; })[0]; }
   function arole() { return ss("nx-arole") || ""; }
   function can(t) { return (PERM[arole()] || []).indexOf(t) > -1; }
@@ -77,7 +78,9 @@
   }
 
   function authInit(mode, root) {
-    var forms = $$("form", root);
+    var forms = $$("form", root), ae = $("#ae", root);
+    function aerr(t) { if (ae) { ae.textContent = t; ae.hidden = false; } else toast(t); }
+    if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
     function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
     if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
     $$("[data-m]", root).forEach(function (b) { b.addEventListener("click", function () {
@@ -87,7 +90,11 @@
     }); });
     root.addEventListener("click", function (ev) {
       var t = ev.target.closest(".pw-t,[data-sso]"); if (!t) return;
-      if (t.dataset.sso) return masuk("Demo " + t.dataset.sso, "", t.dataset.sso);
+      if (t.dataset.sso) {
+        if (window.NX && NX.live) return NX.login(t.dataset.sso, mode).catch(function (er) { aerr(er.message); });
+        if (mode === "alogin") { var S0 = STAFF(); if (!S0.length) { S0.push({ id: "s" + Date.now(), nama: "Demo Founder", email: "demo-founder@example.com", role: "Founder", dibuat: Date.now() }); sv("nx-staff", S0); } ss("nx-arole", S0[0].role); return masuk(S0[0].nama, S0[0].email, t.dataset.sso); }
+        return masuk("Demo " + t.dataset.sso, "", t.dataset.sso);
+      }
       var i = $("input", t.parentNode), show = i.type === "password"; i.type = show ? "text" : "password"; $("i", t).className = "bi bi-" + (show ? "eye-slash" : "eye");
     });
     forms.forEach(function (f) { f.addEventListener("submit", function (ev) {
@@ -189,7 +196,7 @@
       window.addEventListener("resize", function () { if (!isMob()) root.classList.remove("open"), scrim.classList.remove("on"); syncT(); });
       syncT();
     })();
-    function out() { ss("nx-role", ""); ss("nx-arole", ""); go(adm ? "nexora-admin-access.html" : "masuk.html"); }
+    function out() { ss("nx-role", ""); ss("nx-arole", ""); var to = adm ? "nexora-admin-access.html" : "masuk.html"; if (window.NX && NX.live) return NX.logout().then(function () { go(to); }, function () { go(to); }); go(to); }
     function outAsk() {
       modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lo-t"><span class="warn-ic"><i class="bi bi-box-arrow-right"></i></span><div class="mb"><h3 id="lo-t">Keluar dari akun?</h3><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
         $("[data-ok]", m).addEventListener("click", out);
@@ -679,14 +686,12 @@
     function guard(o, fn) {
       modal('<div class="mbox sm"><div class="mh"><b>' + o.title + '</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' + o.html +
         (o.reason ? '<label class="fld"><span>Alasan <em class="req">*</em></span><textarea class="txa" id="g-r" maxlength="200" placeholder="Min. 10 karakter, tercatat di log"></textarea></label>' : "") +
-        '<label class="fld"><span>Kode keamanan admin <em class="req">*</em></span><input class="inp" id="g-p" type="password" inputmode="numeric" autocomplete="off"><small class="hint">Demo: kode awal 246810. Di versi asli diverifikasi di server.</small></label><p class="err" id="g-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn' + (o.danger ? " dng" : "") + '" data-ok>' + o.ok + "</button></div></div>", function (m, close) {
+        '<p class="err" id="g-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn' + (o.danger ? " dng" : "") + '" data-ok>' + o.ok + "</button></div></div>", function (m, close) {
         $("[data-ok]", m).addEventListener("click", function () {
           var er = $("#g-e", m), r = o.reason ? $("#g-r", m).value.trim() : "";
           function bad(x) { er.textContent = x; er.hidden = false; }
-          if (Date.now() < ld("nx-lock", 0)) return bad("Terlalu banyak percobaan. Coba lagi beberapa menit lagi.");
           if (o.reason && r.length < 10) return bad("Alasan minimal 10 karakter.");
-          if ($("#g-p", m).value !== String(ld("nx-pin", "246810"))) { var f = (ld("nx-fail", 0) || 0) + 1; sv("nx-fail", f); if (f >= 3) { sv("nx-lock", Date.now() + 3e5); sv("nx-fail", 0); return bad("Salah 3 kali. Dikunci 5 menit."); } return bad("Kode keamanan salah (" + f + "/3)."); }
-          sv("nx-fail", 0); close(); fn(r);
+          close(); fn(r);
         });
       });
     }
@@ -875,29 +880,29 @@
       var leg = ROLES.map(function (r) { var pm = PERM[r], all = r !== "Teknisi"; return '<article class="rl-c ' + RC[r] + '"><div class="rl-t"><span class="rl-i"><i class="bi bi-' + RICO[r] + '"></i></span><div><b>' + r + '</b><small>' + (cntR[r] || 0) + ' anggota · ' + pm.length + ' menu</small></div></div><p>' + RDESC[r] + '</p><div class="rl-a"><span class="rl-k">Akses</span>' + (all ? '<span class="rl-ch all"><i class="bi bi-check2-all"></i>' + (r === "Founder" ? "Semua fitur + atur role" : "Semua fitur") + "</span>" : pm.map(function (k) { return '<span class="rl-ch">' + TL[k] + "</span>"; }).join("")) + "</div></article>"; }).join("");
       var rows = S.map(function (x, i) {
         var self = x.email === meE, fixed = x.role === "Founder" || self;
-        return '<article class="st-r"><span class="av">' + e((x.nama || "?").charAt(0).toUpperCase()) + '</span><div class="st-t"><b>' + e(x.nama) + (self ? " <em>kamu</em>" : "") + "</b><small>" + e(x.email) + '</small></div><div class="st-o">' + (fixed || !isF ? rbd(x.role) : roleDD(i, x)) + "</div>" + (isF && !fixed ? '<button class="btn ghost sm dn" type="button" data-tm="del" data-i="' + i + '"><i class="bi bi-trash3"></i> Hapus</button>' : "") + "</article>";
+        return '<article class="st-r"><span class="av">' + e((x.nama || "?").charAt(0).toUpperCase()) + '</span><div class="st-t"><b>' + e(x.nama) + (self ? " <em>kamu</em>" : "") + "</b><small>" + e(x.email || ("Discord ID " + x.discord_id)) + '</small></div><div class="st-o">' + (fixed || !isF ? rbd(x.role) : roleDD(i, x)) + "</div>" + (isF && !fixed ? '<button class="btn ghost sm dn" type="button" data-tm="del" data-i="' + i + '"><i class="bi bi-trash3"></i> Hapus</button>' : "") + "</article>";
       }).join("");
       return '<div class="rl-h"><div><b>Role dan hak akses</b><small>Tiap role punya menu yang berbeda di dashboard admin.</small></div></div><div class="rl-g">' + leg + '</div><div class="tkhead tm-h"><div class="tm-t"><b>Anggota tim</b><span class="bd b4">' + S.length + '</span></div>' + (isF ? '<button class="btn" type="button" data-tm="new"><i class="bi bi-person-plus"></i> Tambah anggota</button>' : "") + '</div><div class="st-l">' + rows + '</div><p class="muted kr-n">Hanya Founder yang bisa menambah anggota dan mengatur role. Demo: data tersimpan di browser ini dan password tidak diperiksa.</p>';
     }
     function trole(t) {
       if (arole() !== "Founder") { toast("Hanya Founder yang bisa mengatur role"); return draw(); }
       var S = STAFF(), x = S[Number(t.dataset.trole)]; if (!x || x.role === "Founder" || ROLES.indexOf(t.value) < 1) return;
-      x.role = t.value; sv("nx-staff", S); toast(x.nama + " sekarang " + t.value); draw();
+      x.role = t.value; saveStaff(S); toast(x.nama + " sekarang " + t.value); draw();
     }
     function tmAct(d) {
       if (arole() !== "Founder") return toast("Hanya Founder yang bisa mengatur role");
-      if (d.tm === "new") return modal('<form class="mbox sm" id="f-tm"><div class="mh"><b>Tambah anggota tim</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><label class="fld"><span>Nama <em class="req">*</em></span><input class="inp" name="nama" maxlength="40" required></label><label class="fld"><span>Email <em class="req">*</em></span><input class="inp" name="email" type="email" required placeholder="nama@email.com"><small class="hint">Anggota masuk lewat halaman akses admin memakai email ini.</small></label><div class="fld"><span>Role</span><div class="seg2 full" id="tm-r"><button type="button" data-v="Teknisi" aria-pressed="true">Teknisi</button><button type="button" data-v="Co-Founder" aria-pressed="false">Co-Founder</button></div></div><p class="err" id="tm-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit"><i class="bi bi-person-plus"></i> Tambah</button></div></form>', function (m, close) {
+      if (d.tm === "new") return modal('<form class="mbox sm" id="f-tm"><div class="mh"><b>Tambah anggota tim</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><label class="fld"><span>Nama <em class="req">*</em></span><input class="inp" name="nama" maxlength="40" required></label><label class="fld"><span>Email Google</span><input class="inp" name="email" type="email" placeholder="nama@gmail.com"><small class="hint">Untuk anggota yang login dengan Google.</small></label><label class="fld"><span>ID Discord</span><input class="inp" name="did" inputmode="numeric" pattern="[0-9]{15,22}" placeholder="angka 17-19 digit"><small class="hint">Untuk anggota yang login dengan Discord. Isi salah satu atau keduanya.</small></label><div class="fld"><span>Role</span><div class="seg2 full" id="tm-r"><button type="button" data-v="Teknisi" aria-pressed="true">Teknisi</button><button type="button" data-v="Co-Founder" aria-pressed="false">Co-Founder</button></div></div><p class="err" id="tm-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit"><i class="bi bi-person-plus"></i> Tambah</button></div></form>', function (m, close) {
         var R = "Teknisi";
         $$("#tm-r button", m).forEach(function (b) { b.addEventListener("click", function () { R = b.dataset.v; $$("#tm-r button", m).forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); }); });
         $("#f-tm", m).addEventListener("submit", function (ev) {
-          ev.preventDefault(); var f = ev.target, nm = f.nama.value.trim(), em = f.email.value.trim().toLowerCase(), er = $("#tm-e", m), S2 = STAFF();
-          if (S2.some(function (x) { return x.email === em; })) { er.textContent = "Email ini sudah terdaftar di tim."; er.hidden = false; return; }
-          S2.push({ id: "s" + Date.now(), nama: nm, email: em, role: R, dibuat: Date.now() }); sv("nx-staff", S2); close(); toast(nm + " ditambahkan sebagai " + R); draw();
+          ev.preventDefault(); var f = ev.target, nm = f.nama.value.trim(), em = f.email.value.trim().toLowerCase(), did = (f.did.value || "").trim(), er = $("#tm-e", m), S2 = STAFF(); if (!em && !did) { er.textContent = "Isi email Google atau ID Discord."; er.hidden = false; return; }
+          if (S2.some(function (x) { return (em && x.email === em) || (did && x.discord_id === did); })) { er.textContent = "Akun ini sudah terdaftar di tim."; er.hidden = false; return; }
+          S2.push({ id: "s" + Date.now(), nama: nm, email: em, discord_id: did, role: R, dibuat: Date.now() }); saveStaff(S2); close(); toast(nm + " ditambahkan sebagai " + R); draw();
         });
       });
       var S = STAFF(), x = S[Number(d.i)]; if (!x || x.role === "Founder") return;
       if (d.tm === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus anggota?</b></div><div class="mb"><p>' + e(x.nama) + " (" + e(x.role) + ") tidak bisa lagi masuk ke dashboard admin.</p></div><div class=\"mf\"><button type=\"button\" class=\"btn ghost\" data-x>Batal</button><button type=\"button\" class=\"btn dng\" data-ok>Hapus</button></div></div>", function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { var S3 = STAFF().filter(function (z) { return z.email !== x.email; }); sv("nx-staff", S3); close(); toast(x.nama + " dihapus dari tim"); draw(); });
+        $("[data-ok]", m).addEventListener("click", function () { var S3 = STAFF().filter(function (z) { return z.id !== x.id; }); saveStaff(S3); close(); toast(x.nama + " dihapus dari tim"); draw(); });
       });
     }
     var PAN = {
@@ -989,6 +994,7 @@
       var sm = $(".who small", root); if (sm) sm.textContent = arole() || "Admin";
     }
     function syncRole() {
+      if (window.NX && NX.live) { return NX.refresh().then(function (r) { if (!r) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); return setTimeout(function () { go("nexora-admin-access.html"); }, 1000); } if (r !== arole()) { ss("nx-arole", r); toast("Rolemu sekarang: " + r); applyPerms(); draw(); } }); }
       var u = staffBy(ss("nx-email"));
       if (!u) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); ss("nx-role", ""); ss("nx-arole", ""); return setTimeout(function () { go("nexora-admin-access.html"); }, 1000); }
       if (u.role !== arole()) { ss("nx-arole", u.role); toast("Rolemu sekarang: " + u.role); applyPerms(); draw(); }
@@ -1031,6 +1037,7 @@
       if (d.lk) {
         var kk = LK(), key = d.lk === "google" ? "g" : "d", nmk = d.lk === "google" ? "Google" : "Discord";
         if (kk.via === nmk) return toast("Ini metode login utamamu");
+        if (window.NX && NX.live) { if (kk[key]) { try { return NX.unlink(d.lk).then(function () { toast("Akun " + nmk + " diputuskan"); return NX.hydrate(); }).then(draw, function (er) { toast(er.message); }); } catch (er) { return toast(er.message); } } return NX.link(d.lk).catch(function (er) { toast(er.message); }); }
         kk.P.lk = kk.P.lk || {}; kk.P.lk[key] = !kk[key]; sv("nx-prof", kk.P);
         toast("Akun " + nmk + (kk[key] ? " diputuskan" : " terhubung (demo)")); return draw();
       }
@@ -1125,7 +1132,7 @@
           });
         });
       }
-      if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); toast("Profile tersimpan"); return draw(); }
+      if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: f.nama.value.trim(), discord_username: f.dc.value, whatsapp: f.wa.value }).then(function () { toast("Profile tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profile tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         var b = TK(), id = nextTid(), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
@@ -1139,14 +1146,30 @@
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
   }
 
+  function boot(root, m) {
+    var live = window.NX && NX.live;
+    if (m === "login" || m === "alogin") {
+      if (live && ss("nx-role")) return go(m === "alogin" ? "nexora-admin.html" : "dashboard.html");
+      if (live && NX.user && m === "alogin") { var ae0 = $("#ae", root); if (ae0) { ae0.textContent = NX.err ? "Gagal memeriksa akses: " + NX.err : "Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu."; ae0.hidden = false; } }
+      return authInit(m, root);
+    }
+    var need = m === "admin" ? "admin" : "cust";
+    if (live && m === "admin" && !ss("nx-role")) return go("nexora-admin-access.html" + (NX.user ? "?err=notstaff" : ""));
+    if (ss("nx-role") !== need) return go(m === "admin" ? "nexora-admin-access.html" : "masuk.html");
+    if (m === "admin") {
+      if (live) ss("nx-arole", NX.role);
+      else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
+    }
+    dashInit(m === "admin", root);
+  }
   window.nxDash = function () {
     if (location.hash === "#buka") ss("nx-next", "buka");
     var root = $("[data-dash]"); if (!root) return; var m = root.dataset.dash;
-    if (m === "login" || m === "alogin") return authInit(m, root);
-    var need = m === "admin" ? "admin" : "cust";
-    if (ss("nx-role") !== need) return go(m === "admin" ? "nexora-admin-access.html" : "masuk.html");
-    if (m === "admin") { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
-    dashInit(m === "admin", root);
+    if (window.NX && NX.live) {
+      $$(".demo-note").forEach(function (n) { n.remove(); });
+      return NX.ready(m === "admin" || m === "alogin" ? "admin" : "cust").then(function () { boot(root, m); }, function (er) { console.error(er); toast("Gagal memuat akun: " + er.message); });
+    }
+    boot(root, m);
   };
   document.addEventListener("DOMContentLoaded", window.nxDash);
 })();

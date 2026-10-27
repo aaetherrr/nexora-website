@@ -15,6 +15,9 @@
 <script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
 <link rel="stylesheet" href="../assets/css/style.css">
 <link rel="stylesheet" href="../assets/css/dash.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+<script src="../assets/js/config.js" defer></script>
+<script src="../assets/js/auth.js" defer></script>
 <script src="../assets/js/script.js" defer></script>
 <script src="../assets/js/dash.js" defer></script>
 </head>
@@ -30,8 +33,9 @@
 </header>
 
 <main class="wrap auth" data-dash="alogin"><div class="auth-card">
-<h1>Panel Admin</h1><p class="muted">Khusus tim NEXORA.</p>
-<form style="margin-top:18px"><label class="fld"><span>Email <em class="req">*</em></span><input class="inp" type="email" name="email" required autocomplete="email"></label><label class="fld"><span>Password <em class="req">*</em></span><div class="pw"><input class="inp" type="password" name="password" required autocomplete="current-password"><button class="pw-t" type="button" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button></div></label><p class="err" hidden></p><button class="btn" type="submit">Masuk</button></form>
-<p class="demo-note">Mode demo: belum terhubung ke database. Login pertama otomatis menjadi Founder; anggota lain ditambahkan Founder di menu Tim &amp; role.</p></div></main>
+<h1>Panel Admin</h1><p class="muted">Khusus tim NEXORA. Masuk dengan akun Google atau Discord yang sudah didaftarkan Founder.</p>
+<div class="social" style="margin-top:20px"><button class="btn ghost" type="button" data-sso="Google"><i class="bi bi-google"></i> Lanjutkan dengan Google</button><button class="btn ghost" type="button" data-sso="Discord"><i class="bi bi-discord"></i> Lanjutkan dengan Discord</button></div>
+<p class="err" id="ae" hidden style="margin-top:12px"></p>
+<p class="demo-note">Mode demo: belum terhubung ke database. Klik salah satu tombol untuk masuk sebagai Founder demo.</p></div></main>
 </body>
 </html>

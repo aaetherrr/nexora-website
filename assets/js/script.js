@@ -175,6 +175,7 @@ function pasangPanelMenu() {
     card.innerHTML = '<span class="nv-ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg></span><b>Ulasan customer</b><p>' + (adaTampil ? "Rating " + avg.toFixed(1).replace(".", ",") + " dari " + a2.length + " ulasan. Lihat cerita mereka." : "Lihat penilaian jujur dari customer yang sudah order di NEXORA.") + '</p><span class="nv-cl">Lihat ulasan <i class="bi bi-arrow-right"></i></span>';
     nav.insertBefore(card, dc);
     let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
+    if (!role) { try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)) { role = "cust"; break; } } } catch (x) {} }
     const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
     ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Buka dashboard</a>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html"><i class="bi bi-box-arrow-in-right"></i> Masuk</a>';
     nav.insertBefore(ac, dc);
