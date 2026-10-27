@@ -176,7 +176,7 @@ function pasangPanelMenu() {
     nav.insertBefore(card, dc);
     let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
     const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
-    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Buka dashboard</a>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html">Masuk</a><a class="btn ghost" href="' + ROOT + 'akun/masuk.html#daftar">Buat akun</a>';
+    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Buka dashboard</a>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html"><i class="bi bi-box-arrow-in-right"></i> Masuk</a>';
     nav.insertBefore(ac, dc);
     if (dc) dc.style.setProperty("--i", n++);
     if (btn) btn.innerHTML = '<svg class="mb-g" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><svg class="mb-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -276,7 +276,7 @@ function pasangSpot() {
 /* ===== 5b. CARA KERJA, MARQUEE, DROPDOWN URUTKAN ===== */
 const ALUR = {
   tahu: [
-    { j: "Masuk atau buat akun", d: "Klik Masuk di pojok kanan atas. Belum punya akun? Daftar gratis, cukup nama dan email.",
+    { j: "Masuk dengan Google atau Discord", d: "Klik Masuk di pojok kanan atas, lalu pilih Google atau Discord. Akun dibuat otomatis saat pertama kali masuk.",
       v: "login" },
     { j: "Buka ticket di dashboard", d: "Di dashboard customer, klik Buka ticket, pilih layanan dan paket, ceritakan kebutuhanmu, lalu Kirim ticket.",
       v: "form", x: { f: 3 } },
@@ -308,10 +308,9 @@ function panelAlur(s) {
   }
   if (s.v === "login") {
     return '<div class="fb-cap"' + k(0) + ">Akun NEXORA</div>" +
-      '<div class="fm-tabs"' + k(1) + '><span class="on">Masuk</span><span>Daftar</span></div>' +
-      '<div class="fm-fld"' + k(2) + "><small>Email</small><div>kamu@email.com</div></div>" +
-      '<div class="fm-fld"' + k(3) + "><small>Password</small><div>\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</div></div>" +
-      '<div class="fb-cta"' + k(4) + ">Masuk</div>";
+      '<div class="fm-sso"' + k(1) + '><i class="bi bi-google"></i> Lanjutkan dengan Google</div>' +
+      '<div class="fm-sso"' + k(2) + '><i class="bi bi-discord"></i> Lanjutkan dengan Discord</div>' +
+      '<div class="fm-sub"' + k(3) + ">Akun dibuat otomatis saat pertama kali masuk</div>";
   }
   if (s.v === "form") {
     const f = s.x.f;
