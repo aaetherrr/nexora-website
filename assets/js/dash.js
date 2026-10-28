@@ -1161,13 +1161,15 @@
       else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
     }
     dashInit(m === "admin", root);
+    root.classList.remove("loading");
   }
   window.nxDash = function () {
     if (location.hash === "#buka") ss("nx-next", "buka");
     var root = $("[data-dash]"); if (!root) return; var m = root.dataset.dash;
     if (window.NX && NX.live) {
       $$(".demo-note").forEach(function (n) { n.remove(); });
-      return NX.ready(m === "admin" || m === "alogin" ? "admin" : "cust").then(function () { boot(root, m); }, function (er) { console.error(er); toast("Gagal memuat akun: " + er.message); });
+      if (m !== "login" && m !== "alogin") { root.classList.add("loading"); var cn = ss("nx-name"), wh = $("#who"), wv = $("#wav"); if (cn && wh) { wh.textContent = cn; if (wv) wv.textContent = cn.charAt(0).toUpperCase(); } }
+      return NX.ready(m === "admin" || m === "alogin" ? "admin" : "cust").then(function () { boot(root, m); }, function (er) { console.error(er); root.classList.remove("loading"); toast("Gagal memuat akun: " + er.message); });
     }
     boot(root, m);
   };

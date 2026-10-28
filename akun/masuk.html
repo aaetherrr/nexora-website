@@ -12,13 +12,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
 <script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
-<link rel="stylesheet" href="../assets/css/style.css">
-<link rel="stylesheet" href="../assets/css/dash.css">
+<link rel="stylesheet" href="../assets/css/style.css?v=20261028a">
+<link rel="stylesheet" href="../assets/css/dash.css?v=20261028b">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
-<script src="../assets/js/config.js" defer></script>
-<script src="../assets/js/auth.js" defer></script>
-<script src="../assets/js/script.js" defer></script>
-<script src="../assets/js/dash.js" defer></script>
+<script src="../assets/js/config.js?v=20261028a" defer></script>
+<script src="../assets/js/auth.js?v=20261028a" defer></script>
+<script src="../assets/js/script.js?v=20261028a" defer></script>
+<script src="../assets/js/dash.js?v=20261028b" defer></script>
 </head>
 <body>
 <header class="topbar bare">
@@ -31,11 +31,19 @@
   </div>
 </header>
 
-<main class="wrap auth" data-dash="login"><div class="auth-card">
-<h1>Masuk ke NEXORA</h1><p class="muted">Pantau pesanan dan buka ticket.</p>
-<div class="social" style="margin-top:20px"><button class="btn ghost" type="button" data-sso="Google"><i class="bi bi-google"></i> Lanjutkan dengan Google</button><button class="btn ghost" type="button" data-sso="Discord"><i class="bi bi-discord"></i> Lanjutkan dengan Discord</button></div>
-<p class="muted" style="font-size:.85rem;text-align:center;margin:16px 0 0">Akun dibuat otomatis saat pertama kali masuk.</p>
-<p class="err" id="ae" hidden style="margin-top:12px"></p>
-<p class="demo-note">Mode demo: belum terhubung ke database. Klik salah satu tombol untuk mencoba.</p></div></main>
+<main class="lg" data-dash="login">
+<section class="lg-brand"><span class="lg-chip"><i class="bi bi-box2"></i> Akun NEXORA</span><h2>Kelola pesanan server Minecraft &amp; Discord-mu di satu tempat.</h2><ul class="lg-list"><li><i class="bi bi-receipt"></i><span>Pantau pesanan dan tagihan</span></li><li><i class="bi bi-chat-dots"></i><span>Buka ticket dan chat langsung dengan tim</span></li><li><i class="bi bi-shield-check"></i><span>Masuk aman lewat Google atau Discord, tanpa password</span></li></ul></section>
+<section class="lg-side"><div class="lg-card">
+<h1>Masuk</h1><p class="muted">Lanjutkan dengan akun yang kamu punya.</p>
+<div class="lg-btns">
+<button class="sso" type="button" data-sso="Google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Lanjutkan dengan Google</span></button>
+<button class="sso dc" type="button" data-sso="Discord"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059.05.05 0 0 0-.018-.011 8.8 8.8 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.05.05 0 0 1 .015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"/></svg><span>Lanjutkan dengan Discord</span></button>
+</div>
+<p class="lg-note">Akun dibuat otomatis saat pertama kali masuk.</p>
+<p class="err" id="ae" hidden></p>
+<p class="demo-note">Mode demo: belum terhubung ke database. Klik salah satu tombol untuk mencoba.</p>
+<p class="lg-legal">Dengan masuk, kamu menyetujui <a href="../pages/terms.html">Terms and Conditions</a> dan <a href="../pages/privacy.html">Privacy Policy</a>.</p>
+<a class="lg-back" href="../index.html"><i class="bi bi-arrow-left"></i> Kembali ke beranda</a>
+</div></section></main>
 </body>
 </html>
