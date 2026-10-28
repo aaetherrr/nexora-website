@@ -5,6 +5,8 @@
   var NX = (window.NX = { live: false, user: null, profile: null, role: "", staff: [], identities: [] });
   if (!C.supabaseUrl || !C.supabaseAnonKey || !window.supabase || !window.supabase.createClient) return;
   NX.live = true;
+  try { var pc = document.createElement("link"); pc.rel = "preconnect"; pc.href = C.supabaseUrl; pc.crossOrigin = ""; document.head.appendChild(pc); } catch (x) {}
+  function deadSession(e) { return !!e && (e.status === 401 || e.status === 403 || e.status === 404 || e.name === "AuthSessionMissingError"); }
   var sb = (NX.sb = window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey, { auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }));
   var PROV = { Google: "google", Discord: "discord", google: "google", discord: "discord" };
 
@@ -45,7 +47,8 @@
     return Promise.all([
       sb.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       sb.auth.getUserIdentities(),
-      mode === "admin" ? sb.rpc("claim_staff") : Promise.resolve({ data: "" })
+      mode === "admin" ? sb.rpc("claim_staff") : Promise.resolve({ data: "" }),
+      mode === "admin" ? sb.from("staff").select("*").order("dibuat", { ascending: true }) : Promise.resolve({ data: [] })
     ]).then(function (r) {
       if (r[0].error) fail(r[0].error);
       var um = user.user_metadata || {};
@@ -72,7 +75,8 @@
         old.lk = { g: hasId("google"), d: hasId("discord") };
         localStorage.setItem("nx-prof", JSON.stringify(old));
       } catch (x) {}
-      return NX.role ? reloadStaff() : null;
+      NX.staff = NX.role && !r[3].error ? (r[3].data || []).map(mapStaff) : [];
+      return NX.role && !NX.staff.length ? reloadStaff() : null;
     });
   }
 
@@ -82,7 +86,16 @@
     NX._p = sb.auth.getSession().then(function (r) {
       var s = r.data && r.data.session;
       if (!s) { clearSession(); return null; }
-      return load(s.user, mode);
+      var pu = sb.auth.getUser().then(function (u) { return u; }, function (e) { return { error: e }; });
+      var pl = load(s.user, mode).then(function () { return null; }, function (e) { return e; });
+      return Promise.all([pu, pl]).then(function (x) {
+        var er = x[0].error;
+        if ((er && deadSession(er)) || (!er && !(x[0].data && x[0].data.user))) {
+          return sb.auth.signOut({ scope: "local" }).then(clearSession, clearSession).then(function () { return null; });
+        }
+        if (x[1]) throw x[1];
+        return null;
+      });
     });
     NX._mode = mode;
     return NX._p;
