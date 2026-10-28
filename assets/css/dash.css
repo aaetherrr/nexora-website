@@ -1721,3 +1721,9 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 
 /* ===== v19: status final terkunci ===== */
 .st-lk{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:color-mix(in srgb,#2a9a56 14%,transparent);color:#2a9a56;font-size:.8rem;font-weight:600;white-space:nowrap}
+
+/* ===== Status memuat dashboard (mode Supabase) ===== */
+@keyframes nxspin{to{transform:rotate(360deg)}}
+.dash.loading .dmain>*{display:none}
+.dash.loading .dmain::before{content:"";display:block;width:30px;height:30px;margin:80px auto 12px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:nxspin .8s linear infinite}
+.dash.loading .dmain::after{content:"Memuat dashboard\2026";display:block;text-align:center;color:var(--muted);font-size:.9rem}
