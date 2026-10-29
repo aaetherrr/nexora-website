@@ -1770,3 +1770,129 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .dash.loading #who:empty{display:block;width:90px;height:12px;border-radius:6px;background:var(--line)}
 @keyframes nxsh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.sk{animation:none}}
+
+/* ===== Login: tema jasa setup Minecraft, Discord, dan hosting ===== */
+.lg-brand{justify-content:center;gap:18px}
+.lg-brand .grad{background:linear-gradient(100deg,var(--accent),color-mix(in srgb,var(--accent) 45%,#ff8ad8));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lg-sub{margin:0;max-width:46ch;color:var(--muted)}
+.lg-svc{display:grid;gap:10px;max-width:460px}
+.lg-sv{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--bg) 82%,transparent)}
+.lg-sv>i{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:var(--accent-soft);color:var(--accent);font-size:1.2rem}
+.lg-sv b{display:block;font-size:.95rem}
+.lg-sv small{display:block;color:var(--muted);font-size:.8rem}
+.lg-term{max-width:460px;padding:12px 14px 10px;border:1px solid var(--line);border-radius:14px;background:#1b1626;color:#ece8f5;font:.8rem/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.lg-term .tb{display:flex;align-items:center;gap:6px;margin-bottom:6px;color:#a49cba;font-size:.72rem}
+.lg-term .tb i{width:9px;height:9px;border-radius:50%;background:#3a3150}
+.lg-term .tb span{margin-left:6px}
+.lg-term p{margin:0}.lg-term em{color:#9a86d9;font-style:normal;margin-right:8px}.lg-term b{color:#4cd18a;font-weight:500;margin-left:6px}
+.lg-from{margin:0;color:var(--muted);font-size:.9rem}
+.lg-from b{color:var(--text)}
+.lg-deco{position:absolute!important;right:-70px;bottom:-70px;width:340px;height:340px;fill:var(--accent);opacity:.08;pointer-events:none}
+.lg-ic{display:grid;place-items:center;width:52px;height:52px;margin-bottom:16px;border-radius:16px;background:var(--accent);color:var(--on-accent);font-size:1.5rem}
+@media (max-width:860px){
+  .lg-brand{padding:22px 20px 18px;gap:12px}
+  .lg-sub,.lg-term,.lg-deco{display:none}
+  .lg-brand h2{font-size:1.4rem;max-width:none}
+  .lg-svc{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:none}
+  .lg-sv{flex-direction:column;text-align:center;gap:6px;padding:10px 6px}
+  .lg-sv>i{width:34px;height:34px;font-size:1rem}
+  .lg-sv b{font-size:.78rem}
+  .lg-sv small{display:none}
+  .lg-from{font-size:.8rem}
+  .lg-side{padding:22px 16px 32px}
+  .lg-ic{width:44px;height:44px;font-size:1.25rem;margin-bottom:12px}
+}
+
+/* ===== Login v3: kolase layanan, kartu bergradasi, tombol berkilau ===== */
+.lg-brand{background:radial-gradient(70% 55% at 0% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),radial-gradient(60% 50% at 100% 100%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%),var(--surface);gap:20px}
+.lg-brand h2{font-size:clamp(2rem,3.8vw,3rem)}
+.lg-pills{display:flex;flex-wrap:wrap;gap:8px}
+.lg-pills span{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--line);border-radius:99px;background:color-mix(in srgb,var(--bg) 80%,transparent);font-size:.85rem}
+.lg-pills i{color:var(--accent)}
+.lg-stage{position:relative;display:grid;grid-template-columns:1.2fr .9fr;gap:14px;max-width:520px;margin:6px 0 4px}
+.lc{padding:14px 15px;border:1px solid var(--line);border-radius:18px;background:var(--bg);box-shadow:0 22px 40px -26px rgba(60,40,120,.6);animation:lcf 6s ease-in-out infinite alternate}
+.lc.c1{grid-row:1/span 2;padding:16px;rotate:-1deg}
+.lc.c2{rotate:2deg;animation-delay:-2s}
+.lc.c3{rotate:-1.5deg;animation-delay:-4s}
+@keyframes lcf{to{translate:0 -7px}}
+.lc-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lc-h b{display:block;font-size:.95rem;line-height:1.2}
+.lc-h small{color:var(--muted);font-size:.75rem}
+.lc-cube{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--accent-soft)}
+.lc-cube svg{width:24px;height:24px;fill:var(--accent)}
+.lc-on{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,#2fbf71 16%,transparent);color:#2a9a56;font-size:.72rem}
+.lc-on i{width:7px;height:7px;border-radius:50%;background:#2fbf71}
+.lc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.lc-tags span{padding:3px 9px;border-radius:99px;background:var(--accent-soft);font-size:.72rem}
+.lc-bar{display:grid;grid-template-columns:34px 1fr 34px;gap:8px;align-items:center;margin-top:8px;font-size:.72rem;color:var(--muted)}
+.lc-bar u{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden;text-decoration:none}
+.lc-bar s{display:block;width:var(--w);height:100%;border-radius:99px;background:var(--accent)}
+.lc-bar b{text-align:right;font-weight:500;color:var(--text)}
+.lc-t{display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:.85rem;font-weight:600}
+.lc-t i{color:var(--accent)}
+.lc-n{margin-left:auto;padding:0 8px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-style:normal;font-size:.72rem}
+.lc p{margin:4px 0;font-size:.78rem;color:var(--muted)}
+.lc p>span:first-child{color:var(--accent);margin-right:5px}
+.lc p.on{color:var(--text);background:var(--accent-soft);border-radius:8px;padding:2px 6px;margin-left:-6px}
+.lc p.ok::before{content:"\2713";color:#2fbf71;margin-right:7px;font-weight:700}
+.lc p.rw{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lc p.rw span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.lc p.rw .bd{font-style:normal;font-size:.68rem;padding:1px 8px}
+.lc-roles{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.lc-roles em{padding:2px 8px;border-radius:99px;border:1px solid var(--line);font-style:normal;font-size:.7rem;color:var(--muted)}
+.lg-cap{position:absolute;right:4px;bottom:-18px;font-size:.68rem;color:var(--muted);opacity:.7}
+.lg-from{margin-top:14px}
+.lg-card{position:relative;border:1px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(140deg,var(--accent),color-mix(in srgb,var(--accent) 18%,transparent) 42%,var(--line) 75%) border-box;box-shadow:0 30px 60px -34px color-mix(in srgb,var(--accent) 60%,transparent)}
+.lg-ic{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#ff8ad8));box-shadow:0 12px 24px -12px var(--accent)}
+.sso{position:relative;overflow:hidden}
+.sso::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);translate:-120% 0;transition:translate .7s ease;pointer-events:none}
+.sso:hover::after{translate:120% 0}
+.sso.dc{background:linear-gradient(135deg,#5865f2,#7983f5);border-color:transparent}
+.lg-trust{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 16px;list-style:none;margin:18px 0 0;padding:0;color:var(--muted);font-size:.8rem}
+.lg-trust i{color:var(--accent);margin-right:5px}
+@media (max-width:1100px){.lg-stage{grid-template-columns:1fr;max-width:340px}.lc.c2{display:none}.lc.c1{grid-row:auto}}
+@media (max-width:860px){
+  .lg-stage,.lg-cap,.lg-sub{display:none}
+  .lg-brand{gap:12px;background:radial-gradient(90% 120% at 0% 0%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 70%),var(--surface)}
+  .lg-brand h2{font-size:1.5rem}
+  .lg-pills span{padding:5px 11px;font-size:.78rem}
+  .lg-from{display:none}
+}
+@media (prefers-reduced-motion:reduce){.lc{animation:none}.sso::after{transition:none}}
+
+/* ===== Login v4: sisi kanan lebih hidup (efek hover) ===== */
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes lgang{to{--ang:360deg}}
+@keyframes lgup{from{opacity:0;translate:0 18px}}
+@keyframes lgin{from{opacity:0;translate:0 10px}}
+.lg-side{position:relative;overflow:hidden;background:radial-gradient(45% 45% at 85% 8%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 70%),radial-gradient(40% 40% at 8% 92%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%)}
+.lg-side::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(color-mix(in srgb,var(--accent) 30%,transparent) 1px,transparent 1.4px);background-size:24px 24px;-webkit-mask-image:radial-gradient(60% 60% at 50% 50%,transparent 35%,#000 100%);mask-image:radial-gradient(60% 60% at 50% 50%,transparent 35%,#000 100%);opacity:.35}
+.lg-card{animation:lgup .65s cubic-bezier(.2,.8,.2,1) both;transition:translate .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.lg-card>*{animation:lgin .55s ease both}
+.lg-card>:nth-child(1){animation-delay:.10s}.lg-card>:nth-child(2){animation-delay:.16s}.lg-card>:nth-child(3){animation-delay:.22s}.lg-card>:nth-child(4){animation-delay:.28s}.lg-card>:nth-child(5){animation-delay:.34s}.lg-card>:nth-child(n+6){animation-delay:.40s}
+.lg-card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;background:conic-gradient(from var(--ang),transparent 0 50%,var(--accent) 72%,#ff8ad8 88%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;opacity:0;transition:opacity .4s;pointer-events:none}
+.lg-ic{transition:rotate .45s cubic-bezier(.3,1.6,.5,1),scale .45s cubic-bezier(.3,1.6,.5,1),box-shadow .35s}
+.sso{transition:border-color .2s,translate .25s,box-shadow .25s,filter .25s,scale .15s}
+.sso svg{transition:scale .3s cubic-bezier(.3,1.6,.5,1),rotate .3s}
+.sso-go{position:absolute;right:18px;opacity:0;translate:-10px 0;transition:opacity .25s,translate .25s}
+.sso:active{scale:.98}
+.sso:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.lg-trust li{transition:color .2s,translate .2s;cursor:default}
+.lg-trust i{display:inline-block;transition:scale .3s cubic-bezier(.3,1.6,.5,1),rotate .3s}
+.lg-legal a{background:linear-gradient(var(--accent),var(--accent)) 0 100%/0 1px no-repeat;text-decoration:none;transition:background-size .3s,color .2s}
+.lg-back i{transition:translate .25s}
+@media (hover:hover){
+  .lg-card:hover{translate:0 -5px;box-shadow:0 38px 70px -34px color-mix(in srgb,var(--accent) 75%,transparent)}
+  .lg-card:hover::before{opacity:1;animation:lgang 3.2s linear infinite}
+  .lg-card:hover .lg-ic{rotate:-8deg;scale:1.1;box-shadow:0 18px 30px -12px var(--accent)}
+  .sso:hover{translate:0 -3px}
+  .sso:not(.dc):hover{border-color:#4285f4;box-shadow:0 16px 30px -16px rgba(66,133,244,.75)}
+  .sso.dc:hover{box-shadow:0 16px 32px -12px rgba(88,101,242,.95);filter:brightness(1.07)}
+  .sso:hover svg{scale:1.15;rotate:-6deg}
+  .sso:hover .sso-go{opacity:1;translate:0 0}
+  .lg-trust li:hover{color:var(--text);translate:0 -2px}
+  .lg-trust li:hover i{scale:1.3;rotate:-10deg}
+  .lg-legal a:hover{background-size:100% 1px;color:var(--text)}
+  .lg-back:hover i{translate:-5px 0}
+}
+@media (prefers-reduced-motion:reduce){.lg-card,.lg-card>*{animation:none}.lg-card::before{animation:none!important}}

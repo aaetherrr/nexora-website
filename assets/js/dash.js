@@ -28,8 +28,12 @@
     Teknisi: ["ringkasan", "tiket", "tagihan"]
   };
   var RC = { Founder: "b8", "Co-Founder": "b2", Teknisi: "b7" };
-  function STAFF() { return window.NX && NX.live ? NX.staff : ld("nx-staff", []); }
-  function saveStaff(L) { if (window.NX && NX.live) { return NX.saveStaff(L).then(function () { draw(); }, function (er) { toast("Gagal menyimpan: " + er.message); draw(); }); } sv("nx-staff", L); }
+  function STAFF() { return window.NX && NX.live ? NX.staff.map(function (x) { return Object.assign({}, x); }) : ld("nx-staff", []); }
+  function saveStaff(L, okMsg) {
+    var redo = function () { if (window.nxDraw) window.nxDraw(); };
+    if (window.NX && NX.live) { return NX.saveStaff(L).then(function () { if (okMsg) toast(okMsg); redo(); }, function (er) { toast("Gagal menyimpan: " + er.message); redo(); }); }
+    sv("nx-staff", L); if (okMsg) toast(okMsg); redo();
+  }
   function staffBy(em) { em = String(em || "").toLowerCase(); return STAFF().filter(function (x) { return x.email === em; })[0]; }
   function arole() { return ss("nx-arole") || ""; }
   function can(t) { return (PERM[arole()] || []).indexOf(t) > -1; }
@@ -887,7 +891,7 @@
     function trole(t) {
       if (arole() !== "Founder") { toast("Hanya Founder yang bisa mengatur role"); return draw(); }
       var S = STAFF(), x = S[Number(t.dataset.trole)]; if (!x || x.role === "Founder" || ROLES.indexOf(t.value) < 1) return;
-      x.role = t.value; saveStaff(S); toast(x.nama + " sekarang " + t.value); draw();
+      x.role = t.value; saveStaff(S, x.nama + " sekarang " + t.value);
     }
     function tmAct(d) {
       if (arole() !== "Founder") return toast("Hanya Founder yang bisa mengatur role");
@@ -897,12 +901,12 @@
         $("#f-tm", m).addEventListener("submit", function (ev) {
           ev.preventDefault(); var f = ev.target, nm = f.nama.value.trim(), em = f.email.value.trim().toLowerCase(), did = (f.did.value || "").trim(), er = $("#tm-e", m), S2 = STAFF(); if (!em && !did) { er.textContent = "Isi email Google atau ID Discord."; er.hidden = false; return; }
           if (S2.some(function (x) { return (em && x.email === em) || (did && x.discord_id === did); })) { er.textContent = "Akun ini sudah terdaftar di tim."; er.hidden = false; return; }
-          S2.push({ id: "s" + Date.now(), nama: nm, email: em, discord_id: did, role: R, dibuat: Date.now() }); saveStaff(S2); close(); toast(nm + " ditambahkan sebagai " + R); draw();
+          S2.push({ id: "s" + Date.now(), nama: nm, email: em, discord_id: did, role: R, dibuat: Date.now() }); close(); saveStaff(S2, nm + " ditambahkan sebagai " + R);
         });
       });
       var S = STAFF(), x = S[Number(d.i)]; if (!x || x.role === "Founder") return;
       if (d.tm === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus anggota?</b></div><div class="mb"><p>' + e(x.nama) + " (" + e(x.role) + ") tidak bisa lagi masuk ke dashboard admin.</p></div><div class=\"mf\"><button type=\"button\" class=\"btn ghost\" data-x>Batal</button><button type=\"button\" class=\"btn dng\" data-ok>Hapus</button></div></div>", function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { var S3 = STAFF().filter(function (z) { return z.id !== x.id; }); saveStaff(S3); close(); toast(x.nama + " dihapus dari tim"); draw(); });
+        $("[data-ok]", m).addEventListener("click", function () { var S3 = STAFF().filter(function (z) { return z.id !== x.id; }); close(); saveStaff(S3, x.nama + " dihapus dari tim"); });
       });
     }
     var PAN = {
@@ -1142,6 +1146,7 @@
       }
     });
     window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); if (adm && ev.key === "nx-staff") syncRole(); });
+    window.nxDraw = draw;
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
   }
