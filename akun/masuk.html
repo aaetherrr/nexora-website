@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <script>(function(){var d=document.documentElement;d.className+=" js";var t=null;try{t=localStorage.getItem("nexora-theme")}catch(e){}if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}d.dataset.theme=t})()</script>
 <link rel="stylesheet" href="../assets/css/style.css?v=20261028a">
-<link rel="stylesheet" href="../assets/css/dash.css?v=20261028e">
+<link rel="stylesheet" href="../assets/css/dash.css?v=20261030d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
 <script src="../assets/js/config.js?v=20261028a" defer></script>
 <script src="../assets/js/auth.js?v=20261028a" defer></script>
@@ -23,16 +23,16 @@
 <body>
 <header class="topbar bare">
   <div class="wrap">
-    <a class="logo" href="../index.html"><span class="logo-card"><img src="../assets/img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span><span class="logo-name">NEXORA</span></a>
+    <a class="logo" href="../index.html"><span class="logo-card"><img src="../assets/img/logo.png" alt="NEXORA" style="width: 45px; height: 45px;"></span></a>
     <div class="nav-right">
       <a class="btn btn-icon dc-icon" href="https://discord.gg/7bFYCRheRm" target="_blank" rel="noopener" aria-label="Server Discord" title="Server Discord"><i class="bi bi-discord"></i></a>
-      <button class="icon-btn theme-toggle" type="button" aria-label="Ganti mode terang atau gelap"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
       </div>
   </div>
 </header>
 
-<main class="lg" data-dash="login">
-<section class="lg-brand"><span class="lg-chip">Jasa setup Minecraft, Discord &amp; hosting</span><h2>Server Minecraft impianmu, <span class="grad">kami yang siapkan.</span></h2><p class="lg-sub">Masuk untuk memesan, memantau pesanan dan tagihan, serta chat langsung dengan tim NEXORA.</p><div class="lg-pills"><span><i class="bi bi-box2"></i>Setup Minecraft</span><span><i class="bi bi-discord"></i>Setup Discord</span><span><i class="bi bi-hdd-stack"></i>Hosting</span></div><div class="lg-stage" aria-hidden="true">
+<main class="lg lg-cust" data-dash="login">
+<canvas class="lg-fx" aria-hidden="true"></canvas>
+<section class="lg-brand"><h2 class="lg-logo" data-fx="glow" aria-label="NEXORA">NEXORA</h2><p class="lg-sub" data-fx="fall">Tinggal main, sisanya tim nexora yang urus.</p><div class="lg-pills"><span><i class="bi bi-box2"></i>Setup Minecraft</span><span><i class="bi bi-discord"></i>Setup Discord</span><span><i class="bi bi-hdd-stack"></i>Hosting</span></div><div class="lg-stage" aria-hidden="true">
 <div class="lc c1"><div class="lc-h"><span class="lc-cube"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 33 12.5 20 20 7 12.5z" fill-opacity=".55"/><path d="M7 12.5 20 20v15L7 27.5z" fill-opacity=".8"/><path d="M33 12.5 20 20v15l13-7.5z"/></svg></span><div><b>NEXORA SMP</b><small>Minecraft Java &middot; Paper</small></div><span class="lc-on"><i></i>Online</span></div>
 <div class="lc-tags"><span>Java 21</span><span>100 slot</span><span>Whitelist aktif</span></div>
 <div class="lc-bar"><span>CPU</span><u><s style="--w:34%"></s></u><b>34%</b></div><div class="lc-bar"><span>RAM</span><u><s style="--w:52%"></s></u><b>52%</b></div><div class="lc-bar"><span>SSD</span><u><s style="--w:35%"></s></u><b>35%</b></div></div>
@@ -40,16 +40,152 @@
 <div class="lc c3"><div class="lc-t"><i class="bi bi-check2-circle"></i> Setup selesai</div><p class="ok">Server dibuat</p><p class="ok">Plugin &amp; konfigurasi</p><p class="ok">Whitelist &amp; izin</p></div>
 <small class="lg-cap">Contoh tampilan</small></div><p class="lg-from">Mulai dari <b>Rp 3.000</b> &middot; Java &middot; Bedrock &middot; Discord &middot; Hosting</p></section>
 <section class="lg-side"><div class="lg-card">
-<span class="lg-ic"><i class="bi bi-box2"></i></span>
-<h1>Masuk ke NEXORA</h1><p class="muted">Pilih akun yang kamu punya.</p>
+<p class="lg-eye">Masuk akun</p>
+<h1>Lanjutkan ke <em>Nexora</em></h1><p class="muted">Pilih Google atau Discord, lalu order dan pantau pesananmu di satu tempat.</p>
 <div class="lg-btns">
 <button class="sso" type="button" data-sso="Google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Lanjutkan dengan Google</span><i class="bi bi-arrow-right sso-go"></i></button>
 <button class="sso dc" type="button" data-sso="Discord"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059.05.05 0 0 0-.018-.011 8.8 8.8 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.05.05 0 0 1 .015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"/></svg><span>Lanjutkan dengan Discord</span><i class="bi bi-arrow-right sso-go"></i></button>
 </div>
-<ul class="lg-trust"><li><i class="bi bi-key"></i>Tanpa password</li><li><i class="bi bi-lightning-charge"></i>Sekali klik</li><li><i class="bi bi-shield-check"></i>Aman</li></ul><p class="err" id="ae" hidden></p>
-<p class="demo-note">Mode demo: belum terhubung ke database. Klik salah satu tombol untuk mencoba.</p>
-<p class="lg-legal">Dengan masuk, kamu menyetujui <a href="../pages/terms.html">Terms and Conditions</a> dan <a href="../pages/privacy.html">Privacy Policy</a>.</p>
+<p class="err" id="ae" hidden></p>
+<p class="demo-note"><i class="bi bi-info-circle"></i><span>Mode demo: belum terhubung ke database. Klik salah satu tombol untuk mencoba.</span></p>
+<div class="lg-legal"><p class="lg-legal-t">Dengan masuk, kamu menyetujui:</p><div class="lg-legal-l"><a class="lg-lk" href="../pages/terms.html" target="_blank" rel="noopener"><i class="bi bi-file-earmark-text"></i><span>Terms and Conditions</span><i class="bi bi-arrow-up-right lg-lk-go"></i></a><a class="lg-lk" href="../pages/privacy.html" target="_blank" rel="noopener"><i class="bi bi-shield-check"></i><span>Privacy Policy</span><i class="bi bi-arrow-up-right lg-lk-go"></i></a></div></div>
 <a class="lg-back" href="../index.html"><i class="bi bi-arrow-left"></i> Kembali ke beranda</a>
 </div></section></main>
+<script>
+/* Latar NEXORA: jaringan bintang (konstelasi) yang melayang pelan dan bereaksi pada kursor */
+(function(){
+  var cv=document.querySelector(".lg-fx");if(!cv||!cv.getContext)return;
+  var cx=cv.getContext("2d"),W=0,H=0,dpr=1,raf=0,on=false,pts=[],mx=-999,my=-999,pg=0,prev=0,t0=performance.now(),
+      rm=matchMedia("(prefers-reduced-motion: reduce)"),TAU=Math.PI*2,
+      COL=[[154,134,217],[122,162,255],[255,138,216]];
+  function mix(a,b,k){return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k]}
+  function col(h){return h<.5?mix(COL[0],COL[1],h*2):mix(COL[1],COL[2],(h-.5)*2)}
+  function size(){
+    var r=cv.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cx.setTransform(dpr,0,0,dpr,0,0);
+    var n=Math.round(Math.max(26,Math.min(110,W*H/12000)));pts=[];
+    for(var i=0;i<n;i++){var a=Math.random()*TAU,s=6+Math.random()*12;
+      pts.push({x:Math.random()*W,y:Math.random()*H,vx:Math.cos(a)*s,vy:Math.sin(a)*s,bx:Math.cos(a)*s,by:Math.sin(a)*s,r:.7+Math.random()*1.7,ph:Math.random()*TAU,h:Math.random()});}
+  }
+  function step(t,dt){
+    var link=Math.min(150,Math.max(100,W/9)),cur=190,i,j,p,q,dx,dy,d,a,c;
+    cx.clearRect(0,0,W,H);
+    for(i=0;i<pts.length;i++){
+      p=pts[i];
+      dx=mx-p.x;dy=my-p.y;d=Math.sqrt(dx*dx+dy*dy);
+      if(d<cur&&d>1){var f=(1-d/cur)*55*dt;p.vx+=dx/d*f;p.vy+=dy/d*f}
+      p.vx+=(p.bx-p.vx)*dt*.7;p.vy+=(p.by-p.vy)*dt*.7;
+      p.x+=(p.vx+Math.sin(t*.35+p.ph)*5)*dt;p.y+=(p.vy+Math.cos(t*.3+p.ph)*5)*dt;
+      if(p.x<-20)p.x=W+20;else if(p.x>W+20)p.x=-20;if(p.y<-20)p.y=H+20;else if(p.y>H+20)p.y=-20;
+    }
+    cx.lineWidth=1;
+    for(i=0;i<pts.length;i++){
+      p=pts[i];
+      for(j=i+1;j<pts.length;j++){
+        q=pts[j];dx=p.x-q.x;if(dx>link||dx<-link)continue;dy=p.y-q.y;if(dy>link||dy<-link)continue;
+        d=Math.sqrt(dx*dx+dy*dy);if(d>=link)continue;
+        a=(1-d/link);c=col((p.h+q.h)/2);
+        cx.strokeStyle="rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+(a*a*.5).toFixed(3)+")";
+        cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);cx.stroke();
+      }
+      dx=mx-p.x;dy=my-p.y;d=Math.sqrt(dx*dx+dy*dy);
+      if(d<cur){a=1-d/cur;cx.strokeStyle="rgba(228,216,255,"+(a*.62).toFixed(3)+")";cx.lineWidth=1+a*.6;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(mx,my);cx.stroke();cx.lineWidth=1}
+    }
+    for(i=0;i<pts.length;i++){
+      p=pts[i];c=col(p.h);var tw=.55+.45*Math.sin(t*1.2+p.ph),rr=p.r*(1+.15*tw),cs=(c[0]|0)+","+(c[1]|0)+","+(c[2]|0);
+      cx.fillStyle="rgba("+cs+","+(.10+.10*tw).toFixed(3)+")";cx.beginPath();cx.arc(p.x,p.y,rr*4,0,TAU);cx.fill();
+      cx.fillStyle="rgba("+cs+","+(.55+.4*tw).toFixed(3)+")";cx.beginPath();cx.arc(p.x,p.y,rr,0,TAU);cx.fill();
+    }
+    if(pg>.02){
+      var g=cx.createRadialGradient(mx,my,0,mx,my,170);
+      g.addColorStop(0,"rgba(190,170,255,"+(.2*pg).toFixed(3)+")");g.addColorStop(1,"rgba(154,134,217,0)");
+      cx.fillStyle=g;cx.fillRect(mx-170,my-170,340,340);
+    }
+  }
+  var tpg=0;
+  function frame(now){
+    var dt=Math.min(.05,(now-prev)/1000||.016);prev=now;pg+=(tpg-pg)*(1-Math.exp(-dt*5));step((now-t0)/1000,dt);raf=requestAnimationFrame(frame);
+  }
+  function move(ev){
+    if(ev.pointerType==="touch")return;
+    var r=cv.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;
+    if(x<0||x>r.width||y<0||y>r.height){leave();return}
+    mx=x;my=y;tpg=1;
+  }
+  function leave(){tpg=0;mx=my=-999}
+  function start(){if(on)return;on=true;size();prev=performance.now();addEventListener("pointermove",move,{passive:true});document.addEventListener("mouseleave",leave);addEventListener("blur",leave);raf=requestAnimationFrame(frame)}
+  function stop(){on=false;cancelAnimationFrame(raf);removeEventListener("pointermove",move);document.removeEventListener("mouseleave",leave);removeEventListener("blur",leave)}
+  function check(){if(rm.matches){stop();size();step(0,0)}else start()}
+  rm.addEventListener&&rm.addEventListener("change",check);
+  var rt;addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(function(){size();if(!on)step(0,0)},120)});
+  document.addEventListener("visibilitychange",function(){if(!on)return;if(document.hidden)cancelAnimationFrame(raf);else{prev=performance.now();raf=requestAnimationFrame(frame)}});
+  check();
+})();
+</script>
+<script>
+/* Teks: huruf rubuh seperti domino, tergeletak sebentar, lalu bangun pelan-pelan */
+(function(){
+  var rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function split(el,cls){
+    var t=el.textContent,i=0;el.setAttribute("aria-label",t);el.textContent="";
+    t.split(" ").forEach(function(w,wi,arr){
+      var wd=document.createElement("span");wd.className="w";
+      w.split("").forEach(function(c){var s=document.createElement("span");s.className=cls;s.textContent=c;s.style.setProperty("--i",i++);wd.appendChild(s)});
+      el.appendChild(wd);if(wi<arr.length-1){el.appendChild(document.createTextNode(" "));i++}
+    });
+  }
+  var g=document.querySelector('[data-fx="glow"]'),f=document.querySelector('[data-fx="fall"]');
+  if(g){split(g,"lgc");g.querySelectorAll(".w").forEach(function(w){w.setAttribute("aria-hidden","true")})}
+  /* animasi masuk: huruf NEXORA terbang naik satu per satu, lalu kalimat di bawahnya muncul mengikuti */
+  function intro(list,o){
+    if(rm)return;
+    list.forEach(function(el,i){
+      var a=el.animate([
+        {opacity:0,transform:"translateY("+o.y+"px) scale("+o.sc+")",filter:"blur("+o.bl+"px)"},
+        {opacity:1,transform:"none",filter:"blur(0px)"}
+      ],{duration:o.d,delay:o.t+i*o.s,easing:"cubic-bezier(.16,1,.3,1)",fill:"backwards"});
+      a.onfinish=function(){a.cancel()};
+    });
+  }
+  if(g)intro([].slice.call(g.querySelectorAll(".lgc")),{y:46,sc:.8,bl:14,d:1200,t:250,s:110});
+  if(f){
+    split(f,"fl");
+    intro([].slice.call(f.querySelectorAll(".fl")),{y:16,sc:1,bl:6,d:800,t:1050,s:30});
+    var letters=[].slice.call(f.querySelectorAll(".fl")),lastX=null,
+        DUR=4200,                       /* total durasi satu huruf (ms) */
+        CHAIN=[88,80,70,58,46,34],      /* sudut rebah tiap huruf berantai */
+        STAG=105;                       /* jeda antar huruf (ms) */
+    function tip(el,dir,delay,deg){
+      if(el._b)return;el._b=true;
+      var c0=getComputedStyle(el).color,lie=dir*deg,back=-dir*Math.min(3.5,deg*.045);
+      el.style.transformOrigin=dir>0?"100% 100%":"0% 100%";
+      el.style.zIndex="1";
+      var a=el.animate([
+        /* 1) mulai miring pelan, makin cepat karena gravitasi */
+        {transform:"rotate(0deg)",color:c0,textShadow:"0 0 0 rgba(190,170,255,0)",offset:0,easing:"cubic-bezier(.55,.04,.92,.58)"},
+        /* 2) menyentuh tanah */
+        {transform:"rotate("+lie+"deg) translateY(1.5px)",color:"#f3eeff",textShadow:"0 0 16px rgba(190,170,255,.75)",offset:.24,easing:"cubic-bezier(.2,.75,.35,1)"},
+        /* 3) memantul sedikit lalu diam */
+        {transform:"rotate("+(lie*.93)+"deg)",offset:.31,easing:"cubic-bezier(.4,0,.6,1)"},
+        {transform:"rotate("+lie+"deg) translateY(1px)",offset:.38,easing:"linear"},
+        /* 4) tergeletak, waktu untuk dinikmati */
+        {transform:"rotate("+lie+"deg) translateY(1px)",color:"#f3eeff",textShadow:"0 0 16px rgba(190,170,255,.75)",offset:.56,easing:"cubic-bezier(.42,.04,.4,1)"},
+        /* 5) bangun perlahan, sedikit melewati tegak */
+        {transform:"rotate("+back+"deg)",offset:.94,easing:"cubic-bezier(.3,0,.3,1)"},
+        {transform:"rotate(0deg)",color:c0,textShadow:"0 0 0 rgba(190,170,255,0)",offset:1}
+      ],{duration:DUR,delay:delay});
+      a.onfinish=a.oncancel=function(){el._b=false;el.style.transformOrigin="";el.style.zIndex=""};
+    }
+    f.addEventListener("pointermove",function(ev){
+      var dx=lastX===null?0:ev.clientX-lastX;lastX=ev.clientX;
+      if(rm||ev.buttons||Math.abs(dx)<1)return;
+      var el=ev.target;if(!el.classList||!el.classList.contains("fl"))return;
+      var dir=dx>0?1:-1,i=letters.indexOf(el);if(el._b)return;
+      CHAIN.forEach(function(deg,k){var n=letters[i+dir*k];if(n&&n.textContent.trim())tip(n,dir,k*STAG,deg)});
+    });
+    f.addEventListener("pointerleave",function(){lastX=null});
+  }
+})();
+</script>
 </body>
 </html>
