@@ -30,7 +30,7 @@
   }
   NX.waNorm = waNorm; NX.dcNorm = dcNorm;
 
-  function mapStaff(r) { return { id: r.id, nama: r.nama, email: r.email || "", discord_id: r.discord_id || "", role: r.role, dibuat: Date.parse(r.dibuat) || Date.now() }; }
+  function mapStaff(r) { return { id: r.id, nama: r.nama, email: r.email || "", discord_id: r.discord_id || "", role: r.role, user_id: r.user_id || "", dibuat: Date.parse(r.dibuat) || Date.now() }; }
   function reloadStaff() {
     return sb.from("staff").select("*").order("dibuat", { ascending: true }).then(function (r) {
       if (r.error) fail(r.error); NX.staff = (r.data || []).map(mapStaff);
@@ -38,7 +38,7 @@
   }
   function clearSession() {
     NX.user = null; NX.profile = null; NX.role = ""; NX.staff = []; NX.identities = [];
-    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via"].forEach(function (k) { ssSet(k, ""); });
+    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {};
   }
   function hasId(p) { return NX.identities.some(function (i) { return i.provider === p; }); }
 
@@ -76,7 +76,9 @@
         localStorage.setItem("nx-prof", JSON.stringify(old));
       } catch (x) {}
       NX.staff = NX.role && !r[3].error ? (r[3].data || []).map(mapStaff) : [];
-      return NX.role && !NX.staff.length ? reloadStaff() : null;
+      var more = [NX.tkReload().catch(function (e) { console.error("tiket:", e); NX.tkErr = e.message; NX.tk = []; })];
+      if (NX.role) { more.push(NX.usersReload().catch(function () { NX.users = {}; })); if (!NX.staff.length) more.push(reloadStaff()); }
+      return Promise.all(more).then(function () { startLive(); return null; });
     });
   }
 
@@ -158,4 +160,70 @@
       });
     });
   };
+
+  /* ===== Tahap 2: ticket, chat real time, daftar customer (untuk staf) ===== */
+  NX.tk = []; NX.users = {}; NX.tkErr = "";
+  var DAYF = { day: "2-digit", month: "short" }, FULLF = { day: "2-digit", month: "short", year: "numeric" };
+  function dLabel(d) { return d.toDateString() === new Date().toDateString() ? "Hari ini" : d.toLocaleDateString("id-ID", DAYF); }
+  function hLabel(d) { return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); }
+  function mapTk(r) {
+    var asCust = NX._mode !== "admin" || !NX.role, mine = NX.user && r.customer_id === NX.user.id;
+    var ms = (r.ticket_messages || []).slice().sort(function (a, b) { return a.id - b.id; }).map(function (m) {
+      var d = new Date(m.dibuat), o = { w: m.w, t: m.t, d: dLabel(d), h: hLabel(d) };
+      if (m.n) o.n = m.n; if (m.r) o.r = m.r; return o;
+    });
+    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), m: ms };
+  }
+  NX.tkReload = function () {
+    return sb.from("tickets").select("*, ticket_messages(*)").order("dibuat", { ascending: false }).then(function (r) {
+      if (r.error) fail(r.error);
+      NX.tkErr = ""; var before = JSON.stringify(NX.tk); NX.tk = (r.data || []).map(mapTk);
+      return before !== JSON.stringify(NX.tk);
+    });
+  };
+  NX.tkGet = function () { return JSON.parse(JSON.stringify(NX.tk)); };
+  function oneErr(q) { if (q.error) fail(q.error); if (!q.data || (Array.isArray(q.data) && !q.data.length)) throw new Error("Tidak diizinkan atau data tidak ditemukan."); return q; }
+  NX.tkSet = function (arr) {
+    var old = {}, seen = {}, ops = [];
+    NX.tk.forEach(function (x) { old[x.id] = x; });
+    arr.forEach(function (x) {
+      seen[x.id] = 1; var o = old[x.id];
+      if (!o) {
+        ops.push(function () {
+          return sb.from("tickets").insert({ subj: x.subj, kat: x.kat, paket: x.paket || "-" }).select("id").single().then(function (r) {
+            if (r.error) fail(r.error);
+            var chain = Promise.resolve();
+            x.m.forEach(function (m) { chain = chain.then(function () { return sb.from("ticket_messages").insert({ ticket_id: r.data.id, w: m.w, t: m.t }).then(function (q) { if (q.error) fail(q.error); }); }); });
+            return chain;
+          });
+        });
+        return;
+      }
+      x.m.slice(o.m.length).forEach(function (m) { ops.push(function () { return sb.from("ticket_messages").insert({ ticket_id: x.id, w: m.w, t: m.t }).then(function (q) { if (q.error) fail(q.error); }); }); });
+      if (x.st !== o.st || !!x.closed !== !!o.closed) ops.push(function () { return sb.from("tickets").update({ st: x.st, closed: !!x.closed }).eq("id", x.id).select("id").then(oneErr); });
+    });
+    NX.tk.forEach(function (o) { if (!seen[o.id]) ops.push(function () { return sb.from("tickets").delete().eq("id", o.id).select("id").then(oneErr); }); });
+    NX.tk = JSON.parse(JSON.stringify(arr));
+    var run = ops.reduce(function (p, f) { return p.then(f); }, Promise.resolve());
+    return run.then(function () { return NX.tkReload(); }, function (er) { return NX.tkReload().then(function () { throw er; }, function () { throw er; }); }).then(function () { if (window.nxDraw) window.nxDraw(); }, function (er) { if (window.nxToast) window.nxToast(er.message); if (window.nxDraw) window.nxDraw(); });
+  };
+  NX.usersReload = function () {
+    return sb.from("profiles").select("*").then(function (r) {
+      if (r.error) fail(r.error);
+      var staffIds = {}; NX.staff.forEach(function (s) { if (s.user_id) staffIds[s.user_id] = 1; });
+      var u = {};
+      (r.data || []).forEach(function (p) {
+        if (staffIds[p.id]) return;
+        var nm = p.nama || "Customer", k = nm, i = 2; while (u[k]) k = nm + " (" + (i++) + ")";
+        u[k] = { email: p.email || "", discord: p.discord_username || "", wa: p.whatsapp || "", joined: new Date(p.dibuat).toLocaleDateString("id-ID", FULLF) };
+      });
+      NX.users = u;
+    });
+  };
+  function startLive() {
+    if (NX._live) return; NX._live = true;
+    var t, deb = function () { clearTimeout(t); t = setTimeout(function () { NX.tkReload().then(function (ch) { if (ch && window.nxRemote) window.nxRemote(); }, function () {}); }, 250); };
+    try { sb.channel("nx-tiket").on("postgres_changes", { event: "*", schema: "public", table: "tickets" }, deb).on("postgres_changes", { event: "*", schema: "public", table: "ticket_messages" }, deb).subscribe(); } catch (x) {}
+    setInterval(function () { if (!document.hidden && NX.user) deb(); }, 20000);
+  }
 })();

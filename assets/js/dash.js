@@ -4,8 +4,13 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var mem = {};
-  function ld(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (x) { return k in mem ? mem[k] : d; } }
-  function sv(k, v) { mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch (x) {} }
+  function ordFromTk() {
+    var H = HG(), nm = {};
+    Object.keys(H.jasa).forEach(function (k) { H.jasa[k].forEach(function (p) { nm[p.nama] = (H.meta && H.meta[k] && H.meta[k].nama) || k; }); }); H.hosting.forEach(function (p) { nm[p.nama] = "Hosting"; });
+    return NX.tkGet().filter(function (x) { return x.kat === "Order baru"; }).map(function (x) { return { id: "ORD-" + String(x.id).replace(/^T-/, ""), tk: x.id, item: x.paket, jenis: nm[x.paket] || "Order via ticket", tgl: x.tgl, st: x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu" }; });
+  }
+  function ld(k, d) { if (window.NX && NX.live) { if (k === "nx-tk") return NX.tkGet(); if (k === "nx-or") return ordFromTk(); } try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (x) { return k in mem ? mem[k] : d; } }
+  function sv(k, v) { if (window.NX && NX.live) { if (k === "nx-tk") { NX.tkSet(v); return; } if (k === "nx-or") return; } mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch (x) {} }
   function ss(k, v) {
     if (v === undefined) { try { var r = sessionStorage.getItem(k); return r === null ? mem["s" + k] : r; } catch (x) { return mem["s" + k]; } }
     mem["s" + k] = v; window.__nxS = window.__nxS || {}; window.__nxS[k] = v; try { sessionStorage.setItem(k, v); } catch (x) {}
@@ -215,6 +220,7 @@
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
     function last(t) { return t.m[t.m.length - 1]; }
     function USR() {
+      if (window.NX && NX.live && adm) return NX.users;
       var u = ld("nx-users", { "Demo Customer": { email: "demo@example.com", discord: "democustomer", wa: "081234567890", joined: "10 Okt 2026" }, "Rizky": { email: "rizky@example.com", discord: "rizky_gg", wa: "085711112222", joined: "02 Okt 2026" }, "Andi": { email: "", discord: "", wa: "", joined: "28 Sep 2026" } });
       return u;
     }
@@ -265,6 +271,7 @@
     function isF() { return adm && arole() === "Founder"; }
     function audit(txt) { var a = ld("nx-audit", []); a.unshift({ t: Date.now(), by: whoR(), a: txt }); sv("nx-audit", a.slice(0, 200)); }
     function nextTid() {
+      if (window.NX && NX.live) return "T-n" + Date.now().toString(36);
       var mx = Number(ld("nx-tkseq", 0)) || 0, up = function (v) { var n = Number(String(v || "").slice(2)) || 0; if (n > mx) mx = n; };
       TK().forEach(function (x) { up(x.id); }); RV().forEach(function (r) { up(r.tk); }); BL().forEach(function (b) { up(b.tk); up(b.ticket); }); nfAll().forEach(function (n) { up(n.tk); });
       mx = Math.max(mx, 1043) + 1; sv("nx-tkseq", mx); return "T-" + mx;
@@ -1120,7 +1127,7 @@
         var txt = $("textarea", f).value.trim(); if (!txt) return; var a = TK(), cur = a.filter(function (x) { return x.id === sel; })[0];
         if (!cur || cl(cur)) { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
         cur.m.push(adm ? { w: "a", n: me(), r: arole(), t: txt, d: "Baru saja", h: hm() } : { w: "c", t: txt, d: "Baru saja", h: hm() }); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, whoR() + ": " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
-        if (!adm) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja", h: hm() }); if (x.id === tid && !cl(x) && last(x).w === "a") nt(x, "tk", "Balasan baru · " + x.id, "Admin: Terima kasih, pesanmu sudah kami terima."); }); sv("nx-tk", b); remote(); }, 3500); }
+        if (!adm && !(window.NX && NX.live)) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja", h: hm() }); if (x.id === tid && !cl(x) && last(x).w === "a") nt(x, "tk", "Balasan baru · " + x.id, "Admin: Terima kasih, pesanmu sudah kami terima."); }); sv("nx-tk", b); remote(); }, 3500); }
         return;
       }
       if (f.matches("[data-rvsend]")) {
@@ -1139,6 +1146,7 @@
       if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: f.nama.value.trim(), discord_username: f.dc.value, whatsapp: f.wa.value }).then(function () { toast("Profile tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profile tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
+        var Pc = ld("nx-prof", {}); if (!Pc.discord || !Pc.wa) { toast("Lengkapi username Discord dan nomor WhatsApp di Profil dulu sebelum membuka ticket."); tab = "profil"; return draw(); }
         var b = TK(), id = nextTid(), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
         b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja", h: hm() }] }); sv("nx-tk", b);
         if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), tk: id, item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
@@ -1146,7 +1154,7 @@
       }
     });
     window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); if (adm && ev.key === "nx-staff") syncRole(); });
-    window.nxDraw = draw;
+    window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
   }
@@ -1174,7 +1182,7 @@
     if (window.NX && NX.live) {
       $$(".demo-note").forEach(function (n) { n.remove(); });
       if (m !== "login" && m !== "alogin") { root.classList.add("loading"); var cn = ss("nx-name"), wh = $("#who"), wv = $("#wav"); if (cn && wh) { wh.textContent = cn; if (wv) wv.textContent = cn.charAt(0).toUpperCase(); } }
-      return NX.ready(m === "admin" || m === "alogin" ? "admin" : "cust").then(function () { boot(root, m); }, function (er) { console.error(er); root.classList.remove("loading"); toast("Gagal memuat akun: " + er.message); });
+      return NX.ready(m === "admin" || m === "alogin" ? "admin" : "cust").then(function () { if (NX.tkErr) toast("Data ticket belum bisa dimuat: " + NX.tkErr + ". Pastikan 003_tiket.sql sudah dijalankan."); boot(root, m); }, function (er) { console.error(er); root.classList.remove("loading"); toast("Gagal memuat akun: " + er.message); });
     }
     boot(root, m);
   };
