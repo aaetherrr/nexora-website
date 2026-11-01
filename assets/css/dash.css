@@ -2083,3 +2083,7 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 .bkf .bk-act .btn{width:auto;padding:10px 24px;font-size:.95rem}
 .nm-f:has(> .nm-p[hidden]){display:none}
 .st-r .btn.sm{flex:none}
+
+/* ===== Perbaikan: jarak ikon tombol, posisi tombol kirim ticket ===== */
+.st-r .btn.sm{display:inline-flex;align-items:center;gap:8px}
+.bkf .bk-act{justify-content:flex-start}

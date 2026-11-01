@@ -76,3 +76,8 @@ Login ke halaman admin dengan email baru. Kalau sudah masuk sebagai Founder, hap
 delete from public.staff where email = 'emaillama@gmail.com';
 ```
 Email harus huruf kecil semua dan sama persis dengan akun Google yang dipakai login.
+
+---
+## Buka ticket hanya wajib nomor WhatsApp
+Jalankan `supabase/006_whatsapp_saja.sql` di SQL Editor. Username Discord tidak lagi wajib. Customer tanpa nomor WhatsApp
+yang membuka menu Buka ticket akan melihat modal, lalu diarahkan ke Profil dengan kolom WhatsApp terpilih.

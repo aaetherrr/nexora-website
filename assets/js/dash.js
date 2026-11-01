@@ -899,6 +899,12 @@
       var S = STAFF(), x = S[Number(t.dataset.trole)]; if (!x || x.role === "Founder" || ROLES.indexOf(t.value) < 1) return;
       x.role = t.value; saveStaff(S, x.nama + " sekarang " + t.value);
     }
+    function needWa() { var P = ld("nx-prof", {}); return !P.wa; }
+    function waModal() {
+      return modal('<div class="mbox sm"><div class="mh"><b>Isi nomor WhatsApp dulu</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Untuk membuka ticket, kami butuh nomor WhatsApp-mu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-whatsapp"></i> Isi di Profil</button></div></div>', function (m, close) {
+        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profil"; draw(); setTimeout(function () { var i = $('#p-profil [name="wa"]', root); if (i) i.focus(); }, 60); });
+      });
+    }
     function tmAct(d) {
       if (arole() !== "Founder") return toast("Hanya Founder yang bisa mengatur role");
       if (d.tm === "new") return modal('<form class="mbox sm" id="f-tm"><div class="mh"><b>Tambah anggota tim</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><label class="fld"><span>Nama <em class="req">*</em></span><input class="inp" name="nama" maxlength="40" required></label><label class="fld"><span>Email Google</span><input class="inp" name="email" type="email" placeholder="nama@gmail.com"><small class="hint">Untuk anggota yang login dengan Google.</small></label><label class="fld"><span>ID Discord</span><input class="inp" name="did" inputmode="numeric" pattern="[0-9]{15,22}" placeholder="angka 17-19 digit"><small class="hint">Untuk anggota yang login dengan Discord. Isi salah satu atau keduanya.</small></label><div class="fld"><span>Role</span><div class="seg2 full" id="tm-r"><button type="button" data-v="Teknisi" aria-pressed="true">Teknisi</button><button type="button" data-v="Co-Founder" aria-pressed="false">Co-Founder</button></div></div><p class="err" id="tm-e" hidden></p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button class="btn" type="submit"><i class="bi bi-person-plus"></i> Tambah</button></div></form>', function (m, close) {
@@ -1049,7 +1055,7 @@
       if (t.id === "logout" || t.id === "logout2") return outAsk();
       if (t.id === "side-t") return setWide();
       if (d.ct) { ctab = d.ct; return draw(); }
-      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (ntb !== tab) { aq = ""; tv = "list"; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
+      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { aq = ""; tv = "list"; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
       if (d.lk) {
         var kk = LK(), key = d.lk === "google" ? "g" : "d", nmk = d.lk === "google" ? "Google" : "Discord";
         if (kk.via === nmk) return toast("Ini metode login utamamu");
@@ -1151,7 +1157,7 @@
       if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: f.nama.value.trim(), discord_username: f.dc.value, whatsapp: f.wa.value }).then(function () { toast("Profile tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profile tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
-        var Pc = ld("nx-prof", {}); if (!Pc.discord || !Pc.wa) { toast("Lengkapi username Discord dan nomor WhatsApp di Profil dulu sebelum membuka ticket."); tab = "profil"; return draw(); }
+        if (needWa()) return waModal();
         var b = TK(), id = nextTid(), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
         b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [{ w: "c", t: f.msg.value, d: "Baru saja", h: hm() }] }); sv("nx-tk", b);
         if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), tk: id, item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
@@ -1161,7 +1167,7 @@
     window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); if (adm && ev.key === "nx-staff") syncRole(); });
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     draw();
-    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else { tab = "buka"; draw(); } }
+    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); } }
   }
 
   function boot(root, m) {
