@@ -156,6 +156,8 @@
     return Promise.all(ops).then(function (rs) {
       var bad = rs.filter(function (q) { return q.error || !q.data || !q.data.length; })[0];
       return reloadStaff().then(function () {
+        var self = NX.staff.filter(function (s) { return NX.user && s.user_id === NX.user.id; })[0];
+        if (self && NX.profile && self.nama && self.nama !== NX.profile.nama) { NX.profile.nama = self.nama; ssSet("nx-name", self.nama); sb.from("profiles").update({ nama: self.nama }).eq("id", NX.user.id).then(function () {}); }
         if (bad) throw new Error(bad.error ? (/duplicate|unique/i.test(bad.error.message) ? "Akun ini sudah terdaftar di tim." : bad.error.message) : "Tidak diizinkan. Hanya Founder yang bisa mengatur tim.");
       });
     });

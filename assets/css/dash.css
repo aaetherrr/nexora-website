@@ -2077,3 +2077,9 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 .lg-cust .lg-card .demo-note{background:rgba(154,134,217,.09)}
 .lg-cust .lg-card .lg-note{background:rgba(217,160,0,.07);border-color:rgba(240,194,58,.28)}
 .lg-cust .lg-card h1 em{white-space:nowrap}
+
+/* ===== Perbaikan: tombol kirim ticket lebih kecil, footer notifikasi ===== */
+.bkf .bk-act{display:flex;justify-content:flex-end}
+.bkf .bk-act .btn{width:auto;padding:10px 24px;font-size:.95rem}
+.nm-f:has(> .nm-p[hidden]){display:none}
+.st-r .btn.sm{flex:none}

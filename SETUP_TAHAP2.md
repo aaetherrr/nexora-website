@@ -52,3 +52,27 @@ Notifikasi dikirim hanya untuk **ticket baru** dan **pesan customer pertama sete
 | Notifikasi Discord tidak masuk | Cek `select name from vault.secrets;`. Lalu `select status_code, content from net._http_response order by created desc limit 5;` untuk melihat jawaban Discord (204 = berhasil) |
 | Chat tidak real time | Cek Database > Publications > `supabase_realtime` memuat `tickets` dan `ticket_messages`. Sementara itu halaman memeriksa data tiap 20 detik |
 | "Tidak diizinkan..." saat admin mengubah ticket | Akun belum terdaftar sebagai staf, atau ticket sudah ditutup |
+
+---
+## Perbaikan setelah uji coba (jalankan `supabase/005_perbaikan_tiket.sql`)
+SQL Editor > New query > tempel isi `005_perbaikan_tiket.sql` > Run. Isinya:
+1. **Akun customer yang sudah pernah buka ticket sekarang bisa dihapus** (Authentication > Users). Ticket dan chat-nya tetap ada untuk admin.
+2. **Nomor ticket per kategori:** Order `O-0001`, Bantuan `B-0001`, Lainnya `L-0001`, Pembayaran `P-0001`.
+   Ticket lama berawalan `T-` tidak berubah. Untuk mulai dari 0001 lagi (hanya kalau semua ticket boleh dihapus, misalnya masih uji coba):
+   ```sql
+   delete from public.tickets;          -- MENGHAPUS SEMUA ticket dan chat
+   select public.reset_nomor_ticket();  -- nomor kembali ke 0001
+   ```
+   Fungsi reset menolak berjalan kalau masih ada ticket, dan tidak bisa dipanggil dari web.
+3. **Founder bisa mengubah nama** anggota tim dan namanya sendiri (tombol "Ubah nama" di Tim & role). Role Founder tidak bisa diubah lewat web.
+
+### Pindah akun Founder / ganti email Google
+Dilakukan lewat SQL Editor (web sengaja tidak bisa mengubah Founder). Cara aman:
+```sql
+insert into public.staff (nama, email, role) values ('Nama Kamu', 'emailbaru@gmail.com', 'Founder');
+```
+Login ke halaman admin dengan email baru. Kalau sudah masuk sebagai Founder, hapus yang lama:
+```sql
+delete from public.staff where email = 'emaillama@gmail.com';
+```
+Email harus huruf kecil semua dan sama persis dengan akun Google yang dipakai login.
