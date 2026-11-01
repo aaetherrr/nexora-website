@@ -902,7 +902,7 @@
     function needWa() { var P = ld("nx-prof", {}); return !P.wa; }
     function waModal() {
       return modal('<div class="mbox sm"><div class="mh"><b>Isi nomor WhatsApp dulu</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Untuk membuka ticket, kami butuh nomor WhatsApp-mu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-whatsapp"></i> Isi di Profil</button></div></div>', function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profil"; draw(); setTimeout(function () { var i = $('#p-profil [name="wa"]', root); if (i) i.focus(); }, 60); });
+        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profile"; draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); });
       });
     }
     function tmAct(d) {
