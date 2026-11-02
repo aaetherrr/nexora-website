@@ -38,7 +38,7 @@
   }
   function clearSession() {
     NX.user = null; NX.profile = null; NX.role = ""; NX.staff = []; NX.identities = [];
-    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {};
+    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {};
   }
   function hasId(p) { return NX.identities.some(function (i) { return i.provider === p; }); }
 
@@ -63,6 +63,10 @@
         var idd = (NX.identities.filter(function (i) { return i.provider === "discord"; })[0] || {}).identity_data || {};
         try { var g = dcNorm(idd.full_name || idd.name || idd.user_name); if (g) { P.discord_username = g; sb.from("profiles").update({ discord_username: g }).eq("id", user.id).then(function () {}); } } catch (x) {}
       }
+      var AVRE = /^https:\/\/(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)\/[^\s]{1,500}$/;
+      var avu = um.avatar_url || um.picture || "";
+      if (avu && AVRE.test(avu) && P.avatar_url !== avu) { P.avatar_url = avu; sb.from("profiles").update({ avatar_url: avu }).eq("id", user.id).then(function () {}); }
+      ssSet("nx-avatar", P.avatar_url && AVRE.test(P.avatar_url) ? P.avatar_url : "");
       var via = cap((user.app_metadata && user.app_metadata.provider) || "");
       ssSet("nx-name", P.nama || um.full_name || um.name || (user.email || "").split("@")[0] || "Customer");
       ssSet("nx-email", P.email || user.email || "");
@@ -172,9 +176,9 @@
     var asCust = NX._mode !== "admin" || !NX.role, mine = NX.user && r.customer_id === NX.user.id;
     var ms = (r.ticket_messages || []).slice().sort(function (a, b) { return a.id - b.id; }).map(function (m) {
       var d = new Date(m.dibuat), o = { w: m.w, t: m.t, d: dLabel(d), h: hLabel(d) };
-      if (m.n) o.n = m.n; if (m.r) o.r = m.r; return o;
+      if (m.n) o.n = m.n; if (m.r) o.r = m.r; if (m.av) o.av = m.av; return o;
     });
-    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), m: ms };
+    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", m: ms };
   }
   NX.tkReload = function () {
     return sb.from("tickets").select("*, ticket_messages(*)").order("dibuat", { ascending: false }).then(function (r) {

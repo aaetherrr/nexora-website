@@ -81,3 +81,10 @@ Email harus huruf kecil semua dan sama persis dengan akun Google yang dipakai lo
 ## Buka ticket hanya wajib nomor WhatsApp
 Jalankan `supabase/006_whatsapp_saja.sql` di SQL Editor. Username Discord tidak lagi wajib. Customer tanpa nomor WhatsApp
 yang membuka menu Buka ticket akan melihat modal, lalu diarahkan ke Profil dengan kolom WhatsApp terpilih.
+
+---
+## Foto profil dan jam di notifikasi Discord
+Jalankan `supabase/007_avatar_dan_jam_discord.sql` di SQL Editor (setelah 005 dan 006).
+- Foto akun Google atau Discord ikut tampil di dashboard (kartu profil, navbar) dan di chat ticket. Hanya alamat gambar resmi Google/Discord yang diterima database.
+- Customer yang sudah login perlu login ulang sekali supaya fotonya terbaca.
+- Notifikasi Discord sekarang berisi jam (WIB) di footer dan kolom Waktu.
