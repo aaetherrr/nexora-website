@@ -8,6 +8,15 @@
   try { var pc = document.createElement("link"); pc.rel = "preconnect"; pc.href = C.supabaseUrl; pc.crossOrigin = ""; document.head.appendChild(pc); } catch (x) {}
   function deadSession(e) { return !!e && (e.status === 401 || e.status === 403 || e.status === 404 || e.name === "AuthSessionMissingError"); }
   var sb = (NX.sb = window.supabase.createClient(C.supabaseUrl, C.supabaseAnonKey, { auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }));
+  /* Catat alasan kalau login gagal, supaya halaman login bisa menampilkannya (bukan memantul diam-diam). */
+  function setErr(m) { try { if (m) sessionStorage.setItem("nx-autherr", String(m).slice(0, 300)); else sessionStorage.removeItem("nx-autherr"); } catch (x) {} }
+  var QS = new URLSearchParams(location.search), HS = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+  var BACKCODE = !!QS.get("code");
+  var OERR = QS.get("error_description") || HS.get("error_description") || QS.get("error") || HS.get("error") || "";
+  if (OERR) setErr(OERR.replace(/\+/g, " "));
+  NX.init = (typeof sb.auth.initialize === "function" ? sb.auth.initialize() : Promise.resolve({})).then(function (r) {
+    if (r && r.error) { console.error("Login Supabase:", r.error); setErr(r.error.message || "Sesi login tidak bisa dibuat."); }
+  }, function (er) { console.error("Login Supabase:", er); setErr((er && er.message) || "Sesi login tidak bisa dibuat."); });
   var PROV = { Google: "google", Discord: "discord", google: "google", discord: "discord" };
 
   function ssSet(k, v) { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (x) {} }
@@ -89,17 +98,19 @@
   /* mode: "cust" atau "admin". Menunggu pertukaran kode OAuth selesai, lalu memuat profil dan role. */
   NX.ready = function (mode, force) {
     if (NX._p && !force) return NX._p;
-    NX._p = sb.auth.getSession().then(function (r) {
+    NX._p = NX.init.then(function () { return sb.auth.getSession(); }).then(function (r) {
       var s = r.data && r.data.session;
-      if (!s) { clearSession(); return null; }
+      if (!s) { clearSession(); if (BACKCODE && !sessionStorage.getItem("nx-autherr")) setErr("Sesi login tidak terbentuk setelah kembali dari Google/Discord."); return null; }
       var pu = sb.auth.getUser().then(function (u) { return u; }, function (e) { return { error: e }; });
       var pl = load(s.user, mode).then(function () { return null; }, function (e) { return e; });
       return Promise.all([pu, pl]).then(function (x) {
         var er = x[0].error;
         if ((er && deadSession(er)) || (!er && !(x[0].data && x[0].data.user))) {
+          setErr("Sesi login sudah berakhir atau akunmu tidak ditemukan. Silakan masuk lagi.");
           return sb.auth.signOut({ scope: "local" }).then(clearSession, clearSession).then(function () { return null; });
         }
         if (x[1]) throw x[1];
+        setErr("");
         return null;
       });
     });

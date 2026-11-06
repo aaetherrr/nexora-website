@@ -81,3 +81,4 @@ ID Discord: Discord > Pengaturan > Lanjutan > aktifkan **Developer Mode**, lalu 
 | Profil gagal disimpan | Format WhatsApp/Discord salah (pesan error muncul di notifikasi) |
 | Tombol hubungkan akun error | Opsi manual linking belum dinyalakan |
 | Tampilan masih demo | `config.js` masih kosong atau skrip Supabase belum termuat |
+| Kembali ke halaman login dengan pesan "Login belum berhasil: ..." | Alasan asli ditampilkan di kotak merah. "code verifier" berarti login dimulai dan selesai di alamat yang berbeda (www vs tanpa www, localhost vs 127.0.0.1). Selain itu cek Site URL dan Redirect URLs di Supabase |

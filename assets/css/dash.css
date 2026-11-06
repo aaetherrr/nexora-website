@@ -232,7 +232,7 @@ button.li{cursor:pointer}button.li:hover{border-color:var(--accent)}
 .tmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
 .tmp .wide{grid-column:1/-1}
 .nv-prev{display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
-.nv-prev .lg{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:1.3rem;overflow:hidden}
+.nv-prev .nv-lg{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:1.3rem;overflow:hidden}
 .nv-prev img{width:100%;height:100%;object-fit:contain}
 .sws{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
 .sw{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);background:var(--c);box-shadow:0 0 0 1px var(--line);cursor:pointer}
@@ -1729,7 +1729,7 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .dash.loading .dmain::after{content:"Memuat dashboard\2026";display:block;text-align:center;color:var(--muted);font-size:.9rem}
 
 /* ===== Halaman login (kiri: brand, kanan: kartu masuk) ===== */
-.lg{min-height:calc(100vh - var(--tb,82px));display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);max-width:none;padding:0}
+main.lg{min-height:calc(100vh - var(--tb,82px));display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);max-width:none;padding:0}
 .lg-brand{position:relative;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:48px clamp(24px,6vw,84px);background:linear-gradient(160deg,var(--accent-soft),transparent 70%),var(--surface);border-right:1px solid var(--line);overflow:hidden}
 .lg-brand::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(color-mix(in srgb,var(--accent) 38%,transparent) 1px,transparent 1.4px);background-size:22px 22px;-webkit-mask-image:linear-gradient(200deg,#000,transparent 65%);mask-image:linear-gradient(200deg,#000,transparent 65%);opacity:.45}
 .lg-brand>*{position:relative}
@@ -1754,7 +1754,7 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .lg-back{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;color:var(--muted);font-size:.88rem}
 .lg-back:hover{color:var(--text)}
 .lg-card .err{margin:12px 0 0;text-align:center}
-@media (max-width:860px){.lg{grid-template-columns:minmax(0,1fr)}.lg-brand{padding:26px 22px;gap:14px;border-right:0;border-bottom:1px solid var(--line)}.lg-list{display:none}.lg-brand h2{font-size:1.45rem}.lg-card{padding:26px 20px}}
+@media (max-width:860px){main.lg{grid-template-columns:minmax(0,1fr)}.lg-brand{padding:26px 22px;gap:14px;border-right:0;border-bottom:1px solid var(--line)}.lg-list{display:none}.lg-brand h2{font-size:1.45rem}.lg-card{padding:26px 20px}}
 
 /* ===== Kerangka memuat dashboard (menggantikan animasi putar) ===== */
 .skel{display:none}
@@ -2112,3 +2112,7 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
   .dash.chatv .th-f{flex:none;padding-bottom:max(10px,env(safe-area-inset-bottom))}
   .dash.chatv .th>.muted.done{flex:none;margin:0;padding-bottom:max(12px,env(safe-area-inset-bottom))}
 }
+
+/* ===== v30: Logo & tampilan admin: kartu mengikuti tinggi isinya (tidak ditarik memanjang) ===== */
+.tmp{align-items:start}
+.tcol>.dcard:last-child{flex:none}
