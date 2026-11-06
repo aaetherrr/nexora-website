@@ -94,7 +94,7 @@
   /* Petunjuk perbaikan berdasarkan pesan error asli dari Supabase / Google / Discord. */
   function authHint(t) {
     t = String(t || "");
-    if (/database error saving new user/i.test(t)) return "Database gagal menyimpan akun baru. Di Supabase > SQL Editor jalankan ulang 001_fondasi.sql lalu 007_avatar_dan_jam_discord.sql sampai tanpa error, lalu coba lagi.";
+    if (/database error saving new user/i.test(t)) return "Database gagal menyimpan akun baru. Di Supabase > SQL Editor jalankan supabase/008_perbaiki_foto_profil.sql (Run), lalu coba login lagi. Kalau masih sama, pastikan 001 sampai 007 sudah dijalankan tanpa error.";
     if (/error getting user email|email from external/i.test(t)) return "Provider tidak mengirim email. Untuk Discord: pastikan email akun Discord sudah terverifikasi, lalu coba lagi.";
     if (/unable to exchange external code|invalid_client|client secret|invalid client/i.test(t)) return "Client ID atau Client Secret di Supabase > Authentication > Providers salah (atau sudah di-reset). Salin ulang dari Google Cloud / Discord Developer.";
     if (/redirect_uri|redirect uri|not allowed|redirect url/i.test(t)) return "Alamat belum terdaftar. Tambahkan alamat dashboard ini di Supabase > Authentication > URL Configuration > Redirect URLs, dan Callback URL Supabase di Google/Discord.";

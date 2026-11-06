@@ -88,3 +88,8 @@ Jalankan `supabase/007_avatar_dan_jam_discord.sql` di SQL Editor (setelah 005 da
 - Foto akun Google atau Discord ikut tampil di dashboard (kartu profil, navbar) dan di chat ticket. Hanya alamat gambar resmi Google/Discord yang diterima database.
 - Customer yang sudah login perlu login ulang sekali supaya fotonya terbaca.
 - Notifikasi Discord sekarang berisi jam (WIB) di footer dan kolom Waktu.
+
+## Perbaikan: "Database error saving new user" saat login akun baru
+Jalankan `supabase/008_perbaiki_foto_profil.sql` di SQL Editor (Run, aman diulang). 007 lama memakai aturan `{1,500}`
+yang ditolak PostgreSQL (batas pengulangan 255), sehingga akun baru dari Google/Discord gagal dibuat. Akun yang sudah
+ada tidak terpengaruh. Setelah Run, coba login lagi.

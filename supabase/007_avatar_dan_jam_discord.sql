@@ -11,27 +11,36 @@ alter table public.ticket_messages add column if not exists av         text;
 
 alter table public.profiles drop constraint if exists profiles_avatar_fmt;
 alter table public.profiles add constraint profiles_avatar_fmt
-  check (avatar_url is null or avatar_url ~ '^https://(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)/[^[:space:]]{1,500}$');
+  check (avatar_url is null or (char_length(avatar_url) <= 600
+         and avatar_url ~ '^https://(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)/[^[:space:]]+$'));
 grant update (avatar_url) on public.profiles to authenticated;
 
 -- akun baru: ambil foto dari data login
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
-declare v text;
+declare v text; n text; vi text;
 begin
   v := coalesce(nullif(new.raw_user_meta_data->>'avatar_url', ''), nullif(new.raw_user_meta_data->>'picture', ''));
-  if v is null or v !~ '^https://(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)/[^[:space:]]{1,500}$' then v := null; end if;
-  insert into public.profiles (id, nama, email, via, avatar_url)
-  values (
-    new.id,
-    left(coalesce(nullif(new.raw_user_meta_data->>'full_name', ''),
-                  nullif(new.raw_user_meta_data->>'name', ''),
-                  nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
-                  'Customer'), 60),
-    new.email,
-    initcap(coalesce(new.raw_app_meta_data->>'provider', '')),
-    v)
-  on conflict (id) do nothing;
+  begin
+    if v is not null and (char_length(v) > 600
+       or v !~ '^https://(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)/[^[:space:]]+$') then v := null; end if;
+  exception when others then v := null;
+  end;
+  n  := left(coalesce(nullif(new.raw_user_meta_data->>'full_name', ''),
+                      nullif(new.raw_user_meta_data->>'name', ''),
+                      nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
+                      'Customer'), 60);
+  vi := initcap(coalesce(new.raw_app_meta_data->>'provider', ''));
+  begin
+    insert into public.profiles (id, nama, email, via, avatar_url)
+    values (new.id, n, new.email, vi, v)
+    on conflict (id) do nothing;
+  exception when others then
+    -- foto bermasalah tidak boleh menggagalkan pembuatan akun: simpan tanpa foto
+    insert into public.profiles (id, nama, email, via)
+    values (new.id, n, new.email, vi)
+    on conflict (id) do nothing;
+  end;
   return new;
 end $$;
 
