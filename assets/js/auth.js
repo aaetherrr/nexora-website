@@ -11,12 +11,17 @@
   /* Catat alasan kalau login gagal, supaya halaman login bisa menampilkannya (bukan memantul diam-diam). */
   function setErr(m) { try { if (m) sessionStorage.setItem("nx-autherr", String(m).slice(0, 300)); else sessionStorage.removeItem("nx-autherr"); } catch (x) {} }
   var QS = new URLSearchParams(location.search), HS = new URLSearchParams((location.hash || "").replace(/^#/, ""));
+  function keepErr() { try { return !!sessionStorage.getItem("nx-autherr"); } catch (x) { return false; } }
   var BACKCODE = !!QS.get("code");
   var OERR = QS.get("error_description") || HS.get("error_description") || QS.get("error") || HS.get("error") || "";
-  if (OERR) setErr(OERR.replace(/\+/g, " "));
+  var OCODE = QS.get("error_code") || HS.get("error_code") || "";
+  if (OERR) {
+    setErr((OERR.replace(/\+/g, " ") + (OCODE ? " [" + OCODE + "]" : "")).trim());
+    try { history.replaceState(null, "", location.pathname); } catch (x) {} /* bersihkan alamat supaya muat ulang tidak mengulang error */
+  }
   NX.init = (typeof sb.auth.initialize === "function" ? sb.auth.initialize() : Promise.resolve({})).then(function (r) {
-    if (r && r.error) { console.error("Login Supabase:", r.error); setErr(r.error.message || "Sesi login tidak bisa dibuat."); }
-  }, function (er) { console.error("Login Supabase:", er); setErr((er && er.message) || "Sesi login tidak bisa dibuat."); });
+    if (r && r.error) { console.error("Login Supabase:", r.error); if (!OERR && !keepErr()) setErr(r.error.message || "Sesi login tidak bisa dibuat."); }
+  }, function (er) { console.error("Login Supabase:", er); if (!OERR && !keepErr()) setErr((er && er.message) || "Sesi login tidak bisa dibuat."); });
   var PROV = { Google: "google", Discord: "discord", google: "google", discord: "discord" };
 
   function ssSet(k, v) { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (x) {} }

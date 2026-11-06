@@ -91,14 +91,25 @@
     fr.readAsDataURL(file);
   }
 
+  /* Petunjuk perbaikan berdasarkan pesan error asli dari Supabase / Google / Discord. */
+  function authHint(t) {
+    t = String(t || "");
+    if (/database error saving new user/i.test(t)) return "Database gagal menyimpan akun baru. Di Supabase > SQL Editor jalankan ulang 001_fondasi.sql lalu 007_avatar_dan_jam_discord.sql sampai tanpa error, lalu coba lagi.";
+    if (/error getting user email|email from external/i.test(t)) return "Provider tidak mengirim email. Untuk Discord: pastikan email akun Discord sudah terverifikasi, lalu coba lagi.";
+    if (/unable to exchange external code|invalid_client|client secret|invalid client/i.test(t)) return "Client ID atau Client Secret di Supabase > Authentication > Providers salah (atau sudah di-reset). Salin ulang dari Google Cloud / Discord Developer.";
+    if (/redirect_uri|redirect uri|not allowed|redirect url/i.test(t)) return "Alamat belum terdaftar. Tambahkan alamat dashboard ini di Supabase > Authentication > URL Configuration > Redirect URLs, dan Callback URL Supabase di Google/Discord.";
+    if (/access_denied|denied/i.test(t)) return "Login dibatalkan di halaman Google/Discord. Coba lagi dan pilih Izinkan.";
+    if (/verifier|pkce|flow url/i.test(t)) return "Muat ulang halaman dengan Ctrl+F5, lalu mulai login lagi dari tombol di halaman ini dengan alamat yang sama (jangan campur www dan tanpa www, atau localhost dan 127.0.0.1).";
+    return "Kalau berulang, cek Authentication > URL Configuration di Supabase: Site URL dan Redirect URLs harus memuat alamat situs ini.";
+  }
   function authInit(mode, root) {
     var forms = $$("form", root), ae = $("#ae", root);
     function aerr(t) { if (ae) { ae.textContent = t; ae.hidden = false; } else toast(t); }
     var AE = ss("nx-autherr");
     if (AE || /[?&]err=auth/.test(location.search)) {
       ss("nx-autherr", "");
-      var hint = /verifier|pkce|code/i.test(AE || "") ? " Mulai login lagi dari alamat yang sama (jangan campur www dan tanpa www, atau localhost dan 127.0.0.1)." : " Kalau berulang, cek Authentication > URL Configuration di Supabase: Site URL dan Redirect URLs harus memuat alamat situs ini.";
-      aerr("Login belum berhasil" + (AE ? ": " + AE : ".") + hint);
+      var hint = authHint(AE);
+      aerr("Login belum berhasil" + (AE ? ": " + AE : ".") + (hint ? " " + hint : ""));
     }
     if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
     function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
