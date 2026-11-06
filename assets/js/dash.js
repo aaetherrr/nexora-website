@@ -484,7 +484,7 @@
       var H = HG(), j = kind === "jasa", cats = []; if (j && !H.jasa[hs]) hs = Object.keys(H.jasa)[0] || ""; var rows = kind === "hosting" ? H.hosting : (H.jasa[hs] || []);
       rows.forEach(function (p) { if (cats.indexOf(p.kat) < 0) cats.push(p.kat); });
       var cf = hcat[kind] || "semua"; if (cf !== "semua" && cats.indexOf(cf) < 0) cf = "semua"; hcat[kind] = cf;
-      var JKs = Object.keys(H.jasa), head = '<div class="tkhead">' + (j ? '<div class="seg2 jseg">' + JKs.map(function (k) { return '<button type="button" data-hs="' + k + '" aria-pressed="' + (k === hs) + '"><i class="bi bi-' + e(JM(k).ic) + '"></i>' + e(JM(k).nama) + " <b>" + H.jasa[k].length + "</b></button>"; }).join("") + '<button type="button" class="jnew" data-jadd><i class="bi bi-plus-lg"></i> Jasa baru</button></div>' : '<span class="muted">' + rows.length + " paket hosting</span>") + (j && !hs ? "" : '<button class="btn" type="button" data-add><i class="bi bi-plus-circle"></i> Tambah paket</button>') + '</div>' + (j && hs ? '<div class="jbar"><span class="jbar-i"><i class="bi bi-' + e(JM(hs).ic) + '"></i></span><div class="jbar-t"><b>' + e(JM(hs).nama) + '</b><small>' + rows.length + ' paket · tampil sebagai pilihan layanan di tiket order</small></div><button class="btn ghost sm" type="button" data-jedit><i class="bi bi-pencil"></i> Ubah jasa</button><button class="btn ghost sm dn" type="button" data-jdel><i class="bi bi-trash"></i> Hapus jasa</button></div>' : '');
+      var JKs = Object.keys(H.jasa), head = '<div class="tkhead">' + (j ? '<div class="seg2 jseg jdesk">' + JKs.map(function (k) { return '<button type="button" data-hs="' + k + '" aria-pressed="' + (k === hs) + '"><i class="bi bi-' + e(JM(k).ic) + '"></i>' + e(JM(k).nama) + " <b>" + H.jasa[k].length + "</b></button>"; }).join("") + '<button type="button" class="jnew" data-jadd><i class="bi bi-plus-lg"></i> Jasa baru</button></div>' + jmob(JKs, hs, H) : '<span class="muted">' + rows.length + " paket hosting</span>") + (j && !hs ? "" : '<button class="btn" type="button" data-add><i class="bi bi-plus-circle"></i> Tambah paket</button>') + '</div>' + (j && hs ? '<div class="jbar"><span class="jbar-i"><i class="bi bi-' + e(JM(hs).ic) + '"></i></span><div class="jbar-t"><b>' + e(JM(hs).nama) + '</b><small>' + rows.length + ' paket · tampil sebagai pilihan layanan di tiket order</small></div><button class="btn ghost sm" type="button" data-jedit><i class="bi bi-pencil"></i> Ubah jasa</button><button class="btn ghost sm dn" type="button" data-jdel><i class="bi bi-trash"></i> Hapus jasa</button></div>' : '');
       var chips = cats.length > 1 ? '<div class="chips mini pk-chips">' + ["semua"].concat(cats).map(function (c) { var n = c === "semua" ? rows.length : rows.filter(function (p) { return p.kat === c; }).length; return '<button class="chip" type="button" data-hc="' + e(c) + '" aria-pressed="' + (c === cf) + '">' + (c === "semua" ? "Semua" : e(c)) + " <b>" + n + "</b></button>"; }).join("") + "</div>" : "";
       var card = function (p, i) {
         var f = p.fitur || [];
@@ -666,6 +666,14 @@
       return { t: t, dasar: dasar, pct: pct, total: Math.round(dasar * (1 + sg * pct / 100)) };
     }
     function srows(p) { return '<div class="sum">' + p.map(function (x) { return "<div><span>" + e(x[0]) + "</span><b>" + e(x[1]) + "</b></div>"; }).join("") + "</div>"; }
+    /* Pilihan jasa untuk layar HP: dropdown custom (memakai komponen .dd), bukan <select> bawaan browser. */
+    function jmob(keys, cur, HH) {
+      var c = cur && keys.indexOf(cur) >= 0 ? cur : "", cnt = function (k) { return HH.jasa[k].length + " paket"; };
+      var val = c ? '<span class="jic"><i class="bi bi-' + e(JM(c).ic) + '"></i></span><span class="jv-t"><b>' + e(JM(c).nama) + "</b><small>" + cnt(c) + "</small></span>" : '<span class="jic"><i class="bi bi-grid"></i></span><span class="jv-t"><b>Belum ada jasa</b><small>Tambah jasa baru</small></span>';
+      return '<div class="jmob">' + (keys.length ? '<div class="dd full jdd" id="dd-jasa" data-jdd><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Pilih jasa"><span class="dd-val jv">' + val + '</span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' +
+        keys.map(function (k) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(k) + '" aria-selected="' + (k === c) + '"><span class="jic"><i class="bi bi-' + e(JM(k).ic) + '"></i></span><span class="tx"><b>' + e(JM(k).nama) + "</b><small>" + cnt(k) + '</small></span><i class="bi bi-check2 ck"></i></button>'; }).join("") + "</div></div>" : "") +
+        '<button type="button" class="jnew" data-jadd><i class="bi bi-plus-lg"></i> Jasa baru</button></div>';
+    }
     function ddH(id, cur, opts) {
       var c = opts.filter(function (o) { return String(o.v) === String(cur); })[0];
       return '<div class="dd full" id="' + id + '" data-bdd><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="dd-val">' + (c ? "<b>" + e(c.t) + "</b>" + (c.s ? "<small>" + e(c.s) + "</small>" : "") : "<b>Pilih</b>") + '</span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' +
@@ -1071,6 +1079,7 @@
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-rdd")) return trole({ dataset: { trole: dd.dataset.rdd }, value: d.v });
+        if (dd.hasAttribute("data-jdd")) { hs = d.v; hcat.jasa = "semua"; return draw(); }
         if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
       if (d.bx) return bAct(d);
       if (d.ed) return edAct(d);
