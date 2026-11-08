@@ -2131,7 +2131,7 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 
 /* ===== v31b: pilihan jasa setup admin: dropdown custom di HP, tombol segmented di desktop ===== */
 .jmob{display:none}
-.jic{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:1.05rem}
+.jd-ic{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:1.05rem}
 .jdd{min-width:0}
 .jdd .dd-btn{min-height:52px;padding:8px 14px 8px 10px;border-radius:14px}
 .jdd .dd-val.jv{display:flex;align-items:center;gap:12px;white-space:normal;overflow:hidden}
@@ -2140,8 +2140,8 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 .jv-t small{color:var(--muted);font-size:.78rem}
 .jdd .dd-menu{padding:6px;border-radius:16px;max-height:min(360px,60vh)}
 .jdd .dd-opt{gap:12px;padding:9px 10px}
-.jdd .dd-opt .jic{width:34px;height:34px}
-.jdd .dd-opt[aria-selected="true"] .jic{background:var(--accent);color:var(--on-accent)}
+.jdd .dd-opt .jd-ic{width:34px;height:34px}
+.jdd .dd-opt[aria-selected="true"] .jd-ic{background:var(--accent);color:var(--on-accent)}
 .jmob .jnew{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 16px;border:1px dashed var(--line);border-radius:14px;background:transparent;color:var(--accent);font:inherit;font-size:.9rem;font-weight:500;cursor:pointer}
 .jmob .jnew:hover{border-color:var(--accent);background:var(--accent-soft)}
 @media (max-width:820px){
@@ -2151,3 +2151,24 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
   .tkhead:has(.jmob){flex-direction:column;align-items:stretch}
   .tkhead:has(.jmob)>.btn{width:100%;justify-content:center}
 }
+
+/* ===== v32: filter ticket admin: tab ringkas + dropdown status (tanpa geser ke samping) ===== */
+.tkf-seg{display:grid;grid-template-columns:auto 1fr auto;gap:4px;padding:3px;border:1px solid var(--line);border-radius:11px;background:var(--bg)}
+.tkf-seg button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;padding:7px 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:.8rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.tkf-seg button:hover{color:var(--text);background:var(--accent-soft)}
+.tkf-seg button b{font-weight:600;font-size:.68rem;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--text) 9%,transparent);color:var(--text)}
+.tkf-seg button.hot b{background:#e5484d;color:#fff}
+.tkf-seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);box-shadow:0 6px 14px -8px var(--accent)}
+.tkf-seg button[aria-pressed="true"] b{background:rgba(255,255,255,.25);color:inherit}
+.tkf-dd .dd-btn{min-height:42px;padding:6px 12px;border-radius:11px;background:var(--bg)}
+.tkf-v{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;white-space:nowrap}
+.tkf-k{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.tkf-v b{font-weight:500;font-size:.88rem;overflow:hidden;text-overflow:ellipsis}
+.tkf-v em,.tkf-n{font-style:normal;margin-left:auto;font-size:.72rem;font-weight:600;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--text) 9%,transparent);color:var(--text)}
+.sdot{display:inline-block;flex:none;width:9px;height:9px;border-radius:50%;background:var(--c,#8a8798)}
+.sdot.all{background:conic-gradient(#b07800,#3b7ddd,#c43d85,#2a9a56,#b07800)}
+.sdot.b7{--c:#0e9594}.sdot.b8{--c:#7c4ddb}
+.tkf-dd .dd-menu{padding:6px;border-radius:14px;max-height:min(340px,60vh)}
+.tkf-dd .dd-opt{gap:10px;padding:9px 10px}
+.tkf-dd .dd-opt .tx{min-width:0}
+.tkf-dd .dd-opt .tkf-n{margin-left:0}

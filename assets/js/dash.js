@@ -427,8 +427,21 @@
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
       var t2 = all.filter(function (x) { return x.id === sel; })[0];
-      var chips = AFS.map(function (s) { var n = all.filter(function (x) { return inAf(x, s); }).length; return '<button class="chip" data-af="' + s + '" aria-pressed="' + (af === s) + '">' + (SHORT[s] || s) + " <b>" + n + "</b></button>"; }).join("");
-      return '<div class="tk adm ' + (sel ? tv : "list") + '"><div class="tk-side"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-q type="search" placeholder="Cari ticket atau customer…" value="' + e(aq) + '"></label><div class="chips mini">' + chips + '</div>' + (isF() && af === "Riwayat" && tkHist().length ? '<button class="btn dng sm tk-clr" type="button" data-tdelall><i class="bi bi-trash3"></i> Hapus semua riwayat (' + tkHist().length + ")</button>" : "") + '</div><div class="tk-list">' + admList() + '</div></div><div class="tk-chat">' + (t2 ? thread(t2) : '<div class="dcard empty"><i class="bi bi-chat-dots"></i><b>Pilih ticket</b><p class="muted">Pilih ticket di kiri untuk melihat dan membalas.</p></div>') + "</div></div>";
+      var chips = tkFilter(all);
+      return '<div class="tk adm ' + (sel ? tv : "list") + '"><div class="tk-side"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-q type="search" placeholder="Cari ticket atau customer…" value="' + e(aq) + '"></label>' + chips + (isF() && af === "Riwayat" && tkHist().length ? '<button class="btn dng sm tk-clr" type="button" data-tdelall><i class="bi bi-trash3"></i> Hapus semua riwayat (' + tkHist().length + ")</button>" : "") + '</div><div class="tk-list">' + admList() + '</div></div><div class="tk-chat">' + (t2 ? thread(t2) : '<div class="dcard empty"><i class="bi bi-chat-dots"></i><b>Pilih ticket</b><p class="muted">Pilih ticket di kiri untuk melihat dan membalas.</p></div>') + "</div></div>";
+    }
+    /* Filter ticket admin: 3 tab ringkas + dropdown status (custom, bukan <select> bawaan). Semua muat tanpa geser ke samping. */
+    function tkFilter(all) {
+      var cnt = function (st) { return all.filter(function (x) { return inAf(x, st); }).length; },
+          W = "Menunggu admin balas", nA = cnt("Aktif"), nW = cnt(W), nH = cnt("Riwayat"),
+          lab = function (st) { return st === "Aktif" ? "Semua status" : st; },
+          tab = function (key, txt, n, on, cls) { return '<button type="button" data-af="' + key + '" aria-pressed="' + on + '"' + (cls ? ' class="' + cls + '"' : "") + ">" + txt + " <b>" + n + "</b></button>"; };
+      var seg = '<div class="tkf-seg" role="group" aria-label="Filter ticket">' + tab("Aktif", "Aktif", nA, af !== "Riwayat" && af !== W) + tab(W, "Perlu dibalas", nW, af === W, nW ? "hot" : "") + tab("Riwayat", "Riwayat", nH, af === "Riwayat") + "</div>";
+      if (af === "Riwayat") return seg;
+      var cur = AFS.indexOf(af) >= 0 ? af : "Aktif", dot = function (st) { return '<i class="sdot ' + (BC[st] || "b6") + '"></i>'; };
+      var opts = AFS.filter(function (st) { return st !== "Riwayat"; });
+      return seg + '<div class="dd full tkf-dd" id="dd-tkf" data-afdd><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter status ticket"><span class="dd-val tkf-v"><span class="tkf-k">Status</span>' + (cur === "Aktif" ? '<i class="sdot all"></i>' : dot(cur)) + "<b>" + e(lab(cur)) + '</b><em>' + cnt(cur) + '</em></span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' +
+        opts.map(function (st) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(st) + '" aria-selected="' + (st === cur) + '">' + (st === "Aktif" ? '<i class="sdot all"></i>' : dot(st)) + '<span class="tx"><b>' + e(lab(st)) + '</b></span><em class="tkf-n">' + cnt(st) + '</em><i class="bi bi-check2 ck"></i></button>'; }).join("") + "</div></div>";
     }
     function ddBuild(f, rows) {
       var menu = $("#dd-paket .dd-menu"), g = "";
@@ -669,9 +682,9 @@
     /* Pilihan jasa untuk layar HP: dropdown custom (memakai komponen .dd), bukan <select> bawaan browser. */
     function jmob(keys, cur, HH) {
       var c = cur && keys.indexOf(cur) >= 0 ? cur : "", cnt = function (k) { return HH.jasa[k].length + " paket"; };
-      var val = c ? '<span class="jic"><i class="bi bi-' + e(JM(c).ic) + '"></i></span><span class="jv-t"><b>' + e(JM(c).nama) + "</b><small>" + cnt(c) + "</small></span>" : '<span class="jic"><i class="bi bi-grid"></i></span><span class="jv-t"><b>Belum ada jasa</b><small>Tambah jasa baru</small></span>';
+      var val = c ? '<span class="jd-ic"><i class="bi bi-' + e(JM(c).ic) + '"></i></span><span class="jv-t"><b>' + e(JM(c).nama) + "</b><small>" + cnt(c) + "</small></span>" : '<span class="jd-ic"><i class="bi bi-grid"></i></span><span class="jv-t"><b>Belum ada jasa</b><small>Tambah jasa baru</small></span>';
       return '<div class="jmob">' + (keys.length ? '<div class="dd full jdd" id="dd-jasa" data-jdd><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Pilih jasa"><span class="dd-val jv">' + val + '</span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' +
-        keys.map(function (k) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(k) + '" aria-selected="' + (k === c) + '"><span class="jic"><i class="bi bi-' + e(JM(k).ic) + '"></i></span><span class="tx"><b>' + e(JM(k).nama) + "</b><small>" + cnt(k) + '</small></span><i class="bi bi-check2 ck"></i></button>'; }).join("") + "</div></div>" : "") +
+        keys.map(function (k) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(k) + '" aria-selected="' + (k === c) + '"><span class="jd-ic"><i class="bi bi-' + e(JM(k).ic) + '"></i></span><span class="tx"><b>' + e(JM(k).nama) + "</b><small>" + cnt(k) + '</small></span><i class="bi bi-check2 ck"></i></button>'; }).join("") + "</div></div>" : "") +
         '<button type="button" class="jnew" data-jadd><i class="bi bi-plus-lg"></i> Jasa baru</button></div>';
     }
     function ddH(id, cur, opts) {
@@ -1079,6 +1092,7 @@
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-rdd")) return trole({ dataset: { trole: dd.dataset.rdd }, value: d.v });
+        if (dd.hasAttribute("data-afdd")) { af = d.v; return draw(); }
         if (dd.hasAttribute("data-jdd")) { hs = d.v; hcat.jasa = "semua"; return draw(); }
         if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
       if (d.bx) return bAct(d);
