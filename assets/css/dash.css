@@ -2172,3 +2172,11 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 .tkf-dd .dd-opt{gap:10px;padding:9px 10px}
 .tkf-dd .dd-opt .tx{min-width:0}
 .tkf-dd .dd-opt .tkf-n{margin-left:0}
+
+/* ===== v33: katalog & pengaturan situs (Tahap 3) ===== */
+.chk-r{display:flex;align-items:flex-start;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer}
+.chk-r input{flex:none;width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.chk-r span{display:grid;gap:2px}
+.chk-r b{font-weight:600;font-size:.92rem}
+.chk-r small{color:var(--muted);font-size:.8rem}
+.chk-r:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}

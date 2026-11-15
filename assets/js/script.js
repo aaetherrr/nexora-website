@@ -24,29 +24,32 @@ function kontakBawaan() {
   ];
 }
 function kontakData() {
-  try { const v = localStorage.getItem("nx-kontak"); if (v) { const a = JSON.parse(v); if (Array.isArray(a)) return a; } } catch (x) {}
+  const v = window.NXS ? NXS.setting("kontak") : null;
+  if (Array.isArray(v)) return v;
   return kontakBawaan();
 }
-(function () {
-  const a = kontakData().filter(function (k) { return k.aktif !== false; });
+function urlAman(u) { u = String(u || "").trim(); return /^https?:\/\//i.test(u) ? u : ""; }
+function muatKontak() {
+  const a = kontakData().filter(function (k) { return k && k.aktif !== false; });
   const d = a.filter(function (k) { return k.tipe === "discord"; })[0], w = a.filter(function (k) { return k.tipe === "whatsapp"; })[0];
-  if (d) KONTAK.discord = d.nilai;
-  if (w) KONTAK.whatsapp = String(w.nilai).replace(/\D/g, "");
-})();
+  KONTAK.discord = d ? urlAman(d.nilai) : "";
+  KONTAK.whatsapp = w ? String(w.nilai).replace(/\D/g, "") : "";
+}
+muatKontak();
 
 /* ===== 2. DATA HARGA (semua angka hanya contoh, silakan ganti) =====
    Tiap paket: nama, kat (kategori), harga (angka), ringkas, fitur[], populer (opsional).
    Tambah paket baru = tambah satu baris di array "paket". */
 const HARGA = {
   minecraft: {
-    nama: "Setup server Minecraft", satuan: "paket",
+    nama: "Setup server Minecraft", label: "Setup Minecraft", ikon: "box", satuan: "paket",
     kategori: ["Vanilla", "Plugin", "Mod", "Komunitas"],
     paket: [
       { nama: "Vanilla Starter", kat: "JAVA VERSION", harga: 40000, ringkas: "Server dasar untuk main bareng teman.", fitur: ["Server vanilla Java", "Whitelist & operator", "Pengaturan dasar"] },
     ]
   },
   discord: {
-    nama: "Setup server Discord", satuan: "paket",
+    nama: "Setup server Discord", label: "Setup Discord", ikon: "discord", satuan: "paket",
     kategori: ["Dasar", "Bot", "Komunitas", "Bisnis"],
     paket: [
       { nama: "Rapi Dasar", kat: "Dasar", harga: 20000, ringkas: "Channel dan role dasar.", fitur: ["Channel & kategori", "Role dasar", "Aturan server"] },
@@ -88,6 +91,31 @@ const HARGA = {
   }
 };
 
+/* Data bawaan di atas dipakai kalau belum ada data dari dashboard (atau database belum diisi).
+   Kalau ada (NXS.catalog), daftar jasa, paket, dan harga diganti dengan data dari dashboard admin. */
+const HARGA_ASAL = JSON.parse(JSON.stringify(HARGA));
+function jasaKunci() { return Object.keys(HARGA).filter(function (k) { return k !== "hosting"; }); }
+function kategoriDari(paket, awal) {
+  const u = (awal || []).slice();
+  paket.forEach(function (p) { if (p.kat && u.indexOf(p.kat) < 0) u.push(p.kat); });
+  return u;
+}
+function terapkanKatalog() {
+  const cat = window.NXS ? NXS.catalog() : null;
+  Object.keys(HARGA).forEach(function (k) { delete HARGA[k]; });
+  if (!cat) { Object.assign(HARGA, JSON.parse(JSON.stringify(HARGA_ASAL))); return; }
+  cat.order.forEach(function (k) {
+    if (k === "hosting") return;
+    const m = cat.meta[k];
+    HARGA[k] = { nama: m.nama, label: m.nama, ikon: m.ic, satuan: "paket", kategori: kategoriDari(cat.jasa[k], []), paket: cat.jasa[k] };
+  });
+  const h = JSON.parse(JSON.stringify(HARGA_ASAL.hosting));
+  h.paket = cat.hosting;
+  h.kategori = kategoriDari(h.paket, h.kategori).filter(function (k) { return h.paket.some(function (p) { return p.kat === k; }); });
+  HARGA.hosting = h;
+}
+terapkanKatalog();
+
 /* ===== 3. TEKS UMUM ===== */
 const TXT = { semua: "Semua", n_paket: "paket", pesan: "Pesan paket ini", populer: "Populer", kosong: "Belum ada paket di kategori ini.",
   u_bulan: "bulan", u_paket: "paket", wa_tanya: "Halo NEXORA, saya mau tanya layanan.",
@@ -117,7 +145,9 @@ function pasangKontak() {
 }
 
 function isiMulai() {
-  const semua = HARGA.minecraft.paket.concat(HARGA.discord.paket).map(function (p) { return p.harga; });
+  let semua = [];
+  jasaKunci().forEach(function (k) { semua = semua.concat(HARGA[k].paket.map(function (p) { return p.harga; })); });
+  if (!semua.length) return;
   const min = Math.min.apply(null, semua);
   document.querySelectorAll("[data-mulai]").forEach(function (el) { el.innerHTML = hargaHTML(min, "paket"); });
 }
@@ -532,6 +562,7 @@ function pasangSort(sort) {
    Format yang dicoba berurutan: jpg, webp, png. Kalau belum ada, tampil ikon pengganti. */
 const FOTO_PAKET = { folder: ASSET_BASE + "img/paket/", ext: ["jpg", "webp", "png"] };
 const FOTO_CACHE = {};
+const IKON_UMUM = '<path d="M12 3 20 7.5v9L12 21 4 16.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>';
 const IKON_PLATFORM = {
   minecraft: '<path d="M12 3 20 7.5v9L12 21 4 16.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
   discord: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/>'
@@ -539,6 +570,7 @@ const IKON_PLATFORM = {
 
 function isiFoto(daftar) {
   daftar.forEach(function (p) {
+    if (p.foto) return;
     const slug = slugPlugin(p.nama);
     if (FOTO_CACHE[slug] !== undefined) return;
     FOTO_CACHE[slug] = null;
@@ -557,17 +589,17 @@ function isiFoto(daftar) {
 
 function kartuJasa(p, i, jeda, pesan, data, kunci) {
   const slug = slugPlugin(p.nama);
-  const foto = FOTO_CACHE[slug];
+  const foto = p.foto || FOTO_CACHE[slug];
   return '<article class="pcard jasa' + (p.populer ? " featured" : "") + '" style="--i:' + (Math.min(i, 12) + jeda) + '">' +
-    '<div class="pc-img" data-s="' + slug + '"><svg class="ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IKON_PLATFORM[kunci] + "</svg>" +
-    (typeof foto === "string" ? '<img src="' + foto + '" alt="' + p.nama + '" decoding="async">' : "") +
+    '<div class="pc-img" data-s="' + escK(slug) + '"><svg class="ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IKON_PLATFORM[kunci] || IKON_UMUM) + "</svg>" +
+    (typeof foto === "string" && foto ? '<img src="' + escK(foto) + '" alt="' + escK(p.nama) + '" decoding="async" loading="lazy">' : "") +
     (p.populer ? '<span class="pc-pop">' + t("populer") + "</span>" : "") + "</div>" +
-    '<div class="pc-body"><span class="pc-tag">' + p.kat + "</span>" +
-    "<h3>" + p.nama + "</h3>" +
-    '<p class="pc-desc">' + p.ringkas + "</p>" +
-    "<ul>" + p.fitur.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>" +
+    '<div class="pc-body"><span class="pc-tag">' + escK(p.kat) + "</span>" +
+    "<h3>" + escK(p.nama) + "</h3>" +
+    '<p class="pc-desc">' + escK(p.ringkas) + "</p>" +
+    "<ul>" + p.fitur.map(function (f) { return "<li>" + escK(f) + "</li>"; }).join("") + "</ul>" +
     '<div class="pc-price"><b>' + hargaHTML(p.harga, data.satuan) + "</b></div>" +
-    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + linkPesan(pesan) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></div></article>";
+    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkPesan(pesan)) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></div></article>";
 }
 
 const IKON_SPEK = {
@@ -585,12 +617,12 @@ function kartuHosting(p, i, jeda, pesan, data) {
   if (ssd) spek.push(["Storage", ssd]);
   const sisa = p.fitur.filter(function (f) { return !/^(CPU|RAM|Storage) /.test(f); });
   return '<article class="pcard host' + (p.populer ? " featured" : "") + '" style="--i:' + (Math.min(i, 12) + jeda) + '">' +
-    '<div class="hs-name"><h3>' + p.nama + '</h3><span class="hs-tags">' + (p.populer ? '<span class="pc-pop">' + t("populer") + "</span>" : "") + '<span class="pc-tag">' + p.kat + "</span></span></div>" +
-    '<p class="pc-desc">' + p.ringkas + "</p>" +
+    '<div class="hs-name"><h3>' + escK(p.nama) + '</h3><span class="hs-tags">' + (p.populer ? '<span class="pc-pop">' + t("populer") + "</span>" : "") + '<span class="pc-tag">' + escK(p.kat) + "</span></span></div>" +
+    '<p class="pc-desc">' + escK(p.ringkas) + "</p>" +
     '<div class="pc-price">' + "<b>" + hargaHTML(p.harga, data.satuan) + "</b></div>" +
-    '<div class="specs" style="grid-template-columns:repeat(' + spek.length + ',1fr)">' + spek.map(function (x) { return '<div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IKON_SPEK[x[0]] + "</svg><small>" + x[0] + "</small><b>" + x[1] + "</b></div>"; }).join("") + "</div>" +
-    (sisa.length ? "<ul>" + sisa.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>" : "") +
-    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + linkPesan(pesan) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></article>";
+    (spek.length ? '<div class="specs" style="grid-template-columns:repeat(' + spek.length + ',1fr)">' + spek.map(function (x) { return '<div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IKON_SPEK[x[0]] + "</svg><small>" + x[0] + "</small><b>" + escK(x[1]) + "</b></div>"; }).join("") + "</div>" : "") +
+    (sisa.length ? "<ul>" + sisa.map(function (f) { return "<li>" + escK(f) + "</li>"; }).join("") + "</ul>" : "") +
+    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkPesan(pesan)) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></article>";
 }
 
 /* ===== FAQ =====
@@ -638,20 +670,38 @@ function initHarga(root) {
   const desc = root.querySelector("#tab-desc");
   const sTotal = root.querySelector("#stat-total");
   const sMin = root.querySelector("#stat-min");
-  const tabs = root.querySelectorAll(".tab");
+  const tabsBox = root.querySelector('.tabs[aria-label="Jasa"]');
   const segarSort = pasangSort(sort);
   const st = { layanan: plans.dataset.default, kat: "Semua", urut: "awal", pertama: true };
 
+  function kunciAwal() { const d = plans.dataset.default; return HARGA[d] ? d : (jasaKunci()[0] || d); }
+
+  /* Tab jasa dibuat dari data (jasa bisa ditambah/dihapus lewat dashboard admin). */
+  function buatTab() {
+    if (!tabsBox) return;
+    tabsBox.innerHTML = jasaKunci().map(function (k) {
+      return '<button class="tab" role="tab" data-layanan="' + escK(k) + '" aria-selected="' + (k === st.layanan) + '"><i class="bi bi-' + escK(HARGA[k].ikon || "box") + '"></i>' + escK(HARGA[k].label || HARGA[k].nama) + "</button>";
+    }).join("");
+  }
+
   function buatChip() {
     const data = HARGA[st.layanan];
+    if (!data) { chips.innerHTML = ""; return; }
     chips.classList.toggle("seg", !!data.tanpaSemua);
     chips.innerHTML = (data.tanpaSemua ? data.kategori : ["Semua"].concat(data.kategori)).map(function (k) {
-      return '<button class="chip" data-kat="' + k + '" aria-pressed="' + (k === st.kat) + '">' + (data.tanpaSemua && IK_KAT[k] ? '<i class="bi ' + IK_KAT[k] + '"></i>' : "") + (k === "Semua" ? t("semua") : k) + (data.tanpaSemua ? '<span class="n">' + data.paket.filter(function (p) { return p.kat === k; }).length + "</span>" : "") + "</button>";
+      return '<button class="chip" data-kat="' + escK(k) + '" aria-pressed="' + (k === st.kat) + '">' + (data.tanpaSemua && IK_KAT[k] ? '<i class="bi ' + IK_KAT[k] + '"></i>' : "") + (k === "Semua" ? t("semua") : escK(k)) + (data.tanpaSemua ? '<span class="n">' + data.paket.filter(function (p) { return p.kat === k; }).length + "</span>" : "") + "</button>";
     }).join("");
   }
 
   function renderDaftar() {
     const data = HARGA[st.layanan];
+    if (!data) {
+      count.textContent = "0 " + t("n_paket"); desc.textContent = ""; desc.classList.remove("intro");
+      if (sTotal) sTotal.textContent = "0 " + t("n_paket");
+      if (sMin) sMin.textContent = "-";
+      plans.innerHTML = '<p class="empty">' + t("kosong") + "</p>";
+      return;
+    }
     const daftar = data.paket.filter(function (p) { return st.kat === "Semua" || p.kat === st.kat; });
     if (st.urut === "murah") daftar.sort(function (a, b) { return a.harga - b.harga; });
     if (st.urut === "mahal") daftar.sort(function (a, b) { return b.harga - a.harga; });
@@ -660,9 +710,9 @@ function initHarga(root) {
     const info = data.info && data.info[st.kat];
     desc.classList.toggle("intro", !!info);
     if (info) desc.innerHTML = "<b>" + info.judul + "</b>" + info.teks + (info.fitur ? '<span class="ichips">' + info.fitur.map(function (f) { return "<span><i class=\"bi " + (IK_FITUR[f] || "bi-check2") + "\"></i>" + f + "</span>"; }).join("") + "</span>" : "");
-    else desc.textContent = data.deskripsi;
+    else desc.textContent = data.deskripsi || "";
     if (sTotal) sTotal.textContent = data.paket.length + " " + t("n_paket");
-    if (sMin) sMin.innerHTML = hargaHTML(Math.min.apply(null, data.paket.map(function (p) { return p.harga; })), data.satuan);
+    if (sMin) sMin.innerHTML = data.paket.length ? hargaHTML(Math.min.apply(null, data.paket.map(function (p) { return p.harga; })), data.satuan) : "-";
 
     const jeda = st.pertama ? 6 : 0;
     st.pertama = false;
@@ -679,13 +729,22 @@ function initHarga(root) {
   function tampilkan(kunci) {
     if (!HARGA[kunci]) return;
     st.layanan = kunci;
-    st.kat = HARGA[kunci].tanpaSemua ? HARGA[kunci].kategori[0] : "Semua";
-    tabs.forEach(function (tab) { tab.setAttribute("aria-selected", tab.dataset.layanan === kunci ? "true" : "false"); });
+    st.kat = HARGA[kunci].tanpaSemua ? (HARGA[kunci].kategori[0] || "Semua") : "Semua";
+    root.querySelectorAll(".tab").forEach(function (tab) { tab.setAttribute("aria-selected", tab.dataset.layanan === kunci ? "true" : "false"); });
     render();
   }
 
-  tabs.forEach(function (tab) {
-    tab.addEventListener("click", function () { tampilkan(tab.dataset.layanan); });
+  /* Dipanggil saat data baru datang dari database: pertahankan pilihan pengunjung kalau masih ada. */
+  function segar() {
+    if (!HARGA[st.layanan]) st.layanan = kunciAwal();
+    const d = HARGA[st.layanan];
+    if (d && st.kat !== "Semua" && d.kategori.indexOf(st.kat) < 0) st.kat = d.tanpaSemua ? (d.kategori[0] || "Semua") : "Semua";
+    buatTab(); render();
+  }
+
+  if (tabsBox) tabsBox.addEventListener("click", function (e) {
+    const tab = e.target.closest(".tab");
+    if (tab) tampilkan(tab.dataset.layanan);
   });
   chips.addEventListener("click", function (e) {
     const chip = e.target.closest(".chip");
@@ -696,8 +755,10 @@ function initHarga(root) {
   sort.addEventListener("change", function (e) { st.urut = e.target.value; renderDaftar(); });
 
   root.tampilkan = tampilkan;
-  HARGA_AKTIF.push({ root: root, tampilkan: tampilkan, render: render });
-  tampilkan(plans.dataset.default);
+  HARGA_AKTIF.push({ root: root, tampilkan: tampilkan, render: render, segar: segar });
+  st.layanan = kunciAwal();
+  buatTab();
+  tampilkan(st.layanan);
 }
 
 /* Tautan "Lihat harga ..." di bagian layanan membuka tab yang sesuai */
@@ -737,6 +798,14 @@ function pasangAnchor() {
   const m = location.hash.match(/^#harga-(minecraft|discord)$/);
   if (m) setTimeout(function () { gulirKe("harga", m[1]); }, 60);
 }
+
+/* Data baru dari database (katalog, kontak, QR, sosmed): perbarui tampilan tanpa muat ulang halaman. */
+function segarSitus() {
+  muatKontak(); terapkanKatalog();
+  HARGA_AKTIF.forEach(function (h) { h.segar(); });
+  pasangKontak(); pasangKontakPage(); pasangSosmed(); pasangQr(); isiMulai();
+}
+window.addEventListener("nxsite", segarSitus);
 
 document.addEventListener("DOMContentLoaded", function () {
   pasangAnchor();
@@ -785,14 +854,13 @@ function pasangAkun() {
 
 /* QR Code dari dashboard admin (demo: disimpan di browser yang sama) */
 function pasangQr() {
-  let q = "";
-  try { q = localStorage.getItem("nx-qr") || ""; } catch (x) {}
-  if (q.indexOf("data:image/") !== 0) return;
+  const q = window.NXS ? NXS.qr() : "";
+  if (!q) return;
   document.querySelectorAll(".qr-box").forEach(function (box) {
     let im = box.querySelector("img");
     if (!im) { im = document.createElement("img"); im.alt = "QR Discord NEXORA"; box.insertBefore(im, box.firstChild); }
     im.removeAttribute("onerror"); im.onerror = null;
-    im.src = q;
+    if (im.getAttribute("src") !== q) im.src = q;
     box.classList.remove("empty");
   });
 }
@@ -801,11 +869,13 @@ function pasangQr() {
 /* ===== Footer: Ikuti kami (diatur admin: nx-sosmed) ===== */
 const SOSMED_ICON = { instagram: "instagram", tiktok: "tiktok", youtube: "youtube", facebook: "facebook", x: "twitter-x", discord: "discord", telegram: "telegram", whatsapp: "whatsapp", email: "envelope", lainnya: "link-45deg" };
 function sosmedData() {
-  try { const v = localStorage.getItem("nx-sosmed"); if (v) { const a = JSON.parse(v); if (Array.isArray(a)) return a; } } catch (x) {}
+  const v = window.NXS ? NXS.setting("sosmed") : null;
+  if (Array.isArray(v)) return v;
   return [{ tipe: "instagram", label: "Instagram", nilai: "https://instagram.com/nexora", aktif: true }, { tipe: "tiktok", label: "TikTok", nilai: "https://tiktok.com/@nexora", aktif: true }];
 }
 function pasangSosmed() {
-  const b = document.querySelector(".f-brand"); if (!b || b.querySelector(".f-follow")) return;
+  const b = document.querySelector(".f-brand"); if (!b) return;
+  b.querySelectorAll(".f-follow").forEach(function (n) { n.remove(); });
   const a = sosmedData().filter(function (k) { return k.aktif !== false && k.nilai; }); if (!a.length) return;
   const w = document.createElement("div"); w.className = "f-follow";
   w.innerHTML = "<h4>Ikuti kami</h4><div class=\"f-soc\">" + a.map(function (k) {
@@ -855,11 +925,11 @@ function pasangKontakPage() {
     return '<article class="kc" data-t="' + escK(k.tipe) + '"><span class="kc-i"><i class="bi bi-' + t[1] + '"></i></span><div class="kc-t"><small>' + escK(k.label || t[0]) + "</small><b>" + escK(tampil) + "</b>" + (k.ket ? "<p>" + escK(k.ket) + "</p>" : "") +
       '</div><div class="kc-a"><a class="btn" href="' + escK(href) + '"' + blank + ">" + t[2] + '</a><button class="kc-cp" type="button" data-cp="' + escK(k.tipe === "whatsapp" ? tampil : v) + '" aria-label="Salin ' + escK(k.label || t[0]) + '"><i class="bi bi-copy"></i></button></div></article>';
   }).join("") : '<p class="note">Belum ada kontak yang ditampilkan.</p>';
-  box.addEventListener("click", function (ev) {
+  box.onclick = function (ev) {
     const b = ev.target.closest("[data-cp]"); if (!b) return;
     const v = b.dataset.cp, ok = function () { const i = b.querySelector("i"); i.className = "bi bi-check2"; setTimeout(function () { i.className = "bi bi-copy"; }, 1500); };
     if (navigator.clipboard) navigator.clipboard.writeText(v).then(ok, function () {}); else { const x = document.createElement("textarea"); x.value = v; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); ok(); } catch (e) {} x.remove(); }
-  });
+  };
 }
 
 /* ===== Daftar isi halaman legal: tandai bagian yang sedang dibaca ===== */

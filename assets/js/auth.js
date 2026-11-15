@@ -52,7 +52,7 @@
   }
   function clearSession() {
     NX.user = null; NX.profile = null; NX.role = ""; NX.staff = []; NX.identities = [];
-    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {};
+    ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {}; NX.cat = null; NX.set = {};
   }
   function hasId(p) { return NX.identities.some(function (i) { return i.provider === p; }); }
 
@@ -95,6 +95,8 @@
       } catch (x) {}
       NX.staff = NX.role && !r[3].error ? (r[3].data || []).map(mapStaff) : [];
       var more = [NX.tkReload().catch(function (e) { console.error("tiket:", e); NX.tkErr = e.message; NX.tk = []; })];
+      more.push(NX.catLoad().catch(function (e) { console.error("katalog:", e); NX.catErr = e.message; NX.cat = null; }));
+      more.push(NX.setLoad().catch(function (e) { console.error("pengaturan:", e); NX.set = {}; }));
       if (NX.role) { more.push(NX.usersReload().catch(function () { NX.users = {}; })); if (!NX.staff.length) more.push(reloadStaff()); }
       return Promise.all(more).then(function () { startLive(); return null; });
     });
@@ -242,10 +244,147 @@
       NX.users = u;
     });
   };
+  /* ===== Tahap 3: katalog (jasa + hosting), pengaturan situs, upload gambar ===== */
+  NX.cat = null; NX.set = {}; NX.catErr = "";
+  var BUCKET = "situs";
+  function clone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+  function uuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); });
+  }
+  function eachPaket(H, f) { Object.keys(H.jasa).forEach(function (k) { H.jasa[k].forEach(f); }); H.hosting.forEach(f); }
+  function mapPaket(r) { return { _id: r.id, nama: r.nama, kat: r.kategori, harga: Number(r.harga), ringkas: r.ringkas || "", fitur: Array.isArray(r.fitur) ? r.fitur : [], foto: r.foto_url || "", populer: !!r.populer }; }
+
+  NX.catLoad = function () {
+    return Promise.all([
+      sb.from("catalog_jasa").select("*").order("urutan", { ascending: true }).order("dibuat", { ascending: true }),
+      sb.from("catalog_paket").select("*").order("urutan", { ascending: true }).order("dibuat", { ascending: true })
+    ]).then(function (r) {
+      if (r[0].error) fail(r[0].error); if (r[1].error) fail(r[1].error);
+      var H = { jasa: {}, hosting: [], meta: {} };
+      (r[0].data || []).forEach(function (j) { H.jasa[j.id] = []; H.meta[j.id] = { nama: j.nama, ic: j.ikon }; });
+      (r[1].data || []).forEach(function (p) { if (p.tipe === "hosting") H.hosting.push(mapPaket(p)); else if (H.jasa[p.jasa_id]) H.jasa[p.jasa_id].push(mapPaket(p)); });
+      var changed = JSON.stringify(H) !== JSON.stringify(NX.cat);
+      NX.cat = H; NX._catSynced = clone(H); NX.catErr = "";
+      return changed;
+    });
+  };
+  NX.catGet = function () { return NX.cat ? clone(NX.cat) : null; };
+
+  /* ----- upload gambar ke Storage (bucket publik "situs") ----- */
+  function dataToBlob(d) {
+    var m = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+\/=]+)$/.exec(d || "");
+    if (!m) throw new Error("Format gambar tidak didukung (pakai PNG, JPG, atau WEBP).");
+    var bin = atob(m[2]), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    var b = new Blob([u], { type: m[1] });
+    if (b.size > 2 * 1024 * 1024) throw new Error("Gambar terlalu besar (maksimal 2 MB).");
+    return b;
+  }
+  NX.upload = function (dataUrl, folder) {
+    return Promise.resolve().then(function () {
+      var b = dataToBlob(dataUrl), ext = b.type === "image/png" ? "png" : b.type === "image/webp" ? "webp" : "jpg";
+      var name = folder + "/" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+      return sb.storage.from(BUCKET).upload(name, b, { contentType: b.type, cacheControl: "31536000", upsert: false }).then(function (r) {
+        if (r.error) fail(r.error);
+        return sb.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
+      });
+    });
+  };
+  function bucketPath(u) { var m = /\/storage\/v1\/object\/public\/situs\/(.+)$/.exec(String(u || "")); return m ? decodeURIComponent(m[1]) : ""; }
+  function dropFiles(urls) { /* bersih-bersih file lama, tidak boleh menggagalkan penyimpanan */
+    var ps = urls.map(bucketPath).filter(Boolean);
+    if (ps.length) sb.storage.from(BUCKET).remove(ps).then(function () {}, function () {});
+  }
+  function queue(name, fn) { NX[name] = (NX[name] || Promise.resolve()).then(fn, fn); return NX[name]; }
+  function rowOf(p, tipe, jasa, i) {
+    return { id: p._id, tipe: tipe, jasa_id: jasa, nama: String(p.nama || "").trim(), kategori: String(p.kat || "").trim(), harga: Math.round(Number(p.harga) || 0),
+      ringkas: String(p.ringkas || "").trim(), fitur: (p.fitur || []).map(function (f) { return String(f).trim(); }).filter(Boolean), foto_url: p.foto || null, populer: !!p.populer, urutan: i };
+  }
+  function allRows(H) {
+    var rows = {};
+    Object.keys(H.jasa).forEach(function (k) { H.jasa[k].forEach(function (p, i) { rows[p._id] = rowOf(p, "jasa", k, i); }); });
+    H.hosting.forEach(function (p, i) { rows[p._id] = rowOf(p, "hosting", null, i); });
+    return rows;
+  }
+
+  /* Menyimpan seluruh katalog: hanya baris yang berubah yang dikirim (dibandingkan dengan data terakhir dari database). */
+  function persistCat(H) {
+    var old = NX._catSynced || { jasa: {}, hosting: [], meta: {} }, byId = {};
+    eachPaket(H, function (p) { byId[p._id] = p; });
+    var ups = [];
+    eachPaket(H, function (p) { if (p.foto && /^data:image\//.test(p.foto)) ups.push(NX.upload(p.foto, "paket").then(function (u) { p.foto = u; })); });
+    return Promise.all(ups).then(function () {
+      if (NX.cat) eachPaket(NX.cat, function (p) { if (byId[p._id] && byId[p._id].foto !== p.foto) p.foto = byId[p._id].foto; });
+      var oldKeys = Object.keys(old.jasa), keys = Object.keys(H.jasa);
+      var jRows = keys.map(function (k, i) { return { id: k, nama: String(H.meta[k].nama).trim(), ikon: H.meta[k].ic || "tag", urutan: i }; }).filter(function (r) {
+        var o = old.meta[r.id]; return !o || o.nama !== r.nama || o.ic !== r.ikon || oldKeys.indexOf(r.id) !== keys.indexOf(r.id);
+      });
+      var delJ = oldKeys.filter(function (k) { return !(k in H.jasa); });
+      var oldRows = allRows(old), newRows = allRows(H), pRows = [], delP = [];
+      Object.keys(newRows).forEach(function (id) { if (!oldRows[id] || JSON.stringify(oldRows[id]) !== JSON.stringify(newRows[id])) pRows.push(newRows[id]); });
+      Object.keys(oldRows).forEach(function (id) { var o = oldRows[id]; if (!newRows[id] && !(o.jasa_id && delJ.indexOf(o.jasa_id) >= 0)) delP.push(id); });
+      var chain = Promise.resolve();
+      if (jRows.length) chain = chain.then(function () { return sb.from("catalog_jasa").upsert(jRows).select("id").then(function (q) { if (q.error) fail(q.error); if (!q.data || q.data.length !== jRows.length) throw new Error("Tidak diizinkan. Hanya Founder dan Co-Founder yang bisa mengubah katalog."); }); });
+      if (delJ.length) chain = chain.then(function () { return sb.from("catalog_jasa").delete().in("id", delJ).select("id").then(function (q) { if (q.error) fail(q.error); if (!q.data || q.data.length !== delJ.length) throw new Error("Jasa tidak bisa dihapus (tidak diizinkan)."); }); });
+      if (delP.length) chain = chain.then(function () { return sb.from("catalog_paket").delete().in("id", delP).select("id").then(function (q) { if (q.error) fail(q.error); if (!q.data || q.data.length !== delP.length) throw new Error("Paket tidak bisa dihapus (tidak diizinkan)."); }); });
+      if (pRows.length) chain = chain.then(function () { return sb.from("catalog_paket").upsert(pRows).select("id").then(function (q) { if (q.error) fail(q.error); if (!q.data || q.data.length !== pRows.length) throw new Error("Tidak diizinkan. Hanya Founder dan Co-Founder yang bisa mengubah katalog."); }); });
+      return chain.then(function () {
+        var keep = {}; Object.keys(newRows).forEach(function (id) { if (newRows[id].foto_url) keep[newRows[id].foto_url] = 1; });
+        var gone = []; Object.keys(oldRows).forEach(function (id) { var u = oldRows[id].foto_url; if (u && !keep[u]) gone.push(u); });
+        dropFiles(gone);
+        NX._catSynced = clone(H);
+      });
+    });
+  }
+  /* Dipanggil dari dashboard: langsung memperbarui tampilan (optimistis), lalu menyimpan ke database. */
+  NX.catSet = function (H2) {
+    var H = clone(H2);
+    H.meta = H.meta || {}; Object.keys(H.jasa).forEach(function (k) { if (!H.meta[k]) H.meta[k] = { nama: k, ic: "tag" }; });
+    eachPaket(H, function (p) { if (!p._id) p._id = uuid(); });
+    NX.cat = clone(H);
+    return queue("_catQ", function () { return persistCat(H); }).catch(function (er) {
+      return NX.catLoad().then(function () { throw er; }, function () { throw er; });
+    });
+  };
+
+  /* ----- pengaturan situs: tampilan, kontak, sosmed, bayar, qr ----- */
+  NX.setLoad = function () {
+    return sb.from("site_settings").select("key,value").then(function (r) {
+      if (r.error) fail(r.error);
+      var m = {}; (r.data || []).forEach(function (x) { m[x.key] = x.value; });
+      var changed = JSON.stringify(m) !== JSON.stringify(NX.set); NX.set = m; NX._setSynced = clone(m); return changed;
+    });
+  };
+  NX.setGet = function (k) { return NX.set[k] === undefined ? null : clone(NX.set[k]); };
+  function imgField(k) { return k === "tampilan" ? "logo" : k === "qr" ? "url" : ""; }
+  NX.setPut = function (k, v) {
+    var val = v == null ? null : clone(v);
+    if (val === null) delete NX.set[k]; else NX.set[k] = clone(val);
+    return queue("_setQ", function () {
+      var f = imgField(k), old = NX._setSynced && NX._setSynced[k], oldImg = old && f ? old[f] : "", pre = Promise.resolve();
+      if (val && f && val[f] && /^data:image\//.test(val[f])) pre = NX.upload(val[f], k === "qr" ? "qr" : "logo").then(function (u) { val[f] = u; if (NX.set[k]) NX.set[k][f] = u; });
+      return pre.then(function () {
+        var q = val === null ? sb.from("site_settings").delete().eq("key", k).select("key") : sb.from("site_settings").upsert({ key: k, value: val }).select("key");
+        return q.then(function (r) {
+          if (r.error) fail(r.error);
+          if (val !== null && (!r.data || !r.data.length)) throw new Error("Tidak diizinkan. Hanya Founder dan Co-Founder yang bisa mengubah pengaturan situs.");
+          if (!NX._setSynced) NX._setSynced = {};
+          if (val === null) delete NX._setSynced[k]; else NX._setSynced[k] = clone(val);
+          var nu = val && f ? val[f] : ""; if (oldImg && oldImg !== nu) dropFiles([oldImg]);
+        });
+      });
+    }).catch(function (er) { return NX.setLoad().then(function () { throw er; }, function () { throw er; }); });
+  };
+
   function startLive() {
     if (NX._live) return; NX._live = true;
     var t, deb = function () { clearTimeout(t); t = setTimeout(function () { NX.tkReload().then(function (ch) { if (ch && window.nxRemote) window.nxRemote(); }, function () {}); }, 250); };
     try { sb.channel("nx-tiket").on("postgres_changes", { event: "*", schema: "public", table: "tickets" }, deb).on("postgres_changes", { event: "*", schema: "public", table: "ticket_messages" }, deb).subscribe(); } catch (x) {}
     setInterval(function () { if (!document.hidden && NX.user) deb(); }, 20000);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden || !NX.user) return;
+      Promise.all([NX.catLoad().catch(function () { return false; }), NX.setLoad().catch(function () { return false; })]).then(function (c) { if ((c[0] || c[1]) && window.nxRemote) window.nxRemote(); });
+    });
   }
 })();
