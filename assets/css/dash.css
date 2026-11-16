@@ -2180,3 +2180,77 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
 .chk-r b{font-weight:600;font-size:.92rem}
 .chk-r small{color:var(--muted);font-size:.8rem}
 .chk-r:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+
+/* =====================================================================
+   v13: notifikasi jelas, bar simpan melayang, tombol sidebar, breadcrumb
+   ===================================================================== */
+/* --- notifikasi (pengganti toast lama) --- */
+.nxt-box{position:fixed;z-index:400;top:calc(var(--tb,64px) + 12px);right:16px;display:grid;gap:10px;width:min(380px,calc(100vw - 24px));pointer-events:none}
+.nxt{--c:var(--accent);position:relative;display:flex;align-items:flex-start;gap:12px;padding:14px 14px 16px 16px;border:1px solid color-mix(in srgb,var(--c) 38%,var(--line));border-left:5px solid var(--c);border-radius:14px;background:var(--surface);color:var(--text);box-shadow:0 22px 44px -18px rgba(25,15,60,.55),0 2px 6px rgba(25,15,60,.08);overflow:hidden;pointer-events:auto;animation:nxtin .45s cubic-bezier(.22,1,.36,1) both}
+.nxt.ok{--c:#1f9d57}.nxt.err{--c:#e5484d}.nxt.warn{--c:#e39a00}.nxt.info{--c:#3b7ddd}
+.nxt-i{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c);font-size:1.2rem}
+.nxt-t{flex:1;min-width:0;display:grid;gap:1px;padding-top:1px}
+.nxt-t b{font-family:"Bricolage Grotesque",sans-serif;font-size:.98rem;line-height:1.25}
+.nxt-t span{color:var(--muted);font-size:.9rem;line-height:1.4;overflow-wrap:anywhere}
+.nxt-x{display:grid;place-items:center;flex:none;width:30px;height:30px;margin:-4px -4px 0 0;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:.85rem;cursor:pointer}
+.nxt-x:hover{background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--text)}
+.nxt-p{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--c);transform-origin:left;animation:nxtp 4.8s linear forwards}
+.nxt.err .nxt-p,.nxt.warn .nxt-p{animation-duration:7s}
+.nxt:hover .nxt-p{animation-play-state:paused}
+.nxt.out{animation:nxtout .26s ease forwards}
+@keyframes nxtin{from{opacity:0;transform:translate3d(28px,0,0) scale(.97)}to{opacity:1;transform:none}}
+@keyframes nxtout{to{opacity:0;transform:translate3d(24px,0,0) scale(.97)}}
+@keyframes nxtp{to{transform:scaleX(0)}}
+@media (max-width:820px){
+  .nxt-box{left:12px;right:12px;width:auto;top:calc(var(--tb,70px) + 8px)}
+  @keyframes nxtin{from{opacity:0;transform:translate3d(0,-18px,0)}to{opacity:1;transform:none}}
+  @keyframes nxtout{to{opacity:0;transform:translate3d(0,-14px,0)}}
+}
+@media (prefers-reduced-motion:reduce){.nxt{animation:none}}
+
+/* --- bar simpan melayang --- */
+.dpanel>.sbar{animation:none!important}
+.sbar{position:fixed;z-index:60;left:50%;bottom:max(18px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(640px,calc(100vw - 28px));padding:12px 14px 12px 18px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 26px 50px -18px rgba(25,15,60,.6);visibility:hidden;opacity:0;transform:translate(-50%,24px) scale(.97);transition:opacity .28s ease,transform .38s cubic-bezier(.22,1,.36,1),visibility 0s linear .38s}
+.sbar.on{visibility:visible;opacity:1;transform:translate(-50%,0) scale(1);transition-delay:0s}
+.sb-d{display:flex;align-items:center;gap:12px;min-width:0}
+.sb-d>i{flex:none;color:#e39a00;font-size:1.3rem}
+.sb-d b{display:block;font-size:.93rem}
+.sb-d small{display:block;color:var(--muted);font-size:.8rem}
+.sb-a{display:flex;gap:8px;flex:none}
+.sb-a .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;font-size:.9rem}
+@media (min-width:821px){.dash .sbar{left:calc(50% + var(--sw,224px)/2)}}
+@media (max-width:560px){.sbar{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px}.sb-d small{display:none}.sb-a{display:grid;grid-template-columns:1fr 2fr}.sb-a .btn{justify-content:center}}
+
+/* --- tombol perlebar/perkecil sidebar: lebih besar, tanpa border --- */
+.dash .topbar #side-t,.dash .topbar .tgl,.tgl{width:46px;height:46px;font-size:1.45rem;border:0!important;outline:0;box-shadow:none!important;background:transparent;color:var(--text);border-radius:14px}
+.dash .topbar #side-t:hover,.dash .topbar .tgl:hover,.tgl:hover{background:var(--accent-soft);color:var(--accent)}
+.dash .topbar #side-t:focus-visible,.tgl:focus-visible{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:820px){.dash .topbar #side-t,.dash .topbar .tgl{width:48px;height:48px;font-size:1.5rem}}
+
+/* --- isi konten melebar saat sidebar diperkecil --- */
+@media (min-width:821px){
+  .dmain{transition:max-width .35s cubic-bezier(.22,1,.36,1)}
+  .dash.mini .dmain{max-width:1480px}
+  .sx-g{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dash.mini .sx-g{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:1500px){.dash.mini .sx-g{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media (min-width:1280px){.dash.mini .pk-grid,.dash.mini .cu-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))}}
+
+/* --- breadcrumb --- */
+.bc{margin:0 0 12px}
+.bc[hidden]{display:none}
+.bc ol{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin:0;padding:0;list-style:none;font-size:.88rem}
+.bc li{display:inline-flex;align-items:center;gap:2px;min-width:0}
+.bc-l,.bc-c{display:inline-flex;align-items:center;gap:6px;max-width:min(60vw,320px);padding:5px 10px;border:0;border-radius:10px;font:inherit;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bc-l{background:transparent;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.bc-l:hover{background:var(--accent-soft);color:var(--accent)}
+.bc-l:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.bc-c{background:var(--accent-soft);color:var(--text);font-weight:600}
+.bc-l i,.bc-c i{color:var(--accent);flex:none}
+.bc-s{color:var(--muted);font-size:.7rem;opacity:.7}
+@media (max-width:820px){
+  .bc ol{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.bc ol::-webkit-scrollbar{display:none}
+  .bc li{flex:none}.bc-l,.bc-c{padding:7px 11px}
+}
