@@ -207,7 +207,12 @@ function pasangPanelMenu() {
     let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
     if (!role) { try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)) { role = "cust"; break; } } } catch (x) {} }
     const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
-    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Buka dashboard</a>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html"><i class="bi bi-box-arrow-in-right"></i> Masuk</a>';
+    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Dashboard</a><button type="button" class="btn ghost nv-out"><i class="bi bi-box-arrow-right"></i> <span>Keluar</span></button>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html"><i class="bi bi-box-arrow-in-right"></i> Masuk</a>';
+    const nvOut = ac.querySelector(".nv-out");
+    if (nvOut) nvOut.addEventListener("click", function () {
+      if (!nvOut.classList.contains("ask")) { nvOut.classList.add("ask"); nvOut.querySelector("span").textContent = "Yakin keluar?"; setTimeout(function () { nvOut.classList.remove("ask"); nvOut.querySelector("span").textContent = "Keluar"; }, 3500); return; }
+      keluarAkun();
+    });
     nav.insertBefore(ac, dc);
     if (dc) dc.style.setProperty("--i", n++);
     if (btn) btn.innerHTML = '<svg class="mb-g" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><svg class="mb-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';

@@ -995,3 +995,10 @@ html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:
 .acm-o:hover,.acm-o.ask{background:color-mix(in srgb,#e5484d 10%,transparent)}
 @media (max-width:480px){.acct-b{width:40px;height:40px}.acm{right:-4px}}
 @media (prefers-reduced-motion:reduce){.acm{animation:none}}
+
+
+/* HP/tablet: profil di navbar disembunyikan; Dashboard dan Keluar ada di dalam menu */
+@media (max-width:1100px){.acct{display:none}}
+.nv-out{color:#e5484d;border-color:color-mix(in srgb,#e5484d 40%,var(--line))}
+.nv-out:hover,.nv-out.ask{background:color-mix(in srgb,#e5484d 12%,transparent);color:#e5484d;border-color:#e5484d}
+.nv-out i{color:inherit}
