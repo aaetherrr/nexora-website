@@ -24,3 +24,8 @@ Semua link antar-file memakai path relatif, jadi folder ini bisa dibuka dari man
 (file langsung, live server, atau hosting). Kalau menambah halaman baru di `pages/`,
 pakai pola yang sama dengan `pages/faq.html`: `../assets/...` untuk css/js/gambar dan
 `../index.html` untuk link ke beranda.
+
+## Catatan update 16 Nov 2026
+- Dashboard admin > "Nama & QR Code": hanya nama situs dan QR Code Discord yang diatur dari dashboard. Logo = ganti file `assets/img/logo.png`; warna aksen = edit `assets/css/style.css`; teks halaman utama = edit `index.html`.
+- Akun yang terdaftar sebagai tim (Founder / Co-Founder / Teknisi) tidak bisa masuk panel customer.
+- Masa login dibatasi `sessionDays` di `assets/js/config.js` (bawaan 7 hari). Lewat itu otomatis logout dan harus login ulang; akun tidak dihapus.

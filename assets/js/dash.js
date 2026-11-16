@@ -124,6 +124,8 @@
       var hint = authHint(AE);
       aerr("Login belum berhasil" + (AE ? ": " + AE : ".") + (hint ? " " + hint : ""));
     }
+    if ((window.NX && NX.sessEnd) || /[?&]err=expired/.test(location.search)) aerr("Sesi login sudah berakhir (masa login maksimal " + ((window.NX && NX.sessionDays) || 7) + " hari). Silakan masuk lagi. Akunmu tetap aman dan tidak dihapus.");
+    if (/[?&]err=staff/.test(location.search)) aerr("Akun ini terdaftar sebagai tim NEXORA, jadi tidak bisa dipakai di panel customer. Untuk order sebagai customer, masuk dengan akun Google/Discord yang lain.");
     if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
     function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
     if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
@@ -594,20 +596,7 @@
         $("[data-ok]", m).addEventListener("click", function () { var H2 = HG(); delete H2.jasa[key]; delete H2.meta[key]; sv("nx-harga", H2); hs = Object.keys(H2.jasa)[0] || ""; close(); toast("Jasa dihapus"); draw(); });
       });
     }
-    var UPL_TXT = "PNG, JPG, atau WEBP. Klik atau seret gambar ke sini.";
     var PF_TXT = "JPG, PNG, atau WEBP. Disarankan rasio 16:9.";
-    function uplHTML(T) {
-      return '<div class="upl"><input class="upl-in" type="file" accept="image/*" id="lg"><label class="upl-box" for="lg"><span class="upl-pv" id="upl-pv">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-image"></i>') + '</span><span class="upl-t"><b id="upl-ttl">' + (T.logo ? "Logo aktif" : "Unggah logo") + '</b><small id="upl-name">' + (T.logo ? "Klik atau seret gambar baru untuk mengganti." : UPL_TXT) + '</small></span><span class="btn sm upl-btn"><i class="bi bi-cloud-arrow-up"></i> Pilih file</span></label><button class="btn ghost sm" id="lg-x" type="button"><i class="bi bi-trash3"></i> Hapus logo</button></div>';
-    }
-    function setLogo(file) {
-      if (!file || file.type.indexOf("image/") !== 0) return toast("File harus berupa gambar");
-      shrink(file, 256, "image/png", function (d) {
-        root._T.logo = d; $("#nvl").innerHTML = '<img src="' + d + '" alt="Logo">';
-        var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<img src="' + d + '" alt="">';
-        var nm = $("#upl-name"); if (nm) nm.textContent = file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB";
-        var tt = $("#upl-ttl"); if (tt) tt.textContent = "Logo dipilih";
-      });
-    }
     var QR_TXT = "PNG atau JPG. Klik atau seret gambar QR ke sini.";
     function qrNow() { if (window.NX && NX.live) { var q = NX.setGet("qr"); return q && q.url ? q.url : ""; } try { return localStorage.getItem("nx-qr") || ""; } catch (x) { return mem["nx-qr"] || ""; } }
     function qrSimpan(d, nama, file) {
@@ -636,18 +625,9 @@
         qrSimpan(d, file.name + " \u00b7 " + Math.max(1, Math.round(file.size / 1024)) + " KB");
       });
     }
-    function hex6(c) { c = String(c || "").replace(/[^0-9a-f]/gi, "").toLowerCase(); if (c.length === 3) c = c.replace(/(.)/g, "$1$1"); return "#" + (c.length === 6 ? c : "6b55b8"); }
-    function setHex(v, from) {
-      var raw = String(v || "").replace(/[^0-9a-f]/gi, "").slice(0, 6), m = $("#hx-m", root), ok = raw.length === 3 || raw.length === 6;
-      if (!ok) { m.textContent = "Kode belum lengkap, isi 3 atau 6 digit (0-9, a-f)."; m.classList.add("bad"); return; }
-      var h = hex6(raw); m.textContent = "Dipakai: " + h; m.classList.remove("bad"); root._T.warna = h;
-      $("#pvb").style.setProperty("--pv", h); if (from !== "c") $("#hx-c").value = h; if (from !== "t") $("#hx-t").value = h.slice(1);
-      $$(".sw", root).forEach(function (x) { x.setAttribute("aria-pressed", x.dataset.c.toLowerCase() === h); });
-    }
     function tampilan() {
-      var T = ld("nx-tampilan", { nama: "NEXORA", discord: "https://discord.gg/7bFYCRheRm", hero: "Buat Server Minecraft Impianmu Bersama NEXORA.", sub: "Kami membantu menyiapkan server Minecraft, server Discord, dan hosting. Kamu tinggal fokus main dan membangun komunitas.", warna: "#6b55b8", logo: "" });
-      var cols = ["#6b55b8", "#7c5cff", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
-      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Logo & nama</b><p class="muted">Tampil di navbar dan footer.</p><div class="nv-prev"><span class="nv-lg" id="nvl">' + (T.logo ? '<img src="' + T.logo + '" alt="">' : '<i class="bi bi-box2"></i>') + '</span><b id="nvn">' + e(T.nama) + '</b></div>' + uplHTML(T) + '<label class="fld" style="margin-top:14px"><span>Nama situs</span><input class="inp" data-t="nama" value="' + e(T.nama) + '"></label></div><div class="dcard"><b>Warna aksen</b><p class="muted">Pilih warna utama tombol dan penanda, atau pakai kode warna sendiri.</p><div class="sws">' + cols.map(function (c) { return '<button type="button" class="sw" data-c="' + c + '" style="--c:' + c + '" aria-pressed="' + (c === T.warna) + '" aria-label="Warna ' + c + '"></button>'; }).join("") + '</div><div class="fld hexf"><span>Kode warna (hex)</span><div class="hexin"><input type="color" class="hexc" id="hx-c" value="' + hex6(T.warna) + '" aria-label="Pilih warna"><span class="hx-h">#</span><input class="inp" id="hx-t" maxlength="7" value="' + hex6(T.warna).slice(1) + '" placeholder="7c5cff" autocomplete="off" spellcheck="false" aria-label="Kode warna hex"></div><small class="hint" id="hx-m">Ketik 3 atau 6 digit, contoh 7c5cff atau f80.</small></div><div class="pvbox" id="pvb" style="--pv:' + T.warna + '"><span class="pb">Tombol contoh</span><span class="pg">Badge</span></div></div></div><div class="tcol">' + qrHTML() + '<div class="dcard"><b>Teks halaman utama</b><label class="fld" style="margin-top:12px"><span>Judul</span><input class="inp" data-t="hero" value="' + e(T.hero) + '"></label><label class="fld"><span>Deskripsi</span><textarea class="txa" data-t="sub">' + e(T.sub) + '</textarea></label><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="tmp-lnk" data-tab="kontak">Kontak</button>.</p></div></div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
+      var T0 = ld("nx-tampilan", {}) || {}, T = { nama: String(T0.nama || "NEXORA") };
+      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Nama situs</b><p class="muted">Tampil di navbar, footer, dan judul tab browser.</p><label class="fld" style="margin-top:12px"><span>Nama situs</span><input class="inp" data-t="nama" maxlength="40" value="' + e(T.nama) + '"></label><p class="hint tmp-dc"><i class="bi bi-code-slash"></i> Logo, warna aksen, dan teks halaman utama diubah manual lewat kode: <code>assets/img/logo.png</code>, <code>assets/css/style.css</code>, dan <code>index.html</code>.</p><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="tmp-lnk" data-tab="kontak">Kontak</button>.</p></div></div><div class="tcol">' + qrHTML() + '</div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
       root._T = T;
     }
     /* ===== Tagihan ===== */
@@ -942,7 +922,7 @@
       if (op === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus ' + (k === "s" ? "sosmed" : isK ? "kontak" : "rekening") + '?</b></div><div class="mb"><p>' + e(isK ? a[i].label : a[i].nama) + ' akan dihapus dan tidak tampil lagi.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { a.splice(i, 1); sv(STO(k), a); close(); toast("Dihapus"); draw(); }); });
     }
     var TITLES = { c: { ringkasan: ["Dashboard", ""], pesanan: ["Riwayat pesanan", "Semua pesanan dan perkembangannya."], tiket: ["Ticket saya", "Chat dengan tim NEXORA di ticket yang masih aktif."], riwayat: ["Riwayat pesanan", "Pesanan dan percakapan ticket yang sudah selesai. Hanya bisa dibaca."], tagihan: ["Tagihan", "Tagihan yang perlu kamu bayar beserta jatuh temponya."], buka: ["Buka ticket", "Order baru atau tanya sesuatu ke tim NEXORA."], profile: ["Profile", "Kelola data akunmu."] },
-      a: { ulasan: ["Ulasan", "Penilaian customer untuk NEXORA. Pilih mana yang tampil di halaman Ulasan."], ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak & sosmed", "Atur kontak halaman Hubungi kami dan icon sosmed di footer."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola jasa dan paketnya. Tambah jasa baru atau hapus yang tidak dipakai."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Logo & tampilan", "Atur logo, warna, dan teks website."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."], customer: ["Customer", "Data akun customer untuk menghubungi jika ada kendala."], tim: ["Tim & role", "Atur siapa saja yang bisa masuk dashboard admin dan role-nya."] } };
+      a: { ulasan: ["Ulasan", "Penilaian customer untuk NEXORA. Pilih mana yang tampil di halaman Ulasan."], ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak & sosmed", "Atur kontak halaman Hubungi kami dan icon sosmed di footer."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola jasa dan paketnya. Tambah jasa baru atau hapus yang tidak dipakai."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Nama & QR Code", "Atur nama website dan QR Code Discord."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."], customer: ["Customer", "Data akun customer untuk menghubungi jika ada kendala."], tim: ["Tim & role", "Atur siapa saja yang bisa masuk dashboard admin dan role-nya."] } };
     var RDESC = { Founder: "Semua fitur dan satu-satunya yang bisa memberi atau mengubah role.", "Co-Founder": "Semua fitur dashboard admin, kecuali mengatur role.", Teknisi: "Dashboard, Ticket, dan Tagihan. Bisa membalas ticket dan membuat tagihan." };
     var RICO = { Founder: "award", "Co-Founder": "stars", Teknisi: "tools" };
     function roleDD(i, x) {
@@ -952,7 +932,7 @@
     function timPanel() {
       var S = STAFF(), meE = (ss("nx-email") || "").toLowerCase(), isF = arole() === "Founder";
       var cntR = {}; S.forEach(function (x) { cntR[x.role] = (cntR[x.role] || 0) + 1; });
-      var TL = { ringkasan: "Dashboard", tiket: "Ticket", tagihan: "Tagihan", customer: "Customer", ulasan: "Ulasan", jasa: "Jasa setup", hosting: "Hosting", tampilan: "Logo & tampilan", kontak: "Kontak", bayar: "Pembayaran", ekspor: "Ekspor data", tim: "Tim & role" };
+      var TL = { ringkasan: "Dashboard", tiket: "Ticket", tagihan: "Tagihan", customer: "Customer", ulasan: "Ulasan", jasa: "Jasa setup", hosting: "Hosting", tampilan: "Nama & QR Code", kontak: "Kontak", bayar: "Pembayaran", ekspor: "Ekspor data", tim: "Tim & role" };
       var leg = ROLES.map(function (r) { var pm = PERM[r], all = r !== "Teknisi"; return '<article class="rl-c ' + RC[r] + '"><div class="rl-t"><span class="rl-i"><i class="bi bi-' + RICO[r] + '"></i></span><div><b>' + r + '</b><small>' + (cntR[r] || 0) + ' anggota · ' + pm.length + ' menu</small></div></div><p>' + RDESC[r] + '</p><div class="rl-a"><span class="rl-k">Akses</span>' + (all ? '<span class="rl-ch all"><i class="bi bi-check2-all"></i>' + (r === "Founder" ? "Semua fitur + atur role" : "Semua fitur") + "</span>" : pm.map(function (k) { return '<span class="rl-ch">' + TL[k] + "</span>"; }).join("")) + "</div></article>"; }).join("");
       var rows = S.map(function (x, i) {
         var self = x.email === meE, fixed = x.role === "Founder" || self;
@@ -1110,7 +1090,7 @@
     }
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#lg-x,#qr-x,.sw,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-tab],[data-go],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-af],[data-of],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,#qr-x,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose(); if (dd.hasAttribute("data-rdd")) return trole({ dataset: { trole: dd.dataset.rdd }, value: d.v });
@@ -1158,8 +1138,6 @@
       if (d.edit !== undefined) return formPaket(tab, Number(d.edit));
       if (d.del !== undefined) { var H = HG(), r = tab === "hosting" ? H.hosting : H.jasa[hs], i = Number(d.del); return modal('<div class="mbox sm"><div class="mh"><b>Hapus paket?</b></div><div class="mb"><p class="muted">Paket "' + e(r[i].nama) + '" akan dihapus dari daftar.</p></div><div class="mf"><button class="btn ghost" data-x>Batal</button><button class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { r.splice(i, 1); sv("nx-harga", H); close(); toast("Paket dihapus"); draw(); }); }); }
       if (d.exp) { var b = new Blob([JSON.stringify(d.exp === "nx-harga" ? HG() : ld(d.exp, []), null, 2)], { type: "application/json" }), l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = d.exp + ".json"; l.click(); return; }
-      if (d.c) { setHex(d.c, "sw"); return; }
-      if (t.id === "lg-x") { root._T.logo = ""; $("#nvl").innerHTML = '<i class="bi bi-box2"></i>'; var pv = $("#upl-pv"); if (pv) pv.innerHTML = '<i class="bi bi-image"></i>'; var nm = $("#upl-name"); if (nm) nm.textContent = UPL_TXT; var tt = $("#upl-ttl"); if (tt) tt.textContent = "Unggah logo"; return; }
       if (t.id === "qr-x" || t.closest("#qr-x")) { return qrHapus(); }
       if (t.id === "sv-tmp") { sv("nx-tampilan", root._T); return toast("Tampilan tersimpan" + DEMOTXT); }
       if (t.id === "rs-tmp") { if (window.NX && NX.live) NX.setPut("qr", null).then(function () {}, liveFail); sv("nx-tampilan", null); try { localStorage.removeItem("nx-tampilan"); } catch (x2) {} delete mem["nx-tampilan"]; try { localStorage.removeItem("nx-qr"); } catch (x3) {} delete mem["nx-qr"]; tampilan(); return toast("Tampilan dikembalikan ke awal"); }
@@ -1171,8 +1149,7 @@
       if (t.matches("[data-q]")) { aq = t.value; PG.hist = 1; $(".tk-list", root).innerHTML = adm ? admList() : (tab === "riwayat" ? histList() : cList()); }
       if (t.matches(".cmp")) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; }
       if (t.name === "msg" && $("#cc")) $("#cc").textContent = t.value.length;
-      if ((t.id === "hx-t" || t.id === "hx-c") && root._T) { setHex(t.value, t.id === "hx-t" ? "t" : "c"); return; }
-      if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; if (t.dataset.t === "nama") $("#nvn").textContent = t.value; }
+      if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; }
     });
     root.addEventListener("keydown", function (ev) {
       var dd = ev.target.closest && ev.target.closest(".dd");
@@ -1188,12 +1165,11 @@
       if (t.closest("#f-buka")) bukaSync();
       if (t.matches("[data-trole]")) return trole(t);
       if (t.matches("[data-st]")) { if (!t.value) return; var a = TK(); var c0 = a.filter(function (y) { return y.id === sel; })[0]; if (c0 && c0.st === "Orderan Selesai") { toast("Status sudah Orderan Selesai dan tidak bisa diubah lagi"); return draw(); } a.forEach(function (x) { if (x.id === sel && x.st !== t.value) { x.st = t.value; x.m.push({ w: "s", t: "Status diubah: " + t.value, d: "Baru saja", h: hm() }); syncOrd(x); nt(x, "tk", "Status diperbarui", x.id + " · " + t.value); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
-      if (t.id === "lg" && t.files[0]) { setLogo(t.files[0]); t.value = ""; }
       if (t.id === "qr" && t.files[0]) { setQR(t.files[0]); t.value = ""; }
     });
     root.addEventListener("dragover", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.add("drag"); });
     root.addEventListener("dragleave", function (ev) { var b = ev.target.closest(".upl-box"); if (b) b.classList.remove("drag"); });
-    root.addEventListener("drop", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); (b.getAttribute("for") === "qr" ? setQR : setLogo)(ev.dataTransfer.files[0]); });
+    root.addEventListener("drop", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); if (b.getAttribute("for") === "qr") setQR(ev.dataTransfer.files[0]); });
     root.addEventListener("mousedown", function (ev) { if (ev.target.closest && ev.target.closest(".rvin label")) ev.preventDefault(); });
     root.addEventListener("input", function (ev) {
       var f = ev.target.closest("[data-rvsend]"); if (!f) return;
@@ -1246,8 +1222,8 @@
       return authInit(m, root);
     }
     var need = m === "admin" ? "admin" : "cust";
-    if (live && m === "admin" && !ss("nx-role")) return go("nexora-admin-access.html" + (NX.user ? "?err=notstaff" : ss("nx-autherr") ? "?err=auth" : ""));
-    if (ss("nx-role") !== need) return go((m === "admin" ? "nexora-admin-access.html" : "masuk.html") + (live && ss("nx-autherr") ? "?err=auth" : ""));
+    if (live && m === "admin" && !ss("nx-role")) return go("nexora-admin-access.html" + (NX.sessEnd ? "?err=expired" : NX.user ? "?err=notstaff" : ss("nx-autherr") ? "?err=auth" : ""));
+    if (ss("nx-role") !== need) return go((m === "admin" ? "nexora-admin-access.html" : "masuk.html") + (live && NX.staffBlock ? "?err=staff" : live && NX.sessEnd ? "?err=expired" : live && ss("nx-autherr") ? "?err=auth" : ""));
     if (m === "admin") {
       if (live) ss("nx-arole", NX.role);
       else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }

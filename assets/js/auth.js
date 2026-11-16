@@ -51,26 +51,49 @@
     });
   }
   function clearSession() {
-    NX.user = null; NX.profile = null; NX.role = ""; NX.staff = []; NX.identities = [];
+    NX.user = null; NX.profile = null; NX.role = ""; NX.staff = []; NX.identities = []; lsSet(STAMP, "");
     ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); }); NX.tk = []; NX.users = {}; NX.cat = null; NX.set = {};
   }
   function hasId(p) { return NX.identities.some(function (i) { return i.provider === p; }); }
+
+  /* ===== Batas masa login =====
+     Login hanya berlaku sampai config.js > sessionDays (bawaan 7 hari). Lewat itu, sesi di browser ini otomatis
+     di-logout (akun dan datanya TIDAK dihapus) dan pengguna harus masuk lagi lewat Google/Discord.
+     Hitungan mulai dari saat login lewat tombol Google/Discord, bukan dari kunjungan terakhir. */
+  var SESS_DAYS = Number(C.sessionDays) > 0 ? Number(C.sessionDays) : 7, SESS_MS = SESS_DAYS * 864e5, STAMP = "nx-login-at", PEND = "nx-login-pend";
+  NX.sessionDays = SESS_DAYS; NX.sessEnd = false; NX.staffBlock = false;
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (x) { return null; } }
+  function lsSet(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (x) {} }
+  function sessionExpired() {
+    var now = Date.now(), at = Number(lsGet(STAMP)) || 0;
+    if (lsGet(PEND) && (BACKCODE || OERR)) { lsSet(PEND, ""); if (BACKCODE) { at = now; lsSet(STAMP, String(at)); } }
+    if (!at) { at = now; lsSet(STAMP, String(at)); } /* sesi lama sebelum fitur ini ada: mulai dihitung dari sekarang */
+    return now - at > SESS_MS;
+  }
 
   function load(user, mode) {
     NX.user = user;
     return Promise.all([
       sb.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       sb.auth.getUserIdentities(),
-      mode === "admin" ? sb.rpc("claim_staff") : Promise.resolve({ data: "" }),
+      sb.rpc("claim_staff"),
       mode === "admin" ? sb.from("staff").select("*").order("dibuat", { ascending: true }) : Promise.resolve({ data: [] })
     ]).then(function (r) {
       if (r[0].error) fail(r[0].error);
       var um = user.user_metadata || {};
       NX.profile = r[0].data || { nama: um.full_name || um.name || "", email: user.email || "" };
       NX.identities = (r[1].data && r[1].data.identities) || [];
-      NX.err = r[2].error ? r[2].error.message : "";
-      if (NX.err) console.error("claim_staff:", r[2].error);
+      NX.err = mode === "admin" && r[2].error ? r[2].error.message : "";
+      if (r[2].error) console.error("claim_staff:", r[2].error);
       NX.role = mode === "admin" && !r[2].error && r[2].data ? r[2].data : "";
+      /* Akun tim (Founder / Co-Founder / Teknisi) tidak boleh dipakai di panel customer. Sesinya TIDAK di-logout,
+         karena sesi yang sama dipakai dashboard admin; panel customer saja yang menolaknya. */
+      NX.staffBlock = mode !== "admin" && !r[2].error && !!r[2].data;
+      if (NX.staffBlock) {
+        ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); });
+        NX.tk = []; NX.users = {}; NX.cat = null; NX.set = {};
+        return null;
+      }
       var P = NX.profile;
       // isi otomatis username Discord bila belum ada
       if (!P.discord_username && hasId("discord")) {
@@ -106,7 +129,11 @@
   NX.ready = function (mode, force) {
     if (NX._p && !force) return NX._p;
     NX._p = NX.init.then(function () { return sb.auth.getSession(); }).then(function (r) {
-      var s = r.data && r.data.session;
+      var s = r.data && r.data.session; NX.sessEnd = false;
+      if (s && sessionExpired()) {
+        NX.sessEnd = true;
+        return sb.auth.signOut({ scope: "local" }).then(clearSession, clearSession).then(function () { return null; });
+      }
       if (!s) { clearSession(); if (BACKCODE && !sessionStorage.getItem("nx-autherr")) setErr("Sesi login tidak terbentuk setelah kembali dari Google/Discord."); return null; }
       var pu = sb.auth.getUser().then(function (u) { return u; }, function (e) { return { error: e }; });
       var pl = load(s.user, mode).then(function () { return null; }, function (e) { return e; });
@@ -128,6 +155,7 @@
 
   NX.login = function (provider, mode) {
     var to = mode === "alogin" ? "nexora-admin.html" : "dashboard.html";
+    lsSet(PEND, "1");
     return sb.auth.signInWithOAuth({ provider: PROV[provider], options: { redirectTo: sibling(to) } }).then(function (r) { if (r.error) fail(r.error); });
   };
   NX.logout = function () { return sb.auth.signOut().then(clearSession, clearSession); };
@@ -379,11 +407,20 @@
 
   function startLive() {
     if (NX._live) return; NX._live = true;
+    function toLogin() {
+      if (document.querySelector("[data-dash]")) location.href = (NX._mode === "admin" ? "nexora-admin-access.html" : "masuk.html") + "?err=expired";
+      else location.reload();
+    }
+    function checkExpire() {
+      if (!NX.user || !sessionExpired()) return false;
+      NX.sessEnd = true; NX.logout().then(toLogin, toLogin); return true;
+    }
     var t, deb = function () { clearTimeout(t); t = setTimeout(function () { NX.tkReload().then(function (ch) { if (ch && window.nxRemote) window.nxRemote(); }, function () {}); }, 250); };
     try { sb.channel("nx-tiket").on("postgres_changes", { event: "*", schema: "public", table: "tickets" }, deb).on("postgres_changes", { event: "*", schema: "public", table: "ticket_messages" }, deb).subscribe(); } catch (x) {}
-    setInterval(function () { if (!document.hidden && NX.user) deb(); }, 20000);
+    setInterval(function () { if (checkExpire()) return; if (!document.hidden && NX.user) deb(); }, 20000);
     document.addEventListener("visibilitychange", function () {
       if (document.hidden || !NX.user) return;
+      if (checkExpire()) return;
       Promise.all([NX.catLoad().catch(function () { return false; }), NX.setLoad().catch(function () { return false; })]).then(function (c) { if ((c[0] || c[1]) && window.nxRemote) window.nxRemote(); });
     });
   }
