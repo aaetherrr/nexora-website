@@ -627,7 +627,7 @@
     }
     function tampilan() {
       var T0 = ld("nx-tampilan", {}) || {}, T = { nama: String(T0.nama || "NEXORA") };
-      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Nama situs</b><p class="muted">Tampil di navbar, footer, dan judul tab browser.</p><label class="fld" style="margin-top:12px"><span>Nama situs</span><input class="inp" data-t="nama" maxlength="40" value="' + e(T.nama) + '"></label><p class="hint tmp-dc"><i class="bi bi-code-slash"></i> Logo, warna aksen, dan teks halaman utama diubah manual lewat kode: <code>assets/img/logo.png</code>, <code>assets/css/style.css</code>, dan <code>index.html</code>.</p><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="tmp-lnk" data-tab="kontak">Kontak</button>.</p></div></div><div class="tcol">' + qrHTML() + '</div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
+      $("#p-tampilan").innerHTML = '<div class="tmp"><div class="tcol"><div class="dcard"><b>Nama situs</b><p class="muted">Tampil di navbar, footer, dan judul tab browser.</p><label class="fld" style="margin-top:12px"><span>Nama situs</span><input class="inp" data-t="nama" maxlength="40" value="' + e(T.nama) + '"></label><p class="hint tmp-dc"><i class="bi bi-discord"></i> Link Discord (tombol navbar, footer, dan halaman Kontak) diatur di tab <button type="button" class="tmp-lnk" data-tab="kontak">Kontak</button>.</p></div></div><div class="tcol">' + qrHTML() + '</div></div><div class="tmp-a"><button class="btn" id="sv-tmp">Simpan perubahan</button><button class="btn ghost" id="rs-tmp">Reset</button></div>';
       root._T = T;
     }
     /* ===== Tagihan ===== */
@@ -646,7 +646,8 @@
         { id: "INV-3002", tk: "T-1040", user: "Rizky", item: "Server Gaming", siklus: "Sekali bayar", dasar: 35000, adj: "none", pct: 0, alasan: "", total: 35000, jatuh: ad(-3), st: "Belum dibayar", dibuat: ad(-10), by: "Admin NEXORA", ts: 0, ticket: "", log: lg },
         { id: "INV-3001", tk: "T-1031", user: "__me", item: "Vanilla Starter", siklus: "Sekali bayar", dasar: 40000, adj: "none", pct: 0, alasan: "", total: 40000, jatuh: ad(-20), st: "Lunas", dibuat: ad(-25), by: "Admin NEXORA", ts: 0, ticket: "", log: lg.concat([{ a: "Ditandai lunas", by: "Admin NEXORA", at: "03 Okt 2026, 09:12" }]) }];
     }
-    function BL() { return ld("nx-bill", seedB()); }
+    /* Mode live: tidak ada tagihan contoh (seedB hanya untuk mode demo); sisa tagihan contoh yang sempat tersimpan di browser disaring. */
+    function BL() { if (window.NX && NX.live) return ld("nx-bill", []).filter(function (b) { return !(b.ts === 0 && /^INV-300[123]$/.test(b.id)); }); return ld("nx-bill", seedB()); }
     function bj(b) { return b.jenis || (b.siklus === "Sekali bayar" ? "bill" : "hosting"); }
     function cpy(t) { if (navigator.clipboard) navigator.clipboard.writeText(t).catch(function () {}); else { var x = document.createElement("textarea"); x.value = t; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); } catch (e) {} x.remove(); } }
     function bs(b) { return b.st === "Belum dibayar" && dleft(b.jatuh) < 0 ? "Terlambat" : b.st; }
