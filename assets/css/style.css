@@ -376,7 +376,7 @@ section>.wrap>h2{font-size:clamp(1.8rem,3.6vw,2.5rem);margin-bottom:12px}
 .cta-sec{padding:72px 0 88px}
 .cta-card{border:1px solid var(--line);border-radius:28px;background:linear-gradient(135deg,var(--accent-soft),var(--surface) 70%);transition:box-shadow .35s}
 @media (hover:hover){.cta-card:hover{box-shadow:0 26px 56px -42px rgba(40,25,90,.45)}}
-.cta-card::before{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;padding:1px;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--accent) 70%,transparent),transparent 70%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.cta-card::before{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;padding:1px;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--accent) 70%,transparent),transparent 70%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude}
 @media (hover:hover){.cta-card:hover::before{opacity:1}}
 .cta-card>*{position:relative;z-index:1}
 .cta-card>.blob{position:absolute;z-index:0}
