@@ -965,3 +965,33 @@ html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:
 .fm-sso{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:.9rem}
 .fm-sso i{color:var(--accent)}
 .fm-sub{text-align:center;color:var(--muted);font-size:.8rem}
+
+
+/* ===== akun di navbar publik: hanya foto profil + menu ===== */
+.acct{position:relative;flex:none}
+.acct-b{position:relative;display:grid;place-items:center;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:var(--accent-soft);color:var(--text);font:inherit;font-weight:700;font-size:1rem;cursor:pointer;transition:box-shadow .2s,transform .2s}
+.acct-b:hover,.acct-b[aria-expanded="true"]{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.acct-b:active{transform:scale(.95)}
+.acct-b:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.acct-i{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.acct-on{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#2fbf71;border:2px solid var(--bg)}
+.acm{position:absolute;right:0;top:calc(100% + 12px);z-index:80;width:min(290px,calc(100vw - 24px));padding:8px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:0 26px 52px -20px rgba(25,15,60,.5);animation:acmin .22s cubic-bezier(.22,1,.36,1) both;transform-origin:top right}
+.acm[hidden]{display:none}
+@keyframes acmin{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.acm-h{display:flex;align-items:center;gap:12px;padding:10px}
+.acm-av{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:50%;background:var(--accent-soft);font-weight:700;font-size:1.1rem;overflow:hidden}
+.acm-n{min-width:0;display:grid;gap:3px}
+.acm-n b{font-size:.98rem;line-height:1.25;overflow-wrap:anywhere}
+.acm-n small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.8rem;line-height:1.3}
+.acm-n small i{flex:none;font-size:.85rem}
+.acm-n small span{min-width:0;overflow-wrap:anywhere}
+.acm-r{display:inline-flex;align-items:center;gap:5px;justify-self:start;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:.72rem;font-weight:600}
+.acm-sep{height:1px;margin:6px 4px;background:var(--line)}
+.acm-a{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border:0;border-radius:11px;background:transparent;color:var(--text);font:inherit;font-size:.92rem;font-weight:500;text-align:left;text-decoration:none;cursor:pointer;transition:background .15s}
+.acm-a:hover,.acm-a:focus-visible{background:var(--accent-soft);outline:0}
+.acm-a i{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:1rem}
+.acm-o{color:#e5484d}
+.acm-o i{background:color-mix(in srgb,#e5484d 12%,transparent);color:#e5484d}
+.acm-o:hover,.acm-o.ask{background:color-mix(in srgb,#e5484d 10%,transparent)}
+@media (max-width:480px){.acct-b{width:40px;height:40px}.acm{right:-4px}}
+@media (prefers-reduced-motion:reduce){.acm{animation:none}}

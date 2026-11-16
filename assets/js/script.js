@@ -842,14 +842,59 @@ function posisiMenu(m) {
   if (dx) m.style.translate = dx + "px 0";
 }
 
+function sesInfo() {
+  let role = "", name = "", email = "", av = "", ar = "";
+  try { const w = window.__nxS || {}, g = function (k) { return w[k] || sessionStorage.getItem(k) || ""; }; role = g("nx-role"); name = g("nx-name"); email = g("nx-email"); av = g("nx-avatar"); ar = g("nx-arole"); } catch (x) {}
+  if (!role) {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i); if (!/^sb-.+-auth-token$/.test(k)) continue;
+        const j = JSON.parse(localStorage.getItem(k) || "null"), u = j && (j.user || (j.currentSession && j.currentSession.user)); if (!u) continue;
+        const m = u.user_metadata || {}; role = "cust"; name = name || m.full_name || m.name || (u.email || "").split("@")[0]; email = email || u.email || ""; av = av || m.avatar_url || m.picture || ""; break;
+      }
+    } catch (x) {}
+  }
+  return { role: role, name: name, email: email, av: /^https:\/\/(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)\/[^\s]{1,500}$/.test(av) ? av : "", ar: ar };
+}
+
+/* Keluar dari halaman publik (tanpa library Supabase): cabut sesi di server bila bisa, lalu bersihkan sesi di browser. */
+function keluarAkun() {
+  const C = window.NX_CONFIG || {};
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i); if (!/^sb-.+-auth-token$/.test(k)) continue;
+      let tok = ""; try { const j = JSON.parse(localStorage.getItem(k) || "null"); tok = (j && (j.access_token || (j.currentSession && j.currentSession.access_token))) || ""; } catch (x) {}
+      if (tok && C.supabaseUrl && C.supabaseAnonKey) { try { fetch(C.supabaseUrl + "/auth/v1/logout", { method: "POST", keepalive: true, headers: { apikey: C.supabaseAnonKey, Authorization: "Bearer " + tok } }).catch(function () {}); } catch (x) {} }
+      localStorage.removeItem(k);
+    }
+  } catch (x) {}
+  try { ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { sessionStorage.removeItem(k); if (window.__nxS) delete window.__nxS[k]; }); } catch (x) {}
+  location.reload();
+}
+
 function pasangAkun() {
   const b = document.querySelector(".login-btn"); if (!b || b.id === "nav-logout") return;
-  let role = "", name = "";
-  try { const w = window.__nxS || {}; role = w["nx-role"] || sessionStorage.getItem("nx-role") || ""; name = w["nx-name"] || sessionStorage.getItem("nx-name") || ""; } catch (x) {}
-  if (!role) return;
-  b.href = ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html");
-  b.classList.add("on"); b.setAttribute("aria-label", "Akun: " + (name || "Dashboard"));
-  const s = b.querySelector("span"); if (s) s.textContent = (name || "Akun").split(" ")[0].slice(0, 12);
+  const I = sesInfo(); if (!I.role) return;
+  const dash = ROOT + (I.role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html"), nm = I.name || (I.role === "admin" ? "Admin" : "Customer"), ini = escK(nm.trim().charAt(0).toUpperCase() || "?");
+  const img = function (c) { return I.av ? '<img class="' + c + '" src="' + escK(I.av) + '" alt="" referrerpolicy="no-referrer" loading="lazy">' : ini; };
+  const w = document.createElement("div"); w.className = "acct";
+  w.innerHTML = '<button type="button" class="acct-b" aria-haspopup="true" aria-expanded="false" aria-label="Akun: ' + escK(nm) + '" title="' + escK(nm) + '">' + img("acct-i") + '<span class="acct-on" aria-hidden="true"></span></button>' +
+    '<div class="acm" role="menu" hidden><div class="acm-h"><span class="acm-av">' + img("acct-i") + '</span><div class="acm-n"><b>' + escK(nm) + '</b>' + (I.email ? '<small><i class="bi bi-envelope"></i><span>' + escK(I.email) + '</span></small>' : "") + (I.role === "admin" ? '<span class="acm-r"><i class="bi bi-shield-check"></i>' + escK(I.ar || "Tim NEXORA") + '</span>' : "") + '</div></div><div class="acm-sep"></div>' +
+    '<a class="acm-a" role="menuitem" href="' + dash + '"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>' +
+    '<button type="button" class="acm-a acm-o" role="menuitem"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></div>';
+  b.replaceWith(w);
+  const btn = w.querySelector(".acct-b"), mn = w.querySelector(".acm"), out = w.querySelector(".acm-o");
+  w.querySelectorAll("img.acct-i").forEach(function (im) { im.addEventListener("error", function () { im.replaceWith(document.createTextNode(ini)); }); });
+  function tutup() { mn.hidden = true; btn.setAttribute("aria-expanded", "false"); out.classList.remove("ask"); out.querySelector("span").textContent = "Logout"; }
+  function buka() { mn.hidden = false; btn.setAttribute("aria-expanded", "true"); posisiMenu(mn); }
+  btn.addEventListener("click", function (ev) { ev.stopPropagation(); mn.hidden ? buka() : tutup(); });
+  out.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    if (!out.classList.contains("ask")) { out.classList.add("ask"); out.querySelector("span").textContent = "Klik lagi untuk keluar"; return; }
+    keluarAkun();
+  });
+  document.addEventListener("click", function (ev) { if (!w.contains(ev.target)) tutup(); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !mn.hidden) { tutup(); btn.focus(); } });
 }
 
 /* QR Code dari dashboard admin (demo: disimpan di browser yang sama) */
