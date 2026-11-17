@@ -498,6 +498,28 @@ function pasangMarquee() {
     const set = '<div class="marq-set">' + kartu + kartu + "</div>";
     m.innerHTML = '<div class="marq-track">' + set + set.replace('class="marq-set"', 'class="marq-set" aria-hidden="true"') + "</div>";
     m.style.setProperty("--dur", (items.length * (PLUG_DETIK[m.dataset.marq] || 5)) + "s");
+
+    // Perlambat animasi secara bertahap saat hover, lalu percepat lagi saat pointer keluar.
+    const track = m.querySelector(".marq-track");
+    let speedFrame = 0;
+    function ubahKecepatan(target) {
+      if (speedFrame) cancelAnimationFrame(speedFrame);
+      const anim = track.getAnimations()[0];
+      if (!anim) return;
+      const awal = anim.playbackRate;
+      const mulai = performance.now();
+      const durasi = 1500;
+      function langkah(sekarang) {
+        const t = Math.min(1, (sekarang - mulai) / durasi);
+        const halus = t * t * (3 - 2 * t);
+        anim.playbackRate = awal + (target - awal) * halus;
+        if (t < 1) speedFrame = requestAnimationFrame(langkah);
+        else speedFrame = 0;
+      }
+      speedFrame = requestAnimationFrame(langkah);
+    }
+    m.addEventListener("pointerenter", function () { ubahKecepatan(0); });
+    m.addEventListener("pointerleave", function () { ubahKecepatan(1); });
     if (!ikon) return;
     items.forEach(function (n) {
       const s = slugPlugin(n);
