@@ -17,7 +17,7 @@ admin/                     area admin
 assets/
   css/  style.css, dash.css
   js/   script.js, dash.js
-  img/  logo.png, qr-discord.png, plugin/, paket/
+  img/  logo.png, plugin/, paket/
 ```
 
 Semua link antar-file memakai path relatif, jadi folder ini bisa dibuka dari mana saja
@@ -26,6 +26,6 @@ pakai pola yang sama dengan `pages/faq.html`: `../assets/...` untuk css/js/gamba
 `../index.html` untuk link ke beranda.
 
 ## Catatan update 16 Nov 2026
-- Dashboard admin > "Nama & QR Code": hanya nama situs dan QR Code Discord yang diatur dari dashboard. Logo = ganti file `assets/img/logo.png`; warna aksen = edit `assets/css/style.css`; teks halaman utama = edit `index.html`.
+- Dashboard admin > "Nama situs": nama situs diatur dari dashboard. Logo = ganti file `assets/img/logo.png`; warna aksen = edit `assets/css/style.css`; teks halaman utama = edit `index.html`.
 - Akun yang terdaftar sebagai tim (Founder / Co-Founder / Teknisi) tidak bisa masuk panel customer.
 - Masa login dibatasi `sessionDays` di `assets/js/config.js` (bawaan 7 hari). Lewat itu otomatis logout dan harus login ulang; akun tidak dihapus.

@@ -4,8 +4,8 @@
 --
 -- Isi:
 --   1. catalog_jasa & catalog_paket : daftar jasa setup dan paket (jasa + hosting)
---   2. site_settings                : tampilan, kontak, sosmed, rekening pembayaran, QR
---   3. Bucket Storage "situs"       : logo, QR Code, foto paket (publik dibaca, hanya Founder/Co-Founder menulis)
+--   2. site_settings                : tampilan, kontak, sosmed, rekening pembayaran
+--   3. Bucket Storage "situs"       : logo dan foto paket (publik dibaca, hanya Founder/Co-Founder menulis)
 --   4. public_site()                : satu panggilan untuk halaman publik (tanpa login)
 --   5. Data awal                    : sama persis dengan daftar harga yang tampil sekarang
 --
@@ -119,7 +119,7 @@ create policy set_tulis on public.site_settings for insert to authenticated with
 create policy set_ubah  on public.site_settings for update to authenticated using (public.can_edit_site()) with check (public.can_edit_site());
 create policy set_hapus on public.site_settings for delete to authenticated using (public.can_edit_site());
 
--- ---------- 3. Storage: bucket "situs" (logo, QR, foto paket) ----------
+-- ---------- 3. Storage: bucket "situs" (logo dan foto paket) ----------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('situs', 'situs', true, 2097152, array['image/png', 'image/jpeg', 'image/webp'])
 on conflict (id) do update set public = true, file_size_limit = 2097152, allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp'];
