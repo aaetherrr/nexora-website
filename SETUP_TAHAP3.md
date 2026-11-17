@@ -1,7 +1,7 @@
 # NEXORA - Tahap 3 (bagian 1): katalog dan pengaturan situs di Supabase
 
 Setelah ini, semua yang diubah admin di dashboard (jasa, paket, harga, hosting, logo, nama, warna,
-teks halaman utama, kontak, sosmed, QR Discord) tersimpan di database dan langsung tampil di
+teks halaman utama, kontak, sosmed) tersimpan di database dan langsung tampil di
 website untuk semua pengunjung. Sebelumnya hanya tersimpan di browser admin.
 
 ## Langkah (sekali saja)
@@ -24,8 +24,8 @@ website untuk semua pengunjung. Sebelumnya hanya tersimpan di browser admin.
 |---|---|
 | Daftar jasa setup (nama, ikon, urutan) | `catalog_jasa` |
 | Paket jasa dan paket hosting (harga, isi, foto, populer) | `catalog_paket` |
-| Tampilan, kontak, sosmed, rekening pembayaran, QR | `site_settings` (kunci: tampilan, kontak, sosmed, bayar, qr) |
-| Logo, QR Code, foto paket | Storage bucket `situs` (PNG/JPG/WEBP, maks 2 MB) |
+| Tampilan, kontak, sosmed, rekening pembayaran | `site_settings` (kunci: tampilan, kontak, sosmed, bayar) |
+| Logo dan foto paket | Storage bucket `situs` (PNG/JPG/WEBP, maks 2 MB) |
 
 Rekening pembayaran (`bayar`) tidak ikut ke halaman publik. Hanya user yang login yang bisa membacanya.
 
@@ -45,5 +45,5 @@ Rekening pembayaran (`bayar`) tidak ikut ke halaman publik. Hanya user yang logi
 |---|---|
 | Toast "Katalog belum termuat dari database" | 009 belum dijalankan, atau ada error saat Run. Jalankan ulang 009 lalu muat ulang halaman |
 | Toast "Tidak diizinkan..." | Akun bukan Founder/Co-Founder |
-| Upload logo/QR/foto gagal | Bucket `situs` belum ada atau file lebih dari 2 MB / bukan PNG, JPG, WEBP |
+| Upload logo/foto gagal | Bucket `situs` belum ada atau file lebih dari 2 MB / bukan PNG, JPG, WEBP |
 | Halaman publik masih menampilkan harga lama | Buka ulang tab / muat ulang sekali. Salinan lama di browser diperbarui otomatis |

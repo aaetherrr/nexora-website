@@ -902,19 +902,6 @@ function pasangAkun() {
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !mn.hidden) { tutup(); btn.focus(); } });
 }
 
-/* QR Code dari dashboard admin (demo: disimpan di browser yang sama) */
-function pasangQr() {
-  const q = window.NXS ? NXS.qr() : "";
-  if (!q) return;
-  document.querySelectorAll(".qr-box").forEach(function (box) {
-    let im = box.querySelector("img");
-    if (!im) { im = document.createElement("img"); im.alt = "QR Discord NEXORA"; box.insertBefore(im, box.firstChild); }
-    im.removeAttribute("onerror"); im.onerror = null;
-    if (im.getAttribute("src") !== q) im.src = q;
-    box.classList.remove("empty");
-  });
-}
-
 
 /* ===== Footer: Ikuti kami (diatur admin: nx-sosmed) ===== */
 const SOSMED_ICON = { instagram: "instagram", tiktok: "tiktok", youtube: "youtube", facebook: "facebook", x: "twitter-x", discord: "discord", telegram: "telegram", whatsapp: "whatsapp", email: "envelope", lainnya: "link-45deg" };

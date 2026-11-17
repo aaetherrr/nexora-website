@@ -493,15 +493,6 @@ form.bkf{grid-template-columns:minmax(0,1fr)}
 .mbox .upl-pv{width:60px;height:60px}
 .pc{flex-wrap:wrap}
 
-/* ===== QR Code (admin) ===== */
-.qr-adm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}
-.qr-pvw{display:grid;justify-items:center;gap:6px;text-align:center}
-.qr-pvb{display:grid;place-items:center;width:132px;height:132px;padding:8px;border-radius:16px;background:#fff;border:1px solid var(--line)}
-.qr-pvb img{width:100%;height:100%;object-fit:contain}
-.qr-pvb small{color:#645c78}
-.upl>.btn[hidden]{display:none}
-@media (max-width:640px){.qr-adm{grid-template-columns:minmax(0,1fr)}}
-
 /* ===== v6: sidebar ala referensi, drawer HP, dashboard customer ===== */
 .dash{--sw:248px}
 .dash.mini{--sw:76px}
