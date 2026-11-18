@@ -2245,3 +2245,6 @@ main.lg.lg-cust{min-height:100vh;min-height:100dvh;padding-top:calc(var(--lgnav)
   .bc ol{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.bc ol::-webkit-scrollbar{display:none}
   .bc li{flex:none}.bc-l,.bc-c{padding:7px 11px}
 }
+
+/* pesan info (bukan error) di halaman masuk */
+.err.info{color:var(--accent)}
