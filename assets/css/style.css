@@ -1104,3 +1104,32 @@ body:not(:has(.dash)) .topbar.open{background:var(--bg)}
 .ul-dist em{font-style:normal;text-align:right}
 @media (max-width:560px){.ul-sumcard{grid-template-columns:1fr;gap:18px;width:100%;padding:20px}.ul-dist{min-width:0}}
 .ul-page .ul-grid:empty{display:none}
+
+/* ===== v20: tombol Masuk navbar desktop lebih besar & jelas ===== */
+@media (min-width:1101px){
+  .topbar .login-btn{padding:13px 28px;font-size:1.02rem;font-weight:600;border-radius:14px;gap:9px;background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff);box-shadow:none;transition:filter .2s}
+  .topbar .login-btn i{font-size:1.2rem}
+  .topbar .login-btn:hover{translate:none;filter:brightness(1.08);box-shadow:none}
+  .topbar .login-btn.on{padding:11px 22px 11px 18px}
+}
+
+/* ===== v20: card rating halaman Ulasan di tengah & lebih besar ===== */
+.ul-sumcard{margin-left:auto;margin-right:auto;gap:44px;padding:34px 48px;border-radius:26px;justify-items:center}
+.ul-sumcard .ul-avg{font-size:4rem}
+.ul-sumcard .ul-sl{justify-items:center;text-align:center;gap:10px;min-width:190px}
+.ul-sumcard .ul-sl small{font-size:.98rem}
+.ul-sumcard .ul-st{gap:4px}
+.ul-sumcard .ul-st i{width:28px;height:28px}
+.ul-sumcard .ul-dist{gap:10px;min-width:min(360px,100%);width:100%}
+.ul-sumcard .ul-dist li{grid-template-columns:14px 18px minmax(140px,1fr) 34px;gap:10px;font-size:1rem}
+.ul-sumcard .ul-dstar svg{width:18px;height:18px}
+.ul-sumcard .ul-bar{height:10px;border-radius:10px}
+.ul-sumcard .ul-bar s{border-radius:10px}
+@media (max-width:640px){.ul-sumcard{grid-template-columns:1fr;gap:24px;padding:26px 20px;width:100%}.ul-sumcard .ul-avg{font-size:3.4rem}.ul-sumcard .ul-st i{width:26px;height:26px}.ul-sumcard .ul-dist{min-width:0}.ul-sumcard .ul-dist li{grid-template-columns:14px 18px minmax(0,1fr) 30px}}
+
+/* ===== v20b: card rating lebih panjang ke samping ===== */
+@media (min-width:641px){
+  .ul-sumcard{width:min(940px,100%);grid-template-columns:minmax(200px,auto) minmax(0,1fr);gap:64px;padding:34px 56px}
+  .ul-sumcard .ul-dist{min-width:0;max-width:none}
+  .ul-sumcard .ul-dist li{grid-template-columns:14px 18px minmax(0,1fr) 40px}
+}
