@@ -1001,3 +1001,31 @@ html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:
 .nv-out{color:#e5484d;border-color:color-mix(in srgb,#e5484d 40%,var(--line))}
 .nv-out:hover,.nv-out.ask{background:color-mix(in srgb,#e5484d 12%,transparent);color:#e5484d;border-color:#e5484d}
 .nv-out i{color:inherit}
+
+
+/* ===== navbar transparan di paling atas, solid saat di-scroll ===== */
+body:not(:has(.dash)) .topbar{transition:background-color .35s ease,border-color .25s,box-shadow .25s,-webkit-backdrop-filter .35s,backdrop-filter .35s}
+body:not(:has(.dash)) .topbar:not(.scrolled):not(.open){background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+body:not(:has(.dash)) .topbar.scrolled{background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+body:not(:has(.dash)) .topbar.open{background:var(--bg)}
+
+/* ===== menu tab (Setup Minecraft / Discord / ...) bisa digeser kiri-kanan ===== */
+.tabs-box{position:relative;margin:0 0 18px}
+.tabs-box>.tabs{position:relative;flex-wrap:nowrap;margin:0;padding:6px 2px;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;scroll-snap-type:x proximity;scroll-padding:0 24px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab}
+.tabs-box>.tabs::-webkit-scrollbar{display:none}
+.tabs-box>.tabs.drag{scroll-behavior:auto;scroll-snap-type:none;cursor:grabbing;user-select:none}
+.tabs-box>.tabs .tab{flex:none;white-space:nowrap;scroll-snap-align:center;transition:background-color .25s,color .25s,border-color .25s}
+.tabs-box>.tabs .tab:hover{color:var(--text)}
+.tabs-box>.tabs .tab[aria-selected="true"]:hover{color:var(--on-accent)}
+.tabs-box::before,.tabs-box::after{content:"";position:absolute;top:0;bottom:0;z-index:2;width:44px;pointer-events:none;opacity:0;transition:opacity .3s}
+.tabs-box::before{left:0;background:linear-gradient(90deg,var(--bg) 20%,transparent)}
+.tabs-box::after{right:0;background:linear-gradient(270deg,var(--bg) 20%,transparent)}
+.tabs-box.can:not(.at-start)::before,.tabs-box.can:not(.at-end)::after{opacity:1}
+.tabs-b{position:absolute;z-index:3;top:50%;display:none;place-items:center;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--text);font-size:.95rem;box-shadow:0 10px 22px -10px rgba(40,25,90,.5);cursor:pointer;transform:translateY(-50%) scale(.85);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s cubic-bezier(.22,1,.36,1),background .2s,color .2s,border-color .2s}
+.tabs-b.prev{left:0}.tabs-b.next{right:0}
+.tabs-box.can .tabs-b{display:grid}
+.tabs-box.can:not(.at-start) .tabs-b.prev,.tabs-box.can:not(.at-end) .tabs-b.next{opacity:1;pointer-events:auto;transform:translateY(-50%) scale(1)}
+.tabs-b:hover{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tabs-b:active{transform:translateY(-50%) scale(.92)!important}
+@media (hover:none),(max-width:700px){.tabs-b{display:none!important}.tabs-box::before,.tabs-box::after{width:28px}}
+@media (prefers-reduced-motion:reduce){.tabs-box>.tabs{scroll-behavior:auto}}

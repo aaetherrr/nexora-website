@@ -236,6 +236,41 @@ function pasangMenu() {
   });
 }
 
+/* Menu tab (Setup Minecraft, Setup Discord, dst.): kalau banyak, bisa digeser kiri-kanan */
+function pasangTabsGeser() {
+  document.querySelectorAll(".tabs").forEach(function (tabs) {
+    if (tabs.parentNode.classList.contains("tabs-box")) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, beh = reduce ? "auto" : "smooth";
+    const box = document.createElement("div"); box.className = "tabs-box";
+    box.innerHTML = '<button type="button" class="tabs-b prev" aria-label="Geser menu ke kiri" tabindex="-1"><i class="bi bi-chevron-left"></i></button><button type="button" class="tabs-b next" aria-label="Geser menu ke kanan" tabindex="-1"><i class="bi bi-chevron-right"></i></button>';
+    tabs.parentNode.insertBefore(box, tabs); box.appendChild(tabs);
+    const prev = box.querySelector(".prev"), next = box.querySelector(".next");
+    function ukur() {
+      const max = tabs.scrollWidth - tabs.clientWidth, x = tabs.scrollLeft, bisa = max > 4;
+      box.classList.toggle("can", bisa); box.classList.toggle("at-start", x < 4); box.classList.toggle("at-end", x > max - 4);
+      prev.disabled = x < 4; next.disabled = x > max - 4;
+    }
+    function tengah(t, mode) { if (!t) return; const to = t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2; tabs.scrollTo({ left: Math.max(0, to), behavior: mode || beh }); }
+    prev.addEventListener("click", function () { tabs.scrollBy({ left: -tabs.clientWidth * 0.7, behavior: beh }); });
+    next.addEventListener("click", function () { tabs.scrollBy({ left: tabs.clientWidth * 0.7, behavior: beh }); });
+    let tick = false; tabs.addEventListener("scroll", function () { if (!tick) { tick = true; requestAnimationFrame(function () { tick = false; ukur(); }); } }, { passive: true });
+    /* tab yang dipilih otomatis digeser ke tengah */
+    tabs.addEventListener("click", function (ev) { const t = ev.target.closest(".tab"); if (t && !tabs.classList.contains("drag")) setTimeout(function () { tengah(t); }, 30); });
+    /* seret dengan mouse */
+    let down = false, sx = 0, sl = 0, moved = 0, pid = null;
+    tabs.addEventListener("pointerdown", function (ev) { if (ev.pointerType !== "mouse" || ev.button !== 0) return; down = true; moved = 0; sx = ev.clientX; sl = tabs.scrollLeft; pid = ev.pointerId; });
+    window.addEventListener("pointermove", function (ev) {
+      if (!down) return; const dx = ev.clientX - sx; moved = Math.max(moved, Math.abs(dx));
+      if (moved > 5 && tabs.scrollWidth > tabs.clientWidth) { if (!tabs.classList.contains("drag")) { tabs.classList.add("drag"); try { tabs.setPointerCapture(pid); } catch (x) {} } tabs.scrollLeft = sl - dx; }
+    });
+    function lepas() { if (!down) return; down = false; tabs.classList.remove("drag"); setTimeout(function () { moved = 0; }, 0); }
+    window.addEventListener("pointerup", lepas); window.addEventListener("pointercancel", lepas);
+    tabs.addEventListener("click", function (ev) { if (moved > 5) { ev.preventDefault(); ev.stopPropagation(); } }, true);
+    /* tab bisa dibangun ulang oleh script harga: ukur ulang dan tengahkan tab aktif */
+    new MutationObserver(function () { ukur(); }).observe(tabs, { childList: true });
+    window.addEventListener("resize", ukur); ukur(); setTimeout(function () { ukur(); tengah(tabs.querySelector('.tab[aria-selected="true"]'), "auto"); }, 350);
+  });
+}
 function pasangNavbar() {
   const bars = document.querySelectorAll(".topbar");
   function cek() {
@@ -843,6 +878,7 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangPanelMenu();
   pasangMenu();
   pasangNavbar();
+  pasangTabsGeser();
   const views = document.querySelectorAll("[data-view]");
   (views.length ? Array.from(views) : [document]).forEach(initHarga);
   pasangKeTab();
@@ -924,6 +960,19 @@ function pasangAkun() {
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !mn.hidden) { tutup(); btn.focus(); } });
 }
 
+
+/* QR Code dari dashboard admin (disimpan oleh admin, tampil di semua .qr-box) */
+function pasangQr() {
+  const q = window.NXS && NXS.qr ? NXS.qr() : "";
+  if (!q) return;
+  document.querySelectorAll(".qr-box").forEach(function (box) {
+    let im = box.querySelector("img");
+    if (!im) { im = document.createElement("img"); im.alt = "QR Discord NEXORA"; box.insertBefore(im, box.firstChild); }
+    im.removeAttribute("onerror"); im.onerror = null;
+    if (im.getAttribute("src") !== q) im.src = q;
+    box.classList.remove("empty");
+  });
+}
 
 /* ===== Footer: Ikuti kami (diatur admin: nx-sosmed) ===== */
 const SOSMED_ICON = { instagram: "instagram", tiktok: "tiktok", youtube: "youtube", facebook: "facebook", x: "twitter-x", discord: "discord", telegram: "telegram", whatsapp: "whatsapp", email: "envelope", lainnya: "link-45deg" };
