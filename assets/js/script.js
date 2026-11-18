@@ -133,6 +133,15 @@ function linkPesan(pesan) {
   return "#";
 }
 
+/* Tombol "Pesan paket ini" di Harga hosting: langsung ke form buka ticket (belum login diminta masuk dulu). */
+function linkOrder() { return ROOT + "akun/dashboard.html#buka"; }
+function pasangOrder() {
+  document.addEventListener("click", function (e) {
+    const a = e.target.closest && e.target.closest("a[data-order]"); if (!a) return;
+    try { sessionStorage.setItem("nx-pkg", JSON.stringify({ svc: a.dataset.order, paket: a.dataset.paket || "" })); } catch (x) {}
+  });
+}
+
 function pasangKontak() {
   document.querySelectorAll(".k-dc").forEach(function (dc) {
     dc.href = KONTAK.discord || "#";
@@ -199,7 +208,7 @@ function pasangPanelMenu() {
     const hub = document.createElement("a"); hub.className = "nv nv-m"; hub.href = pre + "kontak.html"; hub.style.setProperty("--i", n++);
     hub.innerHTML = '<span class="nv-i"><i class="bi bi-chat-dots"></i></span><span class="nv-t">Hubungi Kami</span>';
     const dc = nav.querySelector(".nav-dc"); nav.insertBefore(hub, dc);
-    let a2 = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a2 = v; } catch (x) {}
+    let a2 = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a2 = v.filter(function (r) { return r && r.tampil; }); } catch (x) {}
     const adaTampil = a2.some(function (r) { return r && r.tampil; }), avg = a2.length ? a2.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a2.length : 0;
     const card = document.createElement("a"); card.className = "nv-card nv-m"; card.href = pre + "ulasan.html"; card.style.setProperty("--i", n++);
     card.innerHTML = '<span class="nv-ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg></span><b>Ulasan customer</b><p>' + (adaTampil ? "Rating " + avg.toFixed(1).replace(".", ",") + " dari " + a2.length + " ulasan. Lihat cerita mereka." : "Lihat penilaian jujur dari customer yang sudah order di NEXORA.") + '</p><span class="nv-cl">Lihat ulasan <i class="bi bi-arrow-right"></i></span>';
@@ -207,12 +216,9 @@ function pasangPanelMenu() {
     let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
     if (!role) { try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)) { role = "cust"; break; } } } catch (x) {} }
     const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
-    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '"><i class="bi bi-speedometer2"></i> Dashboard</a><button type="button" class="btn ghost nv-out"><i class="bi bi-box-arrow-right"></i> <span>Keluar</span></button>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html"><i class="bi bi-box-arrow-in-right"></i> Masuk</a>';
+    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '">Dashboard</a><button type="button" class="btn ghost nv-out"><span>Keluar</span></button>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html">Masuk</a>';
     const nvOut = ac.querySelector(".nv-out");
-    if (nvOut) nvOut.addEventListener("click", function () {
-      if (!nvOut.classList.contains("ask")) { nvOut.classList.add("ask"); nvOut.querySelector("span").textContent = "Yakin keluar?"; setTimeout(function () { nvOut.classList.remove("ask"); nvOut.querySelector("span").textContent = "Keluar"; }, 3500); return; }
-      keluarAkun();
-    });
+    if (nvOut) nvOut.addEventListener("click", function () { konfirmasiKeluar(nvOut); });
     nav.insertBefore(ac, dc);
     if (dc) dc.style.setProperty("--i", n++);
     if (btn) btn.innerHTML = '<svg class="mb-g" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><svg class="mb-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -267,8 +273,19 @@ function pasangTabsGeser() {
     window.addEventListener("pointerup", lepas); window.addEventListener("pointercancel", lepas);
     tabs.addEventListener("click", function (ev) { if (moved > 5) { ev.preventDefault(); ev.stopPropagation(); } }, true);
     /* tab bisa dibangun ulang oleh script harga: ukur ulang dan tengahkan tab aktif */
-    new MutationObserver(function () { ukur(); }).observe(tabs, { childList: true });
-    window.addEventListener("resize", ukur); ukur(); setTimeout(function () { ukur(); tengah(tabs.querySelector('.tab[aria-selected="true"]'), "auto"); }, 350);
+    /* indikator pil yang meluncur ke tab aktif */
+    function indikator(animasi) {
+      const t = tabs.querySelector('.tab[aria-selected="true"]'); let ind = tabs.querySelector(".tab-ind");
+      if (!t) { if (ind) ind.style.opacity = "0"; return; }
+      if (!ind) { ind = document.createElement("span"); ind.className = "tab-ind"; ind.setAttribute("aria-hidden", "true"); tabs.insertBefore(ind, tabs.firstChild); animasi = false; }
+      if (!animasi) ind.style.transition = "none";
+      ind.style.opacity = "1"; ind.style.width = t.offsetWidth + "px"; ind.style.transform = "translateX(" + t.offsetLeft + "px)";
+      if (!animasi) { void ind.offsetWidth; ind.style.transition = ""; }
+    }
+    /* tab bisa dibangun ulang oleh script harga: ukur ulang, pindahkan indikator */
+    new MutationObserver(function () { ukur(); indikator(true); }).observe(tabs, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-selected"] });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { indikator(false); ukur(); });
+    window.addEventListener("resize", function () { ukur(); indikator(false); }); ukur(); indikator(false); setTimeout(function () { ukur(); indikator(false); tengah(tabs.querySelector('.tab[aria-selected="true"]'), "auto"); }, 350);
   });
 }
 function pasangNavbar() {
@@ -661,7 +678,7 @@ function kartuJasa(p, i, jeda, pesan, data, kunci) {
     '<p class="pc-desc">' + escK(p.ringkas) + "</p>" +
     "<ul>" + p.fitur.map(function (f) { return "<li>" + escK(f) + "</li>"; }).join("") + "</ul>" +
     '<div class="pc-price"><b>' + hargaHTML(p.harga, data.satuan) + "</b></div>" +
-    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkPesan(pesan)) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></div></article>";
+    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkOrder()) + '" data-order="' + escK(kunci) + '" data-paket="' + escK(p.nama) + '">' + t("pesan") + "</a></div></article>";
 }
 
 const IKON_SPEK = {
@@ -684,7 +701,7 @@ function kartuHosting(p, i, jeda, pesan, data) {
     '<div class="pc-price">' + "<b>" + hargaHTML(p.harga, data.satuan) + "</b></div>" +
     (spek.length ? '<div class="specs" style="grid-template-columns:repeat(' + spek.length + ',1fr)">' + spek.map(function (x) { return '<div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IKON_SPEK[x[0]] + "</svg><small>" + x[0] + "</small><b>" + escK(x[1]) + "</b></div>"; }).join("") + "</div>" : "") +
     (sisa.length ? "<ul>" + sisa.map(function (f) { return "<li>" + escK(f) + "</li>"; }).join("") + "</ul>" : "") +
-    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkPesan(pesan)) + '" target="_blank" rel="noopener">' + t("pesan") + "</a></article>";
+    '<a class="btn' + (p.populer ? "" : " ghost") + '" href="' + escK(linkOrder()) + '" data-order="hosting" data-paket="' + escK(p.nama) + '">' + t("pesan") + "</a></article>";
 }
 
 /* ===== FAQ =====
@@ -879,6 +896,7 @@ document.addEventListener("DOMContentLoaded", function () {
   pasangMenu();
   pasangNavbar();
   pasangTabsGeser();
+  pasangOrder();
   const views = document.querySelectorAll("[data-view]");
   (views.length ? Array.from(views) : [document]).forEach(initHarga);
   pasangKeTab();
@@ -935,6 +953,25 @@ function keluarAkun() {
   location.reload();
 }
 
+/* Modal peringatan sebelum keluar (menggantikan "klik 2 kali"). `balik` = elemen yang kembali difokuskan saat modal ditutup. */
+function konfirmasiKeluar(balik) {
+  if (document.querySelector(".nx-modal")) return;
+  const m = document.createElement("div"); m.className = "nx-modal"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("aria-labelledby", "nxm-t");
+  m.innerHTML = '<div class="nxm-box"><h3 id="nxm-t">Keluar dari akun?</h3><p>Kamu perlu masuk lagi untuk membuka dashboard dan ticket.</p><div class="nxm-act"><button type="button" class="btn ghost" data-nxm="batal">Batal</button><button type="button" class="btn danger" data-nxm="keluar">Keluar</button></div></div>';
+  document.body.appendChild(m); document.documentElement.classList.add("nxm-lock");
+  const batal = m.querySelector('[data-nxm="batal"]'), ya = m.querySelector('[data-nxm="keluar"]');
+  function tutup() { m.classList.add("out"); document.removeEventListener("keydown", tombol); document.documentElement.classList.remove("nxm-lock"); setTimeout(function () { m.remove(); }, 180); if (balik && balik.focus) try { balik.focus(); } catch (x) {} }
+  function tombol(ev) {
+    if (ev.key === "Escape") { ev.preventDefault(); tutup(); }
+    else if (ev.key === "Tab") { const a = document.activeElement; if (ev.shiftKey && a === batal) { ev.preventDefault(); ya.focus(); } else if (!ev.shiftKey && a === ya) { ev.preventDefault(); batal.focus(); } }
+  }
+  document.addEventListener("keydown", tombol);
+  m.addEventListener("click", function (ev) { if (ev.target === m) tutup(); });
+  batal.addEventListener("click", tutup);
+  ya.addEventListener("click", function () { ya.disabled = true; batal.disabled = true; keluarAkun(); });
+  batal.focus();
+}
+
 function pasangAkun() {
   const b = document.querySelector(".login-btn"); if (!b || b.id === "nav-logout") return;
   const I = sesInfo(); if (!I.role) return;
@@ -948,14 +985,10 @@ function pasangAkun() {
   b.replaceWith(w);
   const btn = w.querySelector(".acct-b"), mn = w.querySelector(".acm"), out = w.querySelector(".acm-o");
   w.querySelectorAll("img.acct-i").forEach(function (im) { im.addEventListener("error", function () { im.replaceWith(document.createTextNode(ini)); }); });
-  function tutup() { mn.hidden = true; btn.setAttribute("aria-expanded", "false"); out.classList.remove("ask"); out.querySelector("span").textContent = "Logout"; }
+  function tutup() { mn.hidden = true; btn.setAttribute("aria-expanded", "false"); }
   function buka() { mn.hidden = false; btn.setAttribute("aria-expanded", "true"); posisiMenu(mn); }
   btn.addEventListener("click", function (ev) { ev.stopPropagation(); mn.hidden ? buka() : tutup(); });
-  out.addEventListener("click", function (ev) {
-    ev.stopPropagation();
-    if (!out.classList.contains("ask")) { out.classList.add("ask"); out.querySelector("span").textContent = "Klik lagi untuk keluar"; return; }
-    keluarAkun();
-  });
+  out.addEventListener("click", function (ev) { ev.stopPropagation(); tutup(); konfirmasiKeluar(btn); });
   document.addEventListener("click", function (ev) { if (!w.contains(ev.target)) tutup(); });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && !mn.hidden) { tutup(); btn.focus(); } });
 }
@@ -999,20 +1032,24 @@ function pasangSosmed() {
 const UL_STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.6 6.1 20.7l1.2-6.6L2.5 9.5l6.6-.9z"/></svg>';
 function ulStars(n) { let h = ""; for (let i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? "on" : "") + '">' + UL_STAR + "</i>"; return '<span class="ul-st" role="img" aria-label="' + n + ' dari 5 bintang">' + h + "</span>"; }
 function pasangNavUlasan() {
-  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v; } catch (x) {}
-  if (!a.length || !a.some(function (r) { return r && r.tampil; })) return;
+  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v.filter(function (r) { return r && r.tampil; }); } catch (x) {}
+  if (!a.length) return;
   const avg = a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length;
   const fr = document.querySelector(".f-ul-r"); if (fr) { fr.textContent = "★ " + avg.toFixed(1).replace(".", ",") + " · " + a.length + " ulasan"; fr.hidden = false; }
   document.querySelectorAll("nav a.nav-ul").forEach(function (l) { const em = document.createElement("em"); em.className = "nav-rt"; em.textContent = avg.toFixed(1).replace(".", ","); l.appendChild(em); });
 }
 function pasangUlasan() {
-  const list = document.getElementById("ul-list"); if (!list) return;
-  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v; } catch (x) {}
+  const list = document.getElementById("ul-list"), sm = document.getElementById("ul-sum"); if (!list || !sm) return;
+  let a = []; try { const v = JSON.parse(localStorage.getItem("nx-ulasan") || "[]"); if (Array.isArray(v)) a = v.filter(function (r) { return r && r.tampil; }); } catch (x) {}
   const tampil = a.filter(function (r) { return r && r.tampil; }).sort(function (x, y) { return (y.ts || 0) - (x.ts || 0); });
-  if (!tampil.length) { const em = document.getElementById("ul-empty"); if (em) em.hidden = false; return; }
-  const avg = a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length, sm = document.getElementById("ul-sum");
-  sm.innerHTML = '<b class="ul-avg">' + avg.toFixed(1).replace(".", ",") + "</b><div>" + ulStars(Math.round(avg)) + "<small>dari " + a.length + " ulasan customer</small></div>";
+  const avg = a.length ? a.reduce(function (z, r) { return z + (Number(r.bintang) || 0); }, 0) / a.length : 0;
+  const dist = [0, 0, 0, 0, 0, 0]; a.forEach(function (r) { const b = Math.round(Number(r && r.bintang) || 0); if (b >= 1 && b <= 5) dist[b]++; });
+  const baris = [5, 4, 3, 2, 1].map(function (n) {
+    return '<li><span class="ul-dn">' + n + '</span><span class="ul-dstar" aria-hidden="true">' + UL_STAR + '</span><span class="ul-bar"><s style="width:' + (a.length ? Math.round(dist[n] / a.length * 100) : 0) + '%"></s></span><em>' + dist[n] + "</em></li>";
+  }).join("");
+  sm.innerHTML = '<div class="ul-sl"><b class="ul-avg">' + avg.toFixed(1).replace(".", ",") + "</b>" + ulStars(Math.round(avg)) + "<small>" + (a.length ? "dari " + a.length + " ulasan customer" : "Belum ada ulasan") + '</small></div><ul class="ul-dist" aria-label="Jumlah ulasan per bintang">' + baris + "</ul>";
   sm.hidden = false;
+  const em = document.getElementById("ul-empty"); if (em) em.hidden = true;
   list.innerHTML = tampil.map(function (r) {
     return '<article class="ul-c">' + ulStars(Number(r.bintang) || 0) + (r.teks ? "<p>" + escK(r.teks) + "</p>" : "") + '<footer><span class="ul-av">' + escK(String(r.user || "?").trim().charAt(0).toUpperCase()) + '</span><div><b>' + escK(r.user || "Customer") + "</b><small>Memesan " + escK(r.paket || "layanan NEXORA") + " · " + escK(r.tgl || "") + "</small></div></footer></article>";
   }).join("");

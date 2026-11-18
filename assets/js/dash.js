@@ -139,6 +139,7 @@
     }
     if ((window.NX && NX.sessEnd) || /[?&]err=expired/.test(location.search)) aerr("Sesi login sudah berakhir (masa login maksimal " + ((window.NX && NX.sessionDays) || 7) + " hari). Silakan masuk lagi. Akunmu tetap aman dan tidak dihapus.");
     if (/[?&]err=staff/.test(location.search)) aerr("Akun ini terdaftar sebagai tim NEXORA, jadi tidak bisa dipakai di panel customer. Untuk order sebagai customer, masuk dengan akun Google/Discord yang lain.");
+    if (/[?&]info=order/.test(location.search) && ae) { ae.textContent = "Masuk dulu untuk membuka ticket. Setelah login, kamu langsung diarahkan ke form buka ticket."; ae.classList.add("info"); ae.hidden = false; }
     if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
     function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
     if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
@@ -1223,9 +1224,18 @@
       }
     });
     window.addEventListener("storage", function (ev) { if (ev.key === "nx-tk" || ev.key === "nx-or" || ev.key === "nx-bill" || ev.key === "nx-notif") remote(); if (adm && ev.key === "nx-staff") syncRole(); });
+    /* paket yang dipilih dari halaman Harga hosting dipilihkan otomatis di form buka ticket */
+    function pilihPaket(raw) {
+      if (!raw) return;
+      try {
+        var o = JSON.parse(raw), f = $("#f-buka"); if (!o || !o.svc || !o.paket || !f) return;
+        var sb = $('[data-svc="' + o.svc + '"]', f); if (!sb || !JR(o.svc).some(function (x) { return x.nama === o.paket; })) return;
+        sb.click(); f.paket.value = o.paket; bukaSync();
+      } catch (x) {}
+    }
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     draw();
-    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); } }
+    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
   }
 
   function boot(root, m) {
@@ -1237,7 +1247,7 @@
     }
     var need = m === "admin" ? "admin" : "cust";
     if (live && m === "admin" && !ss("nx-role")) return go("nexora-admin-access.html" + (NX.sessEnd ? "?err=expired" : NX.user ? "?err=notstaff" : ss("nx-autherr") ? "?err=auth" : ""));
-    if (ss("nx-role") !== need) return go((m === "admin" ? "nexora-admin-access.html" : "masuk.html") + (live && NX.staffBlock ? "?err=staff" : live && NX.sessEnd ? "?err=expired" : live && ss("nx-autherr") ? "?err=auth" : ""));
+    if (ss("nx-role") !== need) return go((m === "admin" ? "nexora-admin-access.html" : "masuk.html") + (live && NX.staffBlock ? "?err=staff" : live && NX.sessEnd ? "?err=expired" : live && ss("nx-autherr") ? "?err=auth" : m !== "admin" && ss("nx-next") === "buka" ? "?info=order" : ""));
     if (m === "admin") {
       if (live) ss("nx-arole", NX.role);
       else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }

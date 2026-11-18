@@ -1029,3 +1029,78 @@ body:not(:has(.dash)) .topbar.open{background:var(--bg)}
 .tabs-b:active{transform:translateY(-50%) scale(.92)!important}
 @media (hover:none),(max-width:700px){.tabs-b{display:none!important}.tabs-box::before,.tabs-box::after{width:28px}}
 @media (prefers-reduced-motion:reduce){.tabs-box>.tabs{scroll-behavior:auto}}
+
+/* ===== v16: menu tab seperti pil geser (indikator meluncur halus) ===== */
+.tabs-box{width:fit-content;max-width:100%;padding:5px;border:1px solid var(--line);border-radius:99px;background:var(--surface)}
+.tabs-box>.tabs{padding:0;gap:4px;scroll-padding:0 24px}
+.tabs-box>.tabs .tab{position:relative;z-index:1;border:0;background:transparent;padding:10px 22px;color:var(--muted);transition:color .3s,background-color .25s}
+.tabs-box>.tabs .tab:hover{color:var(--text);background:var(--accent-soft)}
+.tabs-box>.tabs .tab[aria-selected="true"],.tabs-box>.tabs .tab[aria-selected="true"]:hover{background:transparent;color:var(--on-accent)}
+.tab-ind{position:absolute;z-index:0;top:0;bottom:0;left:0;border-radius:99px;background:var(--accent);pointer-events:none;transition:transform .5s cubic-bezier(.22,1,.36,1),width .5s cubic-bezier(.22,1,.36,1)}
+.tabs-box::before,.tabs-box::after{top:1px;bottom:1px;width:56px}
+.tabs-box::before{left:1px;border-radius:99px 0 0 99px;background:linear-gradient(90deg,var(--surface) 35%,transparent)}
+.tabs-box::after{right:1px;border-radius:0 99px 99px 0;background:linear-gradient(270deg,var(--surface) 35%,transparent)}
+.tabs-b{width:34px;height:34px;box-shadow:none}
+.tabs-b.prev{left:6px}.tabs-b.next{right:6px}
+@media (max-width:700px){.tabs-box{width:100%}.tabs-box>.tabs .tab{padding:10px 18px}.tabs-box::before,.tabs-box::after{width:32px}}
+@media (prefers-reduced-motion:reduce){.tab-ind{transition:none}}
+
+/* ===== v16: kartu Join Discord (tanpa QR, ringkas di desktop) ===== */
+.cta-sec{padding:56px 0 72px}
+.cta-card.v2{max-width:980px;margin-inline:auto;border-radius:28px}
+.cta-card.v2 .cta-body{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:36px;padding:40px 44px;align-items:center}
+.cta-card.v2 h2{font-size:clamp(1.9rem,3.4vw,2.5rem);max-width:none;text-wrap:balance}
+.cta-card.v2 .cta-p{max-width:40ch;margin-bottom:24px}
+.cta-card.v2 .btn.lg{padding:14px 26px;font-size:1rem}
+.cta-side{display:grid;justify-items:end}
+.dcv{width:100%;max-width:330px;padding:16px;border-radius:20px;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));box-shadow:0 26px 44px -30px color-mix(in srgb,var(--accent) 70%,transparent);transform:rotate(1.5deg);transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.dcv-top{display:flex;align-items:center;gap:12px;padding-bottom:14px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.dcv-logo{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:14px;background:#1b1626;border:1px solid #2c2540}
+.dcv-logo img{width:30px;height:30px;object-fit:contain}
+.dcv-top b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.05rem;line-height:1.2}
+.dcv-top small{color:var(--muted);font-size:.8rem}
+.dcv-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.dcv-list li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.92rem;line-height:1.3}
+.dcv-list i{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:.95rem}
+@media (hover:hover){.cta-card.v2:hover .dcv{transform:rotate(0) translateY(-3px)}}
+@media (max-width:820px){
+  .cta-sec{padding:40px 0 56px}
+  .cta-card.v2 .cta-body{grid-template-columns:1fr;gap:26px;padding:32px 22px 28px}
+  .cta-side{justify-items:stretch}
+  .dcv{max-width:none;transform:none}
+}
+@media (prefers-reduced-motion:reduce){.dcv{transition:none}}
+
+/* ===== v17: tombol Masuk teks saja; di HP/tablet hanya ada di menu hamburger ===== */
+@media (max-width:1100px){.topbar .login-btn{display:none}}
+.login-btn{padding:9px 18px}
+
+/* ===== v17: modal konfirmasi keluar ===== */
+.nxm-lock{overflow:hidden}
+.nx-modal{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:20px;background:rgba(20,17,28,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:nxmfade .2s ease both}
+.nx-modal.out{animation:nxmfade .18s ease reverse both}
+.nxm-box{width:min(400px,100%);padding:26px 24px 22px;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--text);box-shadow:0 30px 60px -24px rgba(20,10,50,.6);animation:nxmpop .28s cubic-bezier(.2,.8,.2,1) both}
+.nx-modal.out .nxm-box{animation:none}
+.nxm-box h3{font-size:1.3rem;margin:0 0 8px}
+.nxm-box p{margin:0 0 22px;color:var(--muted);font-size:.95rem;line-height:1.5}
+.nxm-act{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nxm-act .btn{padding:12px}
+.btn.danger{background:#e5484d;color:#fff}
+.btn:disabled{opacity:.6;cursor:default}
+@keyframes nxmfade{from{opacity:0}}
+@keyframes nxmpop{from{opacity:0;transform:translateY(10px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){.nx-modal,.nxm-box{animation:none}}
+
+/* ===== v17: card rating di halaman Ulasan (selalu tampil, bintang 1-5) ===== */
+.ul-sumcard{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:28px;width:fit-content;max-width:100%;padding:22px 28px}
+.ul-sumcard .ul-sl{display:grid;justify-items:start;gap:6px;min-width:150px}
+.ul-sumcard .ul-sl small{color:var(--muted);font-size:.88rem}
+.ul-dist{list-style:none;margin:0;padding:0;display:grid;gap:7px;min-width:min(260px,100%)}
+.ul-dist li{display:grid;grid-template-columns:12px 14px minmax(90px,1fr) 28px;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.ul-dist .ul-dn{text-align:right;color:var(--text)}
+.ul-dstar svg{width:14px;height:14px;display:block;fill:#f5b301;stroke:#f5b301;stroke-width:1.6;stroke-linejoin:round}
+.ul-bar{display:block;height:7px;border-radius:7px;background:var(--line);overflow:hidden}
+.ul-bar s{display:block;height:100%;border-radius:7px;background:#f5b301;text-decoration:none;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.ul-dist em{font-style:normal;text-align:right}
+@media (max-width:560px){.ul-sumcard{grid-template-columns:1fr;gap:18px;width:100%;padding:20px}.ul-dist{min-width:0}}
+.ul-page .ul-grid:empty{display:none}
