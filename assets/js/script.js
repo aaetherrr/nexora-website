@@ -551,27 +551,49 @@ function pasangMarquee() {
     m.innerHTML = '<div class="marq-track">' + set + set.replace('class="marq-set"', 'class="marq-set" aria-hidden="true"') + "</div>";
     m.style.setProperty("--dur", (items.length * (PLUG_DETIK[m.dataset.marq] || 5)) + "s");
 
-    // Perlambat animasi secara bertahap saat hover, lalu percepat lagi saat pointer keluar.
+    // Gerak marquee dihitung lewat JS (bukan playbackRate CSS) supaya perlambatan/percepatan saat hover benar-benar mulus.
     const track = m.querySelector(".marq-track");
-    let speedFrame = 0;
-    function ubahKecepatan(target) {
-      if (speedFrame) cancelAnimationFrame(speedFrame);
-      const anim = track.getAnimations()[0];
-      if (!anim) return;
-      const awal = anim.playbackRate;
-      const mulai = performance.now();
-      const durasi = 1500;
-      function langkah(sekarang) {
-        const t = Math.min(1, (sekarang - mulai) / durasi);
-        const halus = t * t * (3 - 2 * t);
-        anim.playbackRate = awal + (target - awal) * halus;
-        if (t < 1) speedFrame = requestAnimationFrame(langkah);
-        else speedFrame = 0;
+    const kurangGerak = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!kurangGerak) {
+      const arah = m.classList.contains("rev") ? -1 : 1;
+      const detik = parseFloat(m.style.getPropertyValue("--dur")) || 50;
+      const TAU = 0.55;            // konstanta waktu easing (detik): makin besar makin lembut
+      let lebar = 0, x = 0, f = 1, target = 1, terakhir = 0, rafId = 0, tampil = true;
+      track.style.animation = "none";
+      track.style.willChange = "transform";
+      function ukur() {
+        const half = track.scrollWidth / 2;
+        if (!half) return;
+        if (lebar) x = (x / lebar) * half; else if (arah < 0) x = half;
+        lebar = half;
       }
-      speedFrame = requestAnimationFrame(langkah);
+      function langkah(now) {
+        rafId = 0;
+        if (!tampil || document.hidden) { terakhir = 0; return; }
+        const dt = terakhir ? Math.min(0.05, (now - terakhir) / 1000) : 0;
+        terakhir = now;
+        f += (target - f) * (1 - Math.exp(-dt / TAU));
+        if (Math.abs(target - f) < 0.0005) f = target;
+        if (lebar) {
+          x += arah * (lebar / detik) * f * dt;
+          x = ((x % lebar) + lebar) % lebar;
+          track.style.transform = "translate3d(" + (-x).toFixed(2) + "px,0,0)";
+        }
+        if (f !== 0 || target !== 0) rafId = requestAnimationFrame(langkah);
+        else terakhir = 0;
+      }
+      function jalan() { if (!rafId) rafId = requestAnimationFrame(langkah); }
+      ukur();
+      if (window.ResizeObserver) new ResizeObserver(ukur).observe(track);
+      window.addEventListener("load", ukur);
+      if (window.IntersectionObserver) {
+        new IntersectionObserver(function (en) { tampil = en[0].isIntersecting; if (tampil) jalan(); }).observe(m);
+      }
+      document.addEventListener("visibilitychange", function () { if (!document.hidden) jalan(); });
+      m.addEventListener("pointerenter", function () { target = 0; jalan(); });
+      m.addEventListener("pointerleave", function () { target = 1; jalan(); });
+      jalan();
     }
-    m.addEventListener("pointerenter", function () { ubahKecepatan(0); });
-    m.addEventListener("pointerleave", function () { ubahKecepatan(1); });
     if (!ikon) return;
     items.forEach(function (n) {
       const s = slugPlugin(n);
