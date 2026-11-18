@@ -5,22 +5,163 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Halaman tidak ditemukan – NEXORA</title>
-<link rel="icon" type="image/png" href="assets/img/favicon.png">
-<link rel="apple-touch-icon" href="assets/img/favicon.png">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/favicon.png">
 <meta name="theme-color" content="#7c5cff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:#f6f4fa;color:#1d1829;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center}
-  @media (prefers-color-scheme:dark){body{background:#14111c;color:#ece8f5}}
-  h1{font-size:4rem;margin:0;color:#6b55b8}
-  p{margin:8px 0 24px;opacity:.75}
-  a{display:inline-block;padding:12px 24px;border-radius:12px;background:#6b55b8;color:#fff;text-decoration:none}
+  :root{
+    --bg:#f6f4fa;--text:#1d1829;--muted:#6d6682;--accent:#6b55b8;--accent-soft:#ece6fa;--on-accent:#fff;
+    --grid:rgba(107,85,184,.08);--glow:rgba(124,92,255,.22);
+    --f-front:#7c5cff;--f-back:#5b43c9;--f-left:#6a4ee0;--f-right:#8f77ff;--f-top:#b3a2ff;--f-bottom:#4a36a8;
+    --shadow:rgba(60,40,120,.28);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#14111c;--text:#ece8f5;--muted:#a49cba;--accent:#9a86d9;--accent-soft:#251f38;--on-accent:#14111c;
+      --grid:rgba(154,134,217,.08);--glow:rgba(154,134,217,.2);
+      --f-front:#6a4ee0;--f-back:#3f2f8f;--f-left:#5a40c4;--f-right:#7a62f0;--f-top:#a190f5;--f-bottom:#2e2272;
+      --shadow:rgba(0,0,0,.55);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;min-height:100vh;display:grid;place-items:center;padding:32px 20px;overflow-x:hidden;
+    background:
+      radial-gradient(60% 50% at 50% 38%,var(--glow),transparent 70%),
+      linear-gradient(var(--grid) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/44px 44px,
+      var(--bg);
+    color:var(--text);font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center;
+  }
+  main{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center}
+
+  /* ===== 3D scene ===== */
+  .scene{position:relative;width:100%;height:300px;perspective:1100px;display:grid;place-items:center;margin-bottom:8px}
+  .rig{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+       transform:rotateX(calc(var(--ry,0) * -1deg)) rotateY(calc(var(--rx,0) * 1deg));transition:transform .15s ease-out}
+  .digit,.cube-wrap{position:absolute;top:50%;left:50%;transform-style:preserve-3d}
+
+  /* extruded "4" digits built from stacked layers */
+  .digit{width:120px;height:170px;margin:-95px 0 0 -60px;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:190px;line-height:170px}
+  .digit span{position:absolute;inset:0;display:block;color:var(--f-right)}
+  .digit span:nth-child(1){transform:translateZ(-22px);color:var(--f-bottom)}
+  .digit span:nth-child(2){transform:translateZ(-16px);color:var(--f-back)}
+  .digit span:nth-child(3){transform:translateZ(-10px);color:var(--f-left)}
+  .digit span:nth-child(4){transform:translateZ(-4px);color:var(--f-right)}
+  .digit span:nth-child(5){transform:translateZ(2px);color:var(--f-front)}
+  .digit span:nth-child(6){transform:translateZ(8px);color:var(--f-top);-webkit-text-stroke:0}
+  .d-left{transform:translateX(-190px) rotateY(18deg);animation:bobL 6s ease-in-out infinite}
+  .d-right{transform:translateX(190px) rotateY(-18deg);animation:bobR 6s ease-in-out infinite .6s}
+  @keyframes bobL{50%{transform:translateX(-190px) translateY(-12px) rotateY(24deg)}}
+  @keyframes bobR{50%{transform:translateX(190px) translateY(-12px) rotateY(-24deg)}}
+
+  /* the "0" is a rotating logo cube */
+  .cube-wrap{width:130px;height:130px;margin:-65px 0 0 -65px;animation:float 5s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-18px)}}
+  .cube{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:spin 14s linear infinite}
+  @keyframes spin{from{transform:rotateX(-22deg) rotateY(0)}to{transform:rotateX(-22deg) rotateY(360deg)}}
+  .face{position:absolute;inset:0;display:grid;place-items:center;border-radius:18px;border:1px solid rgba(255,255,255,.18);backface-visibility:hidden}
+  .face.f{transform:translateZ(65px);background:linear-gradient(145deg,#1b1626,#2c2540)}
+  .face.b{transform:rotateY(180deg) translateZ(65px);background:var(--f-back)}
+  .face.l{transform:rotateY(-90deg) translateZ(65px);background:var(--f-left)}
+  .face.r{transform:rotateY(90deg) translateZ(65px);background:var(--f-right)}
+  .face.t{transform:rotateX(90deg) translateZ(65px);background:var(--f-top)}
+  .face.bt{transform:rotateX(-90deg) translateZ(65px);background:var(--f-bottom)}
+  .face img{width:70px;height:70px;object-fit:contain}
+  .face.l::after,.face.r::after,.face.b::after{content:"";width:46px;height:46px;border-radius:14px;border:3px solid rgba(255,255,255,.35)}
+  .face.t::after{content:"?";font:700 64px "Bricolage Grotesque",sans-serif;color:rgba(255,255,255,.75)}
+
+  /* small floating shapes */
+  .orb{position:absolute;top:50%;left:50%;border-radius:50%;transform-style:preserve-3d;
+       background:radial-gradient(circle at 30% 30%,#fff,var(--f-top) 35%,var(--f-front) 75%);box-shadow:0 14px 24px -8px var(--shadow)}
+  .o1{width:34px;height:34px;margin:-130px 0 0 -250px;animation:bob 5s ease-in-out infinite;transform:translateZ(60px)}
+  .o2{width:22px;height:22px;margin:-20px 0 0 270px;animation:bob 4s ease-in-out infinite .8s;transform:translateZ(80px)}
+  .o3{width:16px;height:16px;margin:-150px 0 0 150px;animation:bob 6s ease-in-out infinite 1.2s;transform:translateZ(-40px)}
+  .o4{width:26px;height:26px;margin:70px 0 0 -300px;animation:bob 5.5s ease-in-out infinite .3s;transform:translateZ(-30px)}
+  @keyframes bob{50%{translate:0 -14px}}
+  .mini{position:absolute;top:50%;left:50%;width:30px;height:30px;margin:90px 0 0 280px;border-radius:9px;transform:translateZ(40px) rotate(18deg);
+        background:linear-gradient(145deg,var(--f-top),var(--f-front));box-shadow:0 14px 22px -8px var(--shadow);animation:bob 4.5s ease-in-out infinite .5s}
+
+  /* ground shadow */
+  .ground{position:absolute;left:50%;bottom:6px;width:420px;max-width:80%;height:34px;transform:translateX(-50%);border-radius:50%;
+          background:radial-gradient(closest-side,var(--shadow),transparent);animation:shadow 5s ease-in-out infinite}
+  @keyframes shadow{50%{transform:translateX(-50%) scale(.82);opacity:.7}}
+
+  /* ===== text ===== */
+  .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.85rem;font-weight:500;letter-spacing:.02em}
+  .tag i{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35;transform:scale(.7)}}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.1;margin:18px 0 10px;letter-spacing:-.01em}
+  p{margin:0 0 28px;color:var(--muted);max-width:46ch;line-height:1.6;font-size:1.02rem}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:12px;font-weight:500;font-size:.98rem;text-decoration:none;border:1px solid transparent;transition:background .2s,border-color .2s,box-shadow .2s}
+  .btn.primary{background:var(--accent);color:var(--on-accent)}
+  .btn.ghost{background:transparent;color:var(--text);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+  .btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .links{margin-top:30px;font-size:.9rem;color:var(--muted)}
+  .links a{color:var(--accent);text-decoration:none;margin:0 8px}
+  .links a:hover{text-decoration:underline}
+
+  /* ===== responsive ===== */
+  @media (max-width:640px){
+    .scene{height:230px}
+    .rig{transform-origin:center;scale:.62}
+    .ground{bottom:-8px}
+  }
+  @media (max-width:380px){.rig{scale:.5}}
+  @media (prefers-reduced-motion:reduce){
+    .cube,.cube-wrap,.d-left,.d-right,.orb,.mini,.ground,.tag i{animation:none}
+    .cube{transform:rotateX(-22deg) rotateY(-28deg)}
+    .rig{transition:none}
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>404</h1>
-  <p>Halaman yang kamu cari tidak ditemukan.</p>
-  <a href="/">Kembali ke beranda</a>
+  <div class="scene" aria-hidden="true">
+    <div class="rig" id="rig">
+      <div class="digit d-left"><span>4</span><span>4</span><span>4</span><span>4</span><span>4</span><span>4</span></div>
+      <div class="cube-wrap">
+        <div class="cube">
+          <div class="face f"><img src="/assets/img/logo.png" alt=""></div>
+          <div class="face b"></div>
+          <div class="face l"></div>
+          <div class="face r"></div>
+          <div class="face t"></div>
+          <div class="face bt"></div>
+        </div>
+      </div>
+      <div class="digit d-right"><span>4</span><span>4</span><span>4</span><span>4</span><span>4</span><span>4</span></div>
+      <i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="orb o4"></i><i class="mini"></i>
+    </div>
+    <div class="ground"></div>
+  </div>
+
+  <span class="tag"><i></i>Error 404</span>
+  <h1>Ups, halaman ini nyasar</h1>
+  <p>Halaman yang kamu cari tidak ditemukan. Mungkin alamatnya salah ketik, atau halamannya sudah dipindahkan.</p>
+  <div class="actions">
+    <a class="btn primary" href="/">Kembali ke beranda</a>
+    <a class="btn ghost" href="/pages/kontak.html">Hubungi kami</a>
+  </div>
+  <div class="links">
+    Atau buka: <a href="/index.html#harga">Jasa Setup</a>·<a href="/pages/harga-hosting.html">Hosting</a>·<a href="/pages/faq.html">FAQ</a>
+  </div>
 </main>
+<script>
+  (function(){
+    var rig=document.getElementById('rig');
+    if(!rig||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+    window.addEventListener('pointermove',function(e){
+      var x=(e.clientX/window.innerWidth-.5)*2, y=(e.clientY/window.innerHeight-.5)*2;
+      rig.style.setProperty('--rx',(x*14).toFixed(2));
+      rig.style.setProperty('--ry',(y*8).toFixed(2));
+    },{passive:true});
+  })();
+</script>
 </body>
 </html>
