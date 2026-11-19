@@ -557,8 +557,8 @@ function pasangMarquee() {
     if (!kurangGerak) {
       const arah = m.classList.contains("rev") ? -1 : 1;
       const detik = parseFloat(m.style.getPropertyValue("--dur")) || 50;
-      const TAU = 0.55;            // konstanta waktu easing (detik): makin besar makin lembut
-      let lebar = 0, x = 0, f = 1, target = 1, terakhir = 0, rafId = 0, tampil = true;
+      const W = 3.4;               // kekakuan pegas easing: makin kecil makin lambat/lembut
+      let lebar = 0, x = 0, f = 1, v = 0, target = 1, terakhir = 0, rafId = 0, dihenti = false;
       track.style.animation = "none";
       track.style.willChange = "transform";
       function ukur() {
@@ -567,13 +567,17 @@ function pasangMarquee() {
         if (lebar) x = (x / lebar) * half; else if (arah < 0) x = half;
         lebar = half;
       }
+      function atur(t) { target = t; jalan(); }
       function langkah(now) {
         rafId = 0;
-        if (!tampil || document.hidden) { terakhir = 0; return; }
+        if (document.hidden) { terakhir = 0; return; }
         const dt = terakhir ? Math.min(0.05, (now - terakhir) / 1000) : 0;
         terakhir = now;
-        f += (target - f) * (1 - Math.exp(-dt / TAU));
-        if (Math.abs(target - f) < 0.0005) f = target;
+        // pegas teredam kritis: awal dan akhir perlambatan sama-sama mulus, tanpa hentakan
+        v += ((target - f) * W * W - 2 * W * v) * dt;
+        f += v * dt;
+        if (f < 0) { f = 0; v = 0; }
+        if (Math.abs(target - f) < 0.001 && Math.abs(v) < 0.002) { f = target; v = 0; }
         if (lebar) {
           x += arah * (lebar / detik) * f * dt;
           x = ((x % lebar) + lebar) % lebar;
@@ -586,12 +590,20 @@ function pasangMarquee() {
       ukur();
       if (window.ResizeObserver) new ResizeObserver(ukur).observe(track);
       window.addEventListener("load", ukur);
-      if (window.IntersectionObserver) {
-        new IntersectionObserver(function (en) { tampil = en[0].isIntersecting; if (tampil) jalan(); }).observe(m);
-      }
+      // Tidak dihentikan saat di luar layar (iOS jadi tidak "mati" sebelum section terlihat); hanya jeda saat tab disembunyikan.
       document.addEventListener("visibilitychange", function () { if (!document.hidden) jalan(); });
-      m.addEventListener("pointerenter", function () { target = 0; jalan(); });
-      m.addEventListener("pointerleave", function () { target = 1; jalan(); });
+      // Mouse: melambat saat hover, lanjut saat kursor keluar
+      m.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") atur(0); });
+      m.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") atur(1); });
+      // Layar sentuh: ketuk sekali langsung melambat sampai berhenti (tanpa ditahan), ketuk lagi atau ketuk di luar untuk lanjut
+      m.addEventListener("pointerup", function (e) {
+        if (e.pointerType === "mouse") return;
+        dihenti = !dihenti; atur(dihenti ? 0 : 1);
+      });
+      document.addEventListener("pointerdown", function (e) {
+        if (e.pointerType === "mouse" || !dihenti || m.contains(e.target)) return;
+        dihenti = false; atur(1);
+      }, { passive: true });
       jalan();
     }
     if (!ikon) return;

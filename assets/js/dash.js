@@ -176,6 +176,7 @@
 
   function dashInit(adm, root) {
     var rlOpen = false, ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", of = "semua", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
     function syncT() {
@@ -208,7 +209,7 @@
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-", AVU = safeAv(ss("nx-avatar"));
       var uw = document.createElement("div"); uw.className = "uwrap";
-      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="um-i"><div class="um-top">' + avh(AVU, "um-av", e(un.charAt(0).toUpperCase())) + '<div class="um-n"><b>' + e(un) + '</b>' + (adm && arole() ? '<span class="um-r">' + rbd(arole()) + '</span>' : '') + '</div></div><small class="um-em"><i class="bi bi-envelope"></i>' + e(em) + '</small></div><div class="um-sep"></div>' + (adm ? "" : '<button type="button" class="um-a" data-tab="profile"><i class="bi bi-person"></i> Profile saya</button>') + '<button type="button" class="um-o"><i class="bi bi-box-arrow-right"></i> Logout</button></div>';
+      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></div><div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
       nr.appendChild(uw);
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
@@ -246,7 +247,7 @@
       var uc = $(".uchip", uw), um = $(".umenu", uw);
       function uOpen(o) { um.hidden = !o; uc.setAttribute("aria-expanded", String(o)); }
       uc.addEventListener("click", function (ev) { ev.stopPropagation(); if (nfClose) nfClose(); uOpen(um.hidden); });
-      $(".um-o", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
+      $(".ux-out", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
       $$(".um-a", uw).forEach(function (b) { b.addEventListener("click", function () { uOpen(false); }); });
       document.addEventListener("click", function (ev) { if (!uw.contains(ev.target)) uOpen(false); });
       sx.addEventListener("click", function () { setOpen(false); });
@@ -1058,10 +1059,10 @@
     }
     var hNav = "", hRest = false;
     function crumb() {
-      var nv = $("#bc"); if (!nv) { nv = document.createElement("nav"); nv.id = "bc"; nv.className = "bc"; nv.setAttribute("aria-label", "Breadcrumb"); var h1 = $("#ptitle"); h1.parentNode.insertBefore(nv, h1); }
+      var nv = $("#bc"); if (!nv) { nv = document.createElement("nav"); nv.id = "bc"; nv.className = "bc"; nv.setAttribute("aria-label", "Breadcrumb"); var h1 = $("#ptitle"); h1.parentNode.insertBefore(nv, h1.nextSibling); }
       var TT = TITLES[adm ? "a" : "c"], its = [];
       if (tab === "ringkasan") { nv.hidden = true; nv.innerHTML = ""; return; }
-      its.push({ k: "ringkasan", t: "Dashboard", ic: "house-door-fill" });
+      its.push({ k: "ringkasan", t: "Dashboard" });
       its.push({ k: tab, t: (TT[tab] ? TT[tab][0] : tab).replace("{n}", me()) });
       var det = "";
       if ((tab === "tiket" || tab === "riwayat") && sel && tv === "chat") { var tk0 = TK().filter(function (x) { return x.id === sel; })[0]; if (tk0) det = tk0.subj || tk0.id; }
@@ -1092,7 +1093,7 @@
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
       lastTab = tab; if (nfUp) nfUp();
-      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1];
+      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : tt[0].replace("{n}", me());
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight;
       root.classList.toggle("chatv", !!sel && (tab === "tiket" ? tv === "chat" : (tab === "riwayat" && !adm && tv === "chat")));
       var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Menunggu admin balas" && !cl(x); }) : mine().filter(function (x) { return !cl(x); })).length; ct.textContent = cc; ct.hidden = !cc; }
