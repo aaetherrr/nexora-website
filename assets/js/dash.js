@@ -448,6 +448,22 @@
     document.addEventListener("mousedown", function (ev) { if (mm && !ev.target.closest(".mmenu") && !ev.target.closest("[data-ma=mn]")) closeMenu(); });
     document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeMenu(); });
     window.addEventListener("resize", closeMenu); document.addEventListener("scroll", closeMenu, true);
+    /* panah penanda menu filter ticket bisa digeser (HP) */
+    function tkAr() {
+      $$(".tkx-tw", root).forEach(function (w) {
+        var sc = $(".tkx-tabs", w); if (!sc) return;
+        var mx = sc.scrollWidth - sc.clientWidth;
+        w.classList.toggle("can-l", sc.scrollLeft > 4);
+        w.classList.toggle("can-r", mx > 4 && sc.scrollLeft < mx - 4);
+      });
+    }
+    root.addEventListener("scroll", function (ev) { if (ev.target.classList && ev.target.classList.contains("tkx-tabs")) tkAr(); }, true);
+    window.addEventListener("resize", tkAr);
+    root.addEventListener("click", function (ev) {
+      var b = ev.target.closest(".tkx-ar"); if (!b) return;
+      var sc = $(".tkx-tabs", b.parentNode); if (!sc) return;
+      sc.scrollBy({ left: (b.classList.contains("r") ? 1 : -1) * Math.max(120, Math.round(sc.clientWidth * 0.6)), behavior: "smooth" });
+    });
     root.addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-ma]"), q = ev.target.closest("[data-qj]"), u = ev.target.closest("[data-unpin]"), x = ev.target.closest("[data-rpx]");
       if (x) { rpl = null; paintRp(); return; }
@@ -472,7 +488,7 @@
         var rdk = isRd(m), tick = mn ? '<span class="mtk' + (rdk ? " rd" : "") + '" title="' + (rdk ? "Dibaca" : "Terkirim") + '">' + (rdk ? CK2 : CK1) + "</span>" : "";
         var qt = m.rp ? '<button type="button" class="qt" data-qj="' + e(m.rp.mid) + '"><b>' + e(rpWho(m.rp, t)) + "</b><span>" + e(m.rp.t.length > 140 ? m.rp.t.slice(0, 140) + "\u2026" : m.rp.t) + "</span></button>" : "";
         var mact = '<div class="mact">' + (closed ? "" : '<button type="button" class="ma rp" data-ma="rp" aria-label="Balas pesan" title="Balas"><i class="bi bi-reply"></i></button>') + '<button type="button" class="ma mn" data-ma="mn" aria-label="Menu pesan" aria-haspopup="menu" title="Lainnya"><i class="bi bi-three-dots"></i></button></div>';
-        return dv + '<div class="row ' + (mn ? "me" : "ot") + (first ? " first" : "") + (m.pin ? " pinned" : "") + '" data-mid="' + e(mid) + '">' + (mn ? "" : first ? (m.w === "a" ? (m.av ? av(who, m.av) : '<span class="av nx"><i class="bi bi-box2"></i></span>') : av(uname(t), t.cav)) : '<span class="av gh"></span>') + '<div class="col"><div class="bub"><span class="bn" style="--nc:' + nc + '">' + e(who) + (mn && !adm ? " \u00b7 kamu" : "") + "</span>" + (m.pin ? '<i class="bi bi-pin-angle-fill pn" title="Disematkan"></i>' : "") + qt + e(m.t) + "<time>" + tm + tick + "</time></div>" + mact + "</div></div>";
+        return dv + '<div class="row ' + (mn ? "me" : "ot") + (first ? " first" : "") + (m.pin ? " pinned" : "") + '" data-mid="' + e(mid) + '">' + (mn ? "" : first ? (m.w === "a" ? (m.av ? av(who, m.av) : '<span class="av nx"><i class="bi bi-box2"></i></span>') : av(uname(t), t.cav)) : '<span class="av gh"></span>') + '<div class="col"><div class="bub">' + (mn ? "" : '<span class="bn" style="--nc:' + nc + '">' + e(who) + "</span>") + (m.pin ? '<i class="bi bi-pin-angle-fill pn" title="Disematkan"></i>' : "") + qt + e(m.t) + "<time>" + tm + tick + "</time></div>" + mact + "</div></div>";
       }).join("") + (closed && last(t).w !== "s" ? '<div class="sys">Ticket ditutup</div>' : "") + rvBlock(t);
       var lockC = adm && !closed && (t.st === "Pembayaran Dikonfirmasi" || t.st === "Pesanan Diproses"), si = ST.indexOf(t.st), nmsg = t.m.filter(function (m) { return m.w !== "s"; }).length;
       var lkH = (lockC ? '<p class="th-lk"><i class="bi bi-lock"></i> <span>Ubah status ke <b>Orderan Selesai</b> dulu sebelum menutup ticket.</span></p>' : "");
@@ -524,10 +540,10 @@
     function kTabs() {
       var all = kSrc(), its = [[adm ? "Aktif" : "Semua", "Semua"]].concat(ST.map(function (s2) { return [s2, SHORT[s2]]; }));
       if (adm) its.push(["Riwayat", "Riwayat"]);
-      return '<div class="tkx-tabs" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
+      return '<div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
         var n = adm ? all.filter(function (x) { return inAf(x, it[0]); }).length : (it[0] === "Semua" ? all.length : all.filter(function (x) { return x.st === it[0]; }).length);
         return '<button type="button" role="tab" data-kf="' + e(it[0]) + '" aria-selected="' + ((adm ? af : kf) === it[0]) + '">' + e(it[1]) + (n ? "<em>" + n + "</em>" : "") + "</button>";
-      }).join("") + "</div>";
+      }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div>';
     }
     function kShell() {
       var kc = KJ;
@@ -1205,16 +1221,16 @@
       if (adm && !can(tab)) tab = "ringkasan";
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
       $$(".dpanel", root).forEach(function (p) { p.hidden = p.id !== "p-" + tab; });
-      var pn = $("#p-" + tab), sx = (lastTab === tab && pn) ? $$(".chips,.bchips,.tkpills", pn).map(function (el) { return el.scrollLeft; }) : null;
+      var pn = $("#p-" + tab), sx = (lastTab === tab && pn) ? $$(".chips,.bchips,.tkpills,.tkx-tabs", pn).map(function (el) { return el.scrollLeft; }) : null;
       var isNew = lastTab !== tab;
       PAN[tab]();
       if (pn && isNew) { pn.classList.remove("enter"); void pn.offsetWidth; pn.classList.add("enter"); clearTimeout(pn._en); pn._en = setTimeout(function () { pn.classList.remove("enter"); }, 1200); }
-      if (pn) $$(".chips,.bchips,.tkpills", pn).forEach(function (el, i) {
+      if (pn) $$(".chips,.bchips,.tkpills,.tkx-tabs", pn).forEach(function (el, i) {
         if (sx && sx[i] != null) el.scrollLeft = sx[i];
-        var on = $('[aria-pressed="true"],[aria-current="true"]', el);
+        var on = $('[aria-pressed="true"],[aria-current="true"],[aria-selected="true"]', el);
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
-      lastTab = tab; if (nfUp) nfUp();
+      lastTab = tab; tkAr(); setTimeout(tkAr, 250); if (nfUp) nfUp();
       var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : tt[0].replace("{n}", me());
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
       root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat");
