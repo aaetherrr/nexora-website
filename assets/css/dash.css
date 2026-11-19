@@ -181,17 +181,7 @@ body:has(.dash) .topbar{border-bottom-color:var(--line)}
 .lis{display:grid;gap:8px}
 .li{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;font:inherit;text-align:left}
 button.li{cursor:pointer}button.li:hover{border-color:var(--accent)}
-.li small,.oc small{display:block;color:var(--muted);font-size:.8rem}
-.oc{margin-bottom:12px}
-.oc-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}
-.stp{display:flex}
-.stp span{position:relative;flex:1;display:grid;justify-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
-.stp span::before{content:"";position:absolute;top:7px;left:-50%;width:100%;height:2px;background:var(--line)}
-.stp span:first-child::before{display:none}
-.stp i{position:relative;z-index:1;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--line)}
-.stp .on{color:var(--text)}
-.stp .on i{background:var(--accent);border-color:var(--accent)}
-.stp .on::before{background:var(--accent)}
+.li small{display:block;color:var(--muted);font-size:.8rem}
 .pf{max-width:520px}
 .pf-h{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .pf-h .av{width:52px;height:52px;font-size:1.2rem}
@@ -459,8 +449,8 @@ form.bkf{grid-template-columns:minmax(0,1fr)}
 .cmp{font-size:16px}
 .th-f{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 @media (max-width:820px){
-  #p-tiket>.th .th-h,#p-riwayat>.th .th-h{flex-wrap:nowrap}
-  #p-tiket>.th .th-a,#p-riwayat>.th .th-a{width:auto;flex-wrap:nowrap}
+  #p-tiket>.th .th-h{flex-wrap:nowrap}
+  #p-tiket>.th .th-a{width:auto;flex-wrap:nowrap}
   .dmain .th{height:max(380px,calc(100vh - var(--tb,82px) - 190px));height:max(380px,calc(100dvh - var(--tb,82px) - 190px))}
   .dash.chatv .dmain .th{height:max(380px,calc(100vh - var(--tb,82px) - 150px));height:max(380px,calc(100dvh - var(--tb,82px) - 150px))}
   .tk.adm.chat .tk-chat>.th,.dash.chatv .tk.adm.chat .tk-chat>.th{height:max(400px,calc(100vh - var(--tb,82px) - 24px));height:max(400px,calc(100dvh - var(--tb,82px) - 24px))}
@@ -708,15 +698,6 @@ a.stab{text-decoration:none}
   .pm-acc{flex-wrap:wrap}.pm-acc .pm-cp{width:100%}
   .pm .mf .btn{flex:1;justify-content:center}
 }
-
-/* ===== Riwayat ticket customer ===== */
-.tk.hs .tk-tools .hs-cnt{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.82rem}
-.tk.hs .tk-item{align-items:flex-start;gap:12px;padding:12px}
-.hs-ic{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;background:color-mix(in srgb,#30a46c 14%,transparent);color:#30a46c;font-size:1.1rem}
-.tk.hs .ti b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow:hidden}
-.tk.hs .ti small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tk.hs .tr{align-self:flex-start}
-
 
 /* =====================================================================
    v9: status ticket baru, dashboard admin, paket, tagihan, kontak, navbar HP
@@ -1503,14 +1484,6 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
   .pcb-l li{padding:9px 10px}
 }
 @media (max-width:360px){.pcb-l{grid-template-columns:minmax(0,1fr)}}
-
-/* Riwayat pesanan */
-.hs-ic.run{background:var(--accent-soft);color:var(--accent)}
-.od{display:grid;gap:14px;align-content:start;margin:0}
-.od-h{display:flex;align-items:center;gap:12px}
-.od-h .th-t{flex:1;min-width:0}
-.od .btn{justify-self:start}
-@media (min-width:821px){.od-h .bk-b{display:none}}
 
 /* ===== v17: grup sidebar admin datar (tanpa dropdown) ===== */
 .side-nav>.sg{display:block;margin:0}
@@ -2323,3 +2296,234 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .dmain>.bc li:first-child .bc-l{padding-left:0}
   .dmain>.sub,.dmain>#psub{margin-bottom:18px}
 }
+
+/* ===== Ticket customer: tampilan tabel ===== */
+.dash[data-dash="cust"] .dmain{position:relative}
+.tkx{display:grid;gap:18px}
+.tkx-new{position:absolute;top:28px;right:clamp(14px,3.5vw,48px);display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:14px;font-weight:600;white-space:nowrap}
+.tkx-tabs{display:flex;gap:2px;width:fit-content;max-width:100%;padding:5px;border:1px solid var(--line);border-radius:99px;background:var(--surface);overflow-x:auto;scrollbar-width:none}
+.tkx-tabs::-webkit-scrollbar{display:none}
+.tkx-tabs button{display:inline-flex;align-items:center;gap:8px;flex:none;padding:9px 16px;border:0;border-radius:99px;background:transparent;color:var(--muted);font:inherit;font-size:.92rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s}
+.tkx-tabs button:hover{color:var(--text)}
+.tkx-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tkx-tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--text);font-weight:600}
+.tkx-tabs em{display:grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:7px;font-style:normal;font-size:.72rem;font-weight:700;background:var(--accent);color:var(--on-accent)}
+.tkx-tabs button:not([aria-selected="true"]) em{background:transparent;color:var(--muted);padding:0 2px}
+.tkx-f{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px}
+.tkx-fb{display:grid;gap:8px;font-size:.92rem;font-weight:500}
+.tkx-fb.grow{flex:1 1 280px;max-width:400px}
+.tkx-sb{position:relative;display:block}
+.tkx-sb i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.tkx-sb input{width:100%;height:44px;padding:0 14px 0 40px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;font-size:.95rem;font-weight:400}
+.tkx-sb input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tkx .dd{position:relative}
+.tkx .dd-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;height:44px;padding:0 14px;border-radius:12px;font-size:.95rem}
+.tkx-kd{min-width:200px}
+.tkx-kd .dd-menu{left:0;right:auto;min-width:100%}
+.tkx-box{border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:visible}
+.tkx-h,.tkx-r{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr);align-items:center;gap:16px}
+.tkx-h{height:46px;padding:0 22px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.82rem}
+.tkx-list{display:grid;gap:4px;padding:6px}
+.tkx-r{width:100%;min-height:64px;padding:10px 16px;border:0;border-radius:14px;background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:background .2s}
+.tkx-r:hover{background:var(--accent-soft)}
+.tkx-r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tkx-t{min-width:0}
+.tkx-t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:1rem;font-weight:600}
+.tkx-t small{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:3px;color:var(--muted);font-size:.8rem}
+.tkx-t code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;background:none;padding:0}
+.tkx-p,.tkx-d{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.95rem}
+.tkx-empty{display:grid;justify-items:center;gap:6px;padding:52px 20px;text-align:center;color:var(--muted)}
+.tkx-empty i{font-size:2rem;color:var(--accent)}
+.tkx-empty b{color:var(--text);font-size:1.02rem}
+.tkx-empty p{margin:0;font-size:.92rem}
+.tkx-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:14px;padding:12px 22px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+.tkx-rp .dd-btn{width:auto;min-width:78px;height:38px;border-radius:10px}
+.tkx-rp .dd-menu{top:auto;bottom:calc(100% + 6px);left:0;right:auto;min-width:100%}
+.tkx-rg{min-width:86px;text-align:center;color:var(--text);font-weight:500}
+.tkx-pb{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:var(--text);font-size:.95rem;cursor:pointer;transition:background .2s}
+.tkx-pb:hover:not(:disabled){background:var(--accent-soft)}
+.tkx-pb:disabled{opacity:.35;cursor:default}
+.tkx-chat .bk-b{display:inline-grid}
+@media (max-width:820px){
+  .tkx-new{position:static;width:100%;justify-content:center}
+  .tkx-tabs{width:100%}
+  .tkx-fb.grow{flex-basis:100%;max-width:none}
+  .tkx-fb:not(.grow){flex:1 1 100%}
+  .tkx-kd{min-width:0;width:100%}
+}
+@media (max-width:720px){
+  .tkx-h{display:none}
+  .tkx-r{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:12px}
+  .tkx-p{display:none}
+  .tkx-d{grid-column:1/-1;font-size:.82rem}
+  .tkx-foot{justify-content:space-between;padding:12px 14px}
+}
+
+/* ===== Ticket admin: kolom customer & hapus riwayat ===== */
+.tkx-u{display:flex;align-items:center;gap:10px;min-width:0;color:var(--text);font-size:.95rem}
+.tkx-u>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkx-u .av{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;font-size:.8rem}
+.tkx-t b .dot{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--accent);vertical-align:middle}
+.tkx-del{margin-right:auto}
+.tkx-chat.tk.adm{grid-template-columns:minmax(0,1fr)}
+@media (max-width:720px){
+  .tkx-r.adm{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t s" "u d"}
+  .tkx-r.adm .tkx-t{grid-area:t}.tkx-r.adm .tkx-s{grid-area:s}.tkx-r.adm .tkx-u{grid-area:u;font-size:.85rem}
+  .tkx-r.adm .tkx-d{grid-area:d;grid-column:auto;text-align:right}
+  .tkx-del{margin-right:0;width:100%;justify-content:center}
+}
+
+/* Ticket baru (customer): wadah .tkx tidak boleh memakai transform saat animasi masuk.
+   Transform membuat tombol absolute menempel ke .tkx (tampil di bawah menu) lalu melompat setelah animasi selesai. */
+.dpanel.enter>.tkx{animation-name:dfade}
+
+/* Chat ticket di HP: satu layer penuh, tapi navbar tetap terlihat dan menu tab (drawer) tetap bisa dibuka */
+@media (max-width:820px){
+  .dash.chatv .th,.dash.chatv .dmain .th,.dash.chatv .tk-chat>.th,.dash.chatv .tk.adm.chat .tk-chat>.th{inset:var(--tb,70px) 0 0 0;z-index:30;height:calc(100vh - var(--tb,70px));height:calc(var(--vvh,100dvh) - var(--tb,70px))}
+  .dash.chatv .th-h{padding-top:10px}
+}
+
+/* ===== Chat ticket di desktop: isi chat menempel penuh ke area konten (tanpa jarak, sudut, atau background yang bocor di pinggir).
+   Judul, breadcrumb, dan header kuota disembunyikan. Navbar tetap tampil dan menu tab otomatis diperkecil (autoSide di dash.js). ===== */
+@media (min-width:821px){
+  .dash.chatv:has(.tk-chat>.th) .dmain{max-width:none;padding:0}
+  .dash.chatv:has(.tk-chat>.th) .dmain>:is(h1,.sub,.bc){display:none}
+  .dash.chatv:has(.tk-chat>.th) .cth{display:none}
+  .dash.chatv .tk:has(.tk-chat>.th){gap:0;align-items:stretch;min-height:0;height:calc(100vh - var(--tb,82px));height:calc(100dvh - var(--tb,82px));background:var(--surface)}
+  .dash.chatv .tk.tkx-chat:has(.tk-chat>.th){grid-template-columns:minmax(0,1fr)}
+  .dash.chatv .tk:has(.tk-side):has(.tk-chat>.th){grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
+  .dash.chatv .tk:has(.tk-chat>.th) .tk-side{border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--surface)}
+  .dash.chatv .tk:has(.tk-chat>.th) .tk-chat{background:var(--surface);min-height:0}
+  .dash.chatv .tk:has(.tk-chat>.th) .tk-chat>.th{height:100%;min-height:0;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--surface)}
+}
+
+/* ===== Header chat ticket: badge status (customer) serta dropdown & tombol tutup ticket (admin) di kanan atas ===== */
+.tk.adm .th-h{display:flex;flex-wrap:nowrap;align-items:center;gap:10px 12px}
+.tk.adm .th-h>.th-t{flex:1 1 0;min-width:0}
+.tk.adm .th-h>.th-a{flex:none;width:auto;grid-column:auto;margin-left:auto;padding-top:0;border-top:0;justify-content:flex-end;flex-wrap:nowrap}
+@media (max-width:560px){
+  .tk.adm .th-h{flex-wrap:wrap}
+  .tk.adm .th-h>.th-a{flex:1 1 100%;width:100%}
+  .tk.adm .th-a .sel{flex:1 1 auto;max-width:none}
+}
+
+/* ===== Dropdown status ticket (admin) & tombol Lihat akun: ukuran sama dengan tombol Tutup ticket ===== */
+.th-a .stdd{flex:none}
+.th-a .stdd .dd-btn{padding:8px 13px;gap:8px;border-radius:10px;background:var(--bg);font-size:inherit;font-weight:500;white-space:nowrap}
+.th-a .stdd .dd-btn .chev{font-size:.8rem}
+.th-a .stdd .dd-menu{left:auto;right:0;min-width:230px;border-radius:14px;z-index:30}
+.th-a .stdd .dd-opt{gap:10px;padding:9px 10px}
+.th-a .stdd .dd-opt[disabled]{opacity:.55;cursor:default}
+.th-a .btn.ghost{padding:8px 13px;border-radius:10px;gap:6px;white-space:nowrap;display:inline-flex;align-items:center}
+.th-a .btn.ghost i{color:var(--accent);font-size:.95rem}
+.th-a .btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
+@media (max-width:560px){
+  /* HP: Lihat akun, dropdown status, dan Tutup ticket muat satu baris. Dropdown ikut mengecil (teks dipotong ...) */
+  .tk.adm .th-h>.th-a{flex-wrap:nowrap;gap:6px;justify-content:flex-end}
+  .tk.adm .th-a .btn{flex:none;font-size:.84rem;gap:5px}
+  .tk.adm .th-a .btn.dng{padding:9px 10px}
+  .tk.adm .th-a .btn.ghost{padding:8px 10px}
+  .th-a .stdd{flex:0 1 auto;min-width:0}
+  .tk.adm .th-a .stdd .dd-btn{width:100%;max-width:100%;padding:8px 10px;gap:6px;font-size:.84rem;justify-content:space-between}
+  .th-a .stdd .dd-val{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+  .th-a .stdd .dd-btn .sdot,.th-a .stdd .dd-btn .chev{flex:none}
+  .th-a .stdd .dd-menu{min-width:210px;max-width:calc(100vw - 24px)}
+}
+
+/* ===== v-chat: balas, sematkan, info, centang + header ticket HP ===== */
+.row{position:relative}
+.row .col{position:relative}
+.bub time{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.mtk{display:inline-flex;align-items:center;line-height:0}
+.mtk .ck{width:15px;height:10px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.row.me .bub time .mtk{color:rgba(255,255,255,.72)}
+.row.me .bub time .mtk.rd{color:#8fe3ff}
+.row.me .bub time{opacity:.9}
+.row.me .bub time{color:rgba(255,255,255,.75)}
+.mact{position:absolute;top:2px;display:flex;gap:2px;opacity:0;pointer-events:none;transition:opacity .12s}
+.row.me .mact{right:100%;margin-right:6px;flex-direction:row-reverse}
+.row.ot .mact{left:100%;margin-left:6px}
+.row:hover .mact,.row:focus-within .mact,.mact.open{opacity:1;pointer-events:auto}
+.ma{width:28px;height:28px;display:grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);font-size:.95rem;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:color .12s,background .12s,border-color .12s}
+.ma:hover,.mact.open .ma.mn{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+@media (hover:none){.mact{opacity:1;pointer-events:auto}.mact .ma.rp{display:none}.ma{width:26px;height:26px;font-size:.9rem;box-shadow:none;background:transparent;border-color:transparent;color:var(--muted)}.row.me .mact{margin-right:2px}.row.ot .mact{margin-left:2px}}
+.bub .pn{position:absolute;top:6px;right:8px;font-size:.7rem;color:var(--accent);opacity:.9}
+.row.me .bub .pn{color:rgba(255,255,255,.85)}
+.bub .qt{display:block;width:100%;margin:2px 0 6px;padding:5px 8px 5px 10px;border:0;border-left:3px solid var(--nc,var(--accent));border-radius:8px;background:color-mix(in srgb,var(--accent) 9%,transparent);color:inherit;font:inherit;font-size:.82rem;line-height:1.35;text-align:left;cursor:pointer;white-space:normal}
+.bub .qt b{display:block;font-size:.74rem;font-weight:600;color:var(--accent)}
+.bub .qt span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
+.row.me .bub .qt{background:rgba(255,255,255,.16);border-left-color:rgba(255,255,255,.8)}
+.row.me .bub .qt b{color:#fff}
+.row.flash .bub{animation:msgflash 1.5s ease}
+@keyframes msgflash{0%,60%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 1px 1px rgba(0,0,0,.06)}}
+.pinb{display:flex;align-items:center;gap:4px;padding:6px 8px 6px 14px;border-bottom:1px solid var(--line);background:var(--surface);flex:none}
+.pb-b{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:2px 0;border:0;background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.pb-b>i{flex:none;color:var(--accent);font-size:1rem}
+.pb-b span{min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.pb-b b{font-size:.74rem;color:var(--accent);font-weight:600}
+.pb-b em{font-style:normal;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-x,.rp-x{flex:none;width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer}
+.pb-x:hover,.rp-x:hover{background:var(--accent-soft);color:var(--accent)}
+.rpb{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-top:1px solid var(--line);background:var(--surface);flex:none}
+.rpb[hidden]{display:none}
+.rpb>i{flex:none;color:var(--accent);font-size:1.1rem}
+.rp-t{flex:1;min-width:0;padding-left:10px;border-left:3px solid var(--accent);display:flex;flex-direction:column;line-height:1.3}
+.rp-t b{font-size:.76rem;color:var(--accent);font-weight:600}
+.rp-t em{font-style:normal;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpb+.th-f{border-top:0}
+.mmenu{position:fixed;z-index:120;min-width:190px;padding:6px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 12px 32px rgba(10,8,20,.22);animation:mpop .14s cubic-bezier(.2,.7,.2,1) both}
+.mmenu button{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:0;border-radius:9px;background:transparent;color:var(--text);font:inherit;font-size:.92rem;text-align:left;cursor:pointer}
+.mmenu button i{width:18px;color:var(--accent);font-size:1rem;text-align:center}
+.mmenu button:hover,.mmenu button:focus-visible{background:var(--accent-soft);outline:0}
+.minf .mi-pv{margin-bottom:14px;padding:10px 12px;border-left:3px solid var(--accent);border-radius:10px;background:var(--accent-soft);line-height:1.4}
+.minf .mi-pv b{display:block;font-size:.78rem;color:var(--accent)}
+.minf .mi-pv span{display:block;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.mi-l{margin:0;display:grid;gap:12px}
+.mi-l>div{display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.mi-l>div:last-child{padding-bottom:0;border-bottom:0}
+.mi-l dt{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--muted)}
+.mi-l dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.mi-l dd.no{color:var(--muted);font-weight:500}
+.mi-l .mtk{color:var(--muted)}
+.mi-l .mtk.rd{color:#1aa8d9}
+@media (max-width:560px){
+  /* header ticket admin HP: tiga kontrol rata kiri-kanan */
+  .tk.adm:not(.cs) .th-h>.th-a{justify-content:space-between;gap:8px}
+  .tk.adm:not(.cs) .th-a>.btn,.tk.adm:not(.cs) .th-a>.stdd,.tk.adm:not(.cs) .th-a>.st-lk{flex:1 1 auto;min-width:0;justify-content:center}
+  .tk.adm:not(.cs) .th-a .stdd .dd-btn{width:100%}
+  .tk.adm:not(.cs) .th-a .btn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+  /* header ticket customer HP: status naik, tepat di bawah judul */
+  .tk.cs .th-h{row-gap:0}
+  .tk.cs .th-h>.th-a{flex:1 1 100%;width:100%;justify-content:flex-start;margin-top:3px;padding-left:54px}
+}
+
+/* ===== v19: chat ticket di desktop punya daftar ticket di kiri (cari + Aktif/Selesai) ===== */
+.tks .tk-tools{gap:10px}
+.tks-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.tks-tabs button{padding:8px 10px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:.92rem;font-weight:500;cursor:pointer;transition:background .2s,color .2s}
+.tks-tabs button:hover{color:var(--text)}
+.tks-tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--text);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 28%,transparent)}
+.tk.adm .tk-item.tks-i{display:grid;align-items:start;gap:3px;padding:11px 12px;width:100%;text-align:left}
+.tks-i b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}
+.tks-i b .dot{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--accent);vertical-align:middle}
+.tks-i small{display:flex;flex-wrap:wrap;gap:2px 10px;color:var(--muted);font-size:.8rem}
+.tks-i small code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600;letter-spacing:.02em}
+.tk.adm .tks .tk-list{gap:4px}
+@media (min-width:821px){
+  .dash.chatv .tk.tkx-chat.tkx-two:has(.tk-chat>.th){grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
+}
+@media (max-width:820px){
+  .tkx-two .tk-side{display:none}
+  /* header ticket customer di HP: judul di kiri, status di kanan atas */
+  .tk.cs .th-h{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:10px;row-gap:0}
+  .tk.cs .th-h .th-t b{line-height:1.25}
+  .tk.cs .th-h .th-ic,.tk.cs .th-h .av{align-self:center}
+  .tk.cs .th-h .th-t{flex:1 1 0;min-width:0}
+  .tk.cs .th-h>.th-a{flex:none;width:auto;margin:0;padding:0;justify-content:flex-end;flex-wrap:nowrap}
+  .tk.cs .th-a .bd{white-space:nowrap;font-size:.72rem;padding:3px 10px;margin-top:2px}
+}
+
+/* ===== v20: tanpa garis/ring ungu di daftar ticket sisi chat; tombol kirim pesawat lurus ke kanan ===== */
+.tkx-two .tk-item[aria-current="true"],.tk.adm.tkx-two .tk-item[aria-current="true"]{box-shadow:none;border:0;background:color-mix(in srgb,var(--text) 7%,transparent)}
+.tks-tabs button[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line)}
+.send svg{display:block;margin-left:2px}
