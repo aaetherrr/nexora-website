@@ -1110,9 +1110,6 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .bub{padding:8px 12px 7px;line-height:1.5}
 .sys{margin:14px 0 6px}
 
-.cu-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border:1px solid var(--accent);border-radius:99px;background:var(--accent-soft);color:var(--text);font:inherit;font-size:.78rem;cursor:pointer}
-.cu-chip i{color:var(--accent)}
-.cu-chip:hover{background:var(--accent);color:var(--on-accent)}.cu-chip:hover i{color:inherit}
 .cu-sb{flex:1;max-width:360px}
 .cu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
 .cu-c{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);transition:border-color .2s,box-shadow .2s}
@@ -1282,8 +1279,8 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 
 /* ===== v12: badge ticket HP, status admin, spesifikasi hosting ===== */
 .th-c{align-items:center;align-content:flex-start}
-.th-c span,.th-c .cu-chip{flex:none;height:auto;min-height:0;align-self:center;white-space:nowrap;line-height:1.4}
-@media (max-width:820px){.th-c{align-items:center;height:auto}.th-c span,.th-c .cu-chip{padding:3px 11px;font-size:.78rem}}
+.th-c span{flex:none;height:auto;min-height:0;align-self:center;white-space:nowrap;line-height:1.4}
+@media (max-width:820px){.th-c{align-items:center;height:auto}.th-c span{padding:3px 11px;font-size:.78rem}}
 .tmp-dc{display:flex;align-items:flex-start;gap:8px;margin:14px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-size:.86rem;line-height:1.45}
 .tmp-dc i{color:#5865f2;margin-top:2px}
 .tmp-lnk{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
@@ -2407,22 +2404,18 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .tk.adm .th-a .sel{flex:1 1 auto;max-width:none}
 }
 
-/* ===== Dropdown status ticket (admin) & tombol Lihat akun: ukuran sama dengan tombol Tutup ticket ===== */
+/* ===== Dropdown status ticket (admin): ukuran sama dengan tombol Tutup ticket ===== */
 .th-a .stdd{flex:none}
 .th-a .stdd .dd-btn{padding:8px 13px;gap:8px;border-radius:10px;background:var(--bg);font-size:inherit;font-weight:500;white-space:nowrap}
 .th-a .stdd .dd-btn .chev{font-size:.8rem}
 .th-a .stdd .dd-menu{left:auto;right:0;min-width:230px;border-radius:14px;z-index:30}
 .th-a .stdd .dd-opt{gap:10px;padding:9px 10px}
 .th-a .stdd .dd-opt[disabled]{opacity:.55;cursor:default}
-.th-a .btn.ghost{padding:8px 13px;border-radius:10px;gap:6px;white-space:nowrap;display:inline-flex;align-items:center}
-.th-a .btn.ghost i{color:var(--accent);font-size:.95rem}
-.th-a .btn.ghost:hover{border-color:var(--accent);background:var(--accent-soft)}
 @media (max-width:560px){
-  /* HP: Lihat akun, dropdown status, dan Tutup ticket muat satu baris. Dropdown ikut mengecil (teks dipotong ...) */
+  /* HP: dropdown status, Tutup ticket, dan tombol info muat satu baris. Dropdown ikut mengecil (teks dipotong ...) */
   .tk.adm .th-h>.th-a{flex-wrap:nowrap;gap:6px;justify-content:flex-end}
   .tk.adm .th-a .btn{flex:none;font-size:.84rem;gap:5px}
   .tk.adm .th-a .btn.dng{padding:9px 10px}
-  .tk.adm .th-a .btn.ghost{padding:8px 10px}
   .th-a .stdd{flex:0 1 auto;min-width:0}
   .tk.adm .th-a .stdd .dd-btn{width:100%;max-width:100%;padding:8px 10px;gap:6px;font-size:.84rem;justify-content:space-between}
   .th-a .stdd .dd-val{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
@@ -2573,4 +2566,112 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 @media (max-width:820px){
   /* lonceng & menu akun di navbar harus berada di atas layer chat, kalau tidak dropdown-nya tertutup */
   .dash.chatv>.topbar{z-index:50}
+}
+
+/* ===== Panel info ticket di kanan chat (dibuka lewat tombol di header) ===== */
+.th-info{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted);font-size:1rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.th-info:hover{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.th-info.on{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.th-info:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tk-info{display:none;min-width:0;position:relative}
+.ti-in{position:absolute;inset:0;overflow:auto;padding:22px;border:1px solid var(--line);border-radius:0;background:var(--surface)}
+.ti-in h4{margin:0 0 14px;font-size:1.02rem;font-weight:700;color:var(--text)}
+.ti-in h4:not(:first-of-type){margin-top:26px}
+.ti-x{display:none}
+.ti-pl{display:grid;gap:14px}
+.ti-p{display:flex;align-items:center;gap:14px;min-width:0}
+.ti-p>div{min-width:0}
+.ti-p b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:1rem;font-weight:600}
+.ti-p small{display:block;margin-top:2px;color:var(--muted);font-size:.86rem}
+.ti-p .av{flex:none;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;overflow:hidden;font-size:1.1rem}
+.ti-st{list-style:none;margin:0;padding:0}
+.ti-st li{position:relative;display:flex;align-items:center;gap:12px;padding-bottom:16px;color:var(--muted);font-size:.92rem}
+.ti-st li:last-child{padding-bottom:0}
+.ti-st li::before{content:"";position:absolute;left:13px;top:28px;bottom:0;width:2px;background:var(--line)}
+.ti-st li:last-child::before{display:none}
+.ti-st li.is-done::before{background:var(--accent)}
+.ti-dot{position:relative;z-index:1;display:grid;place-items:center;flex:none;width:28px;height:28px;border:1.5px solid var(--line);border-radius:50%;background:var(--surface);font-size:.78rem;font-weight:600}
+.ti-st li.is-done .ti-dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ti-st li.is-cur .ti-dot{border-color:var(--accent);color:var(--accent)}
+.ti-st li.is-done .ti-lb,.ti-st li.is-cur .ti-lb{color:var(--text)}
+.ti-st li.is-cur .ti-lb{font-weight:600}
+.ti-r{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0;font-size:.95rem}
+.ti-r>span:first-child{color:var(--muted)}
+.ti-r>span:last-child{display:inline-flex;align-items:center;gap:8px;min-width:0;text-align:right}
+.ti-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;background:none;padding:0}
+.ti-cp{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:.95rem;cursor:pointer;transition:background .2s,color .2s}
+.ti-cp:hover{background:var(--accent-soft);color:var(--accent)}
+@media (min-width:821px){
+  /* tiga kolom selalu ada; kolom info melebar dari 0 dengan durasi & easing yang sama seperti sidebar */
+  .dash .tk.tkx-chat.tkx-two,.dash.chatv .tk.tkx-chat.tkx-two:has(.tk-chat>.th){column-gap:0;grid-template-columns:clamp(260px,26vw,340px) minmax(0,1fr) 0px;transition:grid-template-columns .25s ease}
+  .dash .tk.tkx-chat.tkx-two.has-info,.dash.chatv .tk.tkx-chat.tkx-two.has-info:has(.tk-chat>.th){grid-template-columns:clamp(260px,26vw,340px) minmax(0,1fr) 340px}
+  .tkx-chat.tkx-two .tk-side{min-width:0}
+  .tkx-chat.tkx-two .tk-info{display:block;overflow:hidden;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility 0s linear .25s}
+  .tkx-chat.tkx-two.has-info .tk-info{visibility:visible;opacity:1;transition:opacity .25s ease .05s}
+  .ti-in{inset:auto;top:0;bottom:0;left:0;width:340px;border:0;border-left:1px solid var(--line);border-radius:0}
+}
+@media (max-width:820px){
+  .tk-info{display:block;position:fixed;left:0;right:0;bottom:0;z-index:90;height:auto;max-height:80vh;max-height:80dvh;visibility:hidden;transform:translateY(105%);transition:transform .3s ease,visibility 0s linear .3s}
+  .tkx-chat.has-info .tk-info{visibility:visible;transform:none;transition:transform .3s ease}
+  .ti-in{position:relative;inset:auto;max-height:80vh;max-height:80dvh;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));border-radius:0;border-bottom:0;box-shadow:0 -14px 40px rgba(0,0,0,.35)}
+  .ti-x{position:absolute;top:14px;right:14px;display:inline-grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--bg);color:var(--muted);cursor:pointer}
+  .ti-in h4:first-of-type{padding-right:44px}
+}
+@media (prefers-reduced-motion:reduce){.tk-info,.tkx-chat.tkx-two,.tkx-chat.tkx-two .tk-side{transition:none!important}}
+
+/* ===== chat ticket: menempel penuh (tanpa jarak kiri/kanan/atas/bawah) ===== */
+.dash.chatv>.dmain{max-width:none;padding:0}
+.dash.chatv .dpanel>.tkx-chat{animation:none;margin:0}
+.dash.chatv .tk.tkx-chat{margin:0;padding:0;border:0;border-radius:0;box-shadow:none}
+
+/* ===== Info ticket (customer): admin penangan & tahapan 3 langkah horizontal ===== */
+.ti-q{display:grid;place-items:center;flex:none;width:48px;height:48px;border:2px dashed color-mix(in srgb,var(--muted) 65%,transparent);border-radius:50%;color:var(--muted);font-size:1.25rem;font-weight:700;line-height:1}
+.ti-p b.ti-wait{white-space:normal;overflow:visible;font-weight:500;color:var(--muted);line-height:1.4}
+.ti-hs{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.ti-hs li{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted);font-size:.86rem;text-align:center}
+.ti-hs li::before{content:"";position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--line)}
+.ti-hs li:last-child::before{display:none}
+.ti-hs li.is-done::before{background:var(--accent)}
+.ti-hs .ti-dot{position:relative;z-index:1}
+.ti-hs li.is-done .ti-dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ti-hs li.is-cur .ti-dot{border-color:var(--accent);color:var(--accent)}
+.ti-hs li.is-done .ti-lb,.ti-hs li.is-cur .ti-lb{color:var(--text)}
+.ti-hs li.is-cur .ti-lb{font-weight:600}
+.ti-hs .ti-lb{line-height:1.3;padding:0 4px}
+
+/* Info customer singkat di panel info ticket (admin) */
+.ti-r>span:last-child{overflow-wrap:anywhere}
+.ti-cp{text-decoration:none}
+.ti-none{color:var(--muted);font-style:italic;font-size:.88rem}
+.ti-cu{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:12px;padding:9px 12px}
+
+/* ===== Tooltip tombol info ticket ===== */
+.nx-tip{position:fixed;z-index:300;padding:6px 11px;border-radius:8px;background:var(--text);color:var(--surface);font-size:.76rem;font-weight:500;line-height:1.2;white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .14s,transform .14s}
+.nx-tip.on{opacity:1;transform:none}
+.nx-tip::after{content:"";position:absolute;left:var(--ax,50%);bottom:-4px;width:8px;height:8px;margin-left:-4px;background:inherit;transform:rotate(45deg);border-radius:0 0 2px 0}
+.nx-tip.below{transform:translateY(-4px)}
+.nx-tip.below.on{transform:none}
+.nx-tip.below::after{bottom:auto;top:-4px;border-radius:2px 0 0 0}
+
+/* ===== Animasi alur "Tahapan" di info ticket: manik kecil meluncur di garis, cincin tipis berdenyut di tahap berjalan ===== */
+.ti-hs li::after{display:none}
+.ti-hs .ti-trk{position:absolute;top:13px;left:50%;width:100%;height:0;pointer-events:none}
+.ti-hs .ti-bead{position:absolute;top:-4px;left:14px;width:14px;height:8px;border-radius:99px;background:color-mix(in srgb,var(--accent) 65%,#fff);box-shadow:0 0 8px color-mix(in srgb,var(--accent) 70%,transparent);opacity:0;animation:tibead 3.2s cubic-bezier(.45,0,.3,1) infinite}
+.ti-hs li.is-cur .ti-dot::before,.ti-hs li.is-cur .ti-dot::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;border:1px solid var(--accent);opacity:0;pointer-events:none;animation:tiring 3.2s ease-out 1.15s infinite}
+.ti-hs li.is-cur .ti-dot::after{animation-delay:1.6s}
+.ti-hs.ph0 li.is-cur .ti-dot::before{animation-delay:0s}
+.ti-hs.ph0 li.is-cur .ti-dot::after{animation-delay:.45s}
+.ti-hs.ph0 li.is-cur .ti-lb{animation:tilb 3.2s ease-in-out infinite}
+@keyframes tibead{
+  0%{left:14px;opacity:0;transform:scaleX(.5)}
+  7%{opacity:1;transform:scaleX(1)}
+  38%{left:calc(100% - 28px);opacity:1;transform:scaleX(1.3)}
+  45%,100%{left:calc(100% - 28px);opacity:0;transform:scaleX(.5)}
+}
+@keyframes tiring{0%{opacity:.6;transform:scale(1)}55%,100%{opacity:0;transform:scale(1.8)}}
+@keyframes tilb{0%,100%{opacity:1}30%{opacity:.4}60%{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .nx-tip{transition:none}
+  .ti-hs .ti-bead,.ti-hs li .ti-dot::before,.ti-hs li .ti-dot::after,.ti-hs li .ti-lb{animation:none!important}
+  .ti-hs .ti-trk{display:none}
 }

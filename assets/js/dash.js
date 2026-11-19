@@ -181,7 +181,7 @@
   }
 
   function dashInit(adm, root) {
-    var kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -493,9 +493,9 @@
       var lockC = adm && !closed && (t.st === "Pembayaran Dikonfirmasi" || t.st === "Pesanan Diproses"), si = ST.indexOf(t.st), nmsg = t.m.filter(function (m) { return m.w !== "s"; }).length;
       var lkH = (lockC ? '<p class="th-lk"><i class="bi bi-lock"></i> <span>Ubah status ke <b>Orderan Selesai</b> dulu sebelum menutup ticket.</span></p>' : "");
       var info = lkH ? '<div class="th-i">' + lkH + '</div>' : "";
-      var cuB = '<button type="button" class="btn ghost sm" data-cu="' + e(uname(t)) + '"><i class="bi bi-person-vcard"></i> Lihat akun</button>';
-      var cbd = closed ? '<span class="bd b6">Ditutup</span>' : "";
-      var act = adm ? cuB + (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel><i class="bi bi-trash3"></i> Hapus</button>' : "") : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : stDD(t)) + (lockC ? '<button class="btn dng sm lk" type="button" data-close-lock title="Ubah status ke Orderan Selesai dulu"><i class="bi bi-lock"></i> Tutup ticket</button>' : '<button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Tutup ticket</button>')) : bd(t.st) + cbd;
+      var cbd = "";
+      var ibtn = '<button type="button" class="th-info' + (kinfo ? " on" : "") + '" data-kinfo aria-pressed="' + kinfo + '" aria-label="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '" data-tip="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '"><i class="bi bi-layout-sidebar-inset-reverse"></i></button>';
+      var act = adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : stDD(t)) + (lockC ? '<button class="btn dng sm lk" type="button" data-close-lock title="Ubah status ke Orderan Selesai dulu"><i class="bi bi-lock"></i> Tutup ticket</button>' : '<button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Tutup ticket</button>') + ibtn) : bd(t.st) + cbd + ibtn;
       return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b>' + e(t.subj) + "</b><small>" + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" + info +
         pinBar(t) + '<div class="th-m">' + body + "</div>" + rpBar(t) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
@@ -584,6 +584,32 @@
         return '<button type="button" class="tk-item tks-i" data-id="' + e(x.id) + '" aria-current="' + (x.id === sel) + '"><b>' + wait + e(x.subj) + "</b><small><code>" + e(x.id) + "</code><span>" + e(x.tgl) + "</span>" + (adm ? "<span>" + e(uname(x)) + "</span>" : "") + "</small></button>";
       }).join("") || '<p class="muted pad">' + (kq ? "Tidak ada ticket yang cocok." : (stab === "selesai" ? "Belum ada ticket selesai." : "Belum ada ticket aktif.")) + "</p>";
     }
+    /* Panel info ticket (kanan chat): orang di ticket, tahapan, tentang ticket */
+    function tkInfo(t) {
+      var closed = cl(t), si = closed ? ST.length : Math.max(0, ST.indexOf(t.st)), ppl = [], seen = {};
+      t.m.forEach(function (m) { if (m.w !== "a") return; var k = m.n || m.r || "Admin"; if (seen[k]) return; seen[k] = 1; ppl.push({ n: m.n || "Tim NEXORA", r: m.r || "Admin", a: m.av }); });
+      var cust = '<div class="ti-p">' + av(uname(t), t.cav) + "<div><b>" + e(uname(t)) + "</b><small>Customer · Pembuka ticket</small></div></div>";
+      var h1 = ppl[0], hand = h1 ? '<div class="ti-p">' + (h1.a ? av(h1.n, h1.a) : '<span class="av nx"><i class="bi bi-box2"></i></span>') + "<div><b>" + e(h1.n) + "</b><small>" + e(h1.r) + (adm ? " · Menangani ticket" : "") + "</small></div></div>" :
+        '<div class="ti-p"><span class="ti-q" aria-hidden="true">?</span><div><b class="ti-wait">' + (adm ? "Belum ada admin yang menangani" : "Menunggu admin mengambil ticket kamu") + "</b></div></div>";
+      var fin = closed || si >= ST.length - 1, ph = fin ? 3 : (si === 0 ? 0 : 1);
+      var hs = ["Menunggu admin", "Ditangani", "Selesai"].map(function (l, i) {
+        var done = i < ph, cur = i === ph;
+        return '<li class="' + (done ? "is-done" : cur ? "is-cur" : "") + '" style="--i:' + i + '"' + (cur ? ' aria-current="step"' : "") + '><span class="ti-dot">' + (done ? '<i class="bi bi-check-lg"></i>' : i + 1) + '</span><span class="ti-lb">' + l + "</span>" + (ph === 1 && i === 0 ? '<span class="ti-trk" aria-hidden="true"><i class="ti-bead"></i></span>' : "") + "</li>";
+      }).join("");
+      var dib = t.tgl + (t.m[0] && t.m[0].h ? ", " + t.m[0].h : "");
+      var row = function (l, v) { return '<div class="ti-r"><span>' + l + "</span><span>" + v + "</span></div>"; };
+      var cb = "";
+      if (adm) {
+        var cu = custInfo(uname(t)), none = '<span class="ti-none">Belum diisi</span>';
+        var cp = function (v) { return '<button type="button" class="ti-cp" data-kcp="' + e(v) + '" aria-label="Salin" title="Salin"><i class="bi bi-copy"></i></button>'; };
+        cb = '<h4>Info customer</h4><div class="ti-ab">' + row("Nama akun", e(uname(t))) + row("Discord", cu.discord ? e(cu.discord) + cp(cu.discord) : none) + '</div>' + (arole() !== "Teknisi" ? '<button type="button" class="btn ghost sm ti-cu" data-cu="' + e(uname(t)) + '"><i class="bi bi-person-vcard"></i> Lihat akun lengkap</button>' : "");
+      }
+      return '<aside class="tk-info" aria-label="Info ticket"><div class="ti-in"><button type="button" class="ti-x" data-kinfo aria-label="Tutup info"><i class="bi bi-x-lg"></i></button>' +
+        '<h4>Orang di ticket ini</h4><div class="ti-pl">' + (adm ? hand + cust : hand) + "</div>" +
+        '<h4>Tahapan</h4><ol class="ti-hs ph' + ph + '">' + hs + "</ol>" +
+        '<h4>Tentang ticket</h4><div class="ti-ab">' + row("Nomor", '<code class="ti-id">' + e(t.id) + '</code><button type="button" class="ti-cp" data-kcopy="' + e(t.id) + '" aria-label="Salin nomor ticket" title="Salin nomor"><i class="bi bi-copy"></i></button>') +
+        row("Dibuat", e(dib)) + "</div>" + cb + "</div></aside>";
+    }
     function sidePane(t) {
       if (stabFor !== t.id) { stabFor = t.id; stab = cl(t) ? "selesai" : "aktif"; }
       return '<div class="tk-side tks"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-sq type="search" placeholder="Cari tiket atau pesan" value="' + e(kq) + '" autocomplete="off"></label><div class="tks-tabs" role="tablist" aria-label="Filter ticket"><button type="button" role="tab" data-stab="aktif" aria-selected="' + (stab !== "selesai") + '">Aktif</button><button type="button" role="tab" data-stab="selesai" aria-selected="' + (stab === "selesai") + '">Selesai</button></div></div><div class="tk-list tks-list">' + sideItems() + "</div></div>";
@@ -594,13 +620,13 @@
         var cur = mine();
         if (!cur.some(function (x) { return x.id === sel; })) sel = null;
         var t = cur.filter(function (x) { return x.id === sel; })[0];
-        if (t && tv === "chat") return '<div class="tk adm cs chat tkx-chat tkx-two">' + sidePane(t) + '<div class="tk-chat">' + thread(t, true) + "</div></div>";
+        if (t && tv === "chat") return '<div class="tk adm cs chat tkx-chat tkx-two' + (kinfo ? " has-info" : "") + '">' + sidePane(t) + '<div class="tk-chat">' + thread(t, true) + "</div>" + tkInfo(t) + "</div>";
         return '<div class="tkx"><button type="button" class="btn tkx-new" data-go="buka"><i class="bi bi-plus-circle"></i> Ticket baru</button>' + kShell() + "</div>";
       }
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
       var t2 = all.filter(function (x) { return x.id === sel; })[0];
-      if (t2 && tv === "chat") return '<div class="tk adm chat tkx-chat tkx-two">' + sidePane(t2) + '<div class="tk-chat">' + thread(t2) + "</div></div>";
+      if (t2 && tv === "chat") return '<div class="tk adm chat tkx-chat tkx-two' + (kinfo ? " has-info" : "") + '">' + sidePane(t2) + '<div class="tk-chat">' + thread(t2) + "</div>" + tkInfo(t2) + "</div>";
       return '<div class="tkx">' + kShell() + "</div>";
     }
     /* Filter ticket admin: 3 tab ringkas + dropdown status (custom, bukan <select> bawaan). Semua muat tanpa geser ke samping. */
@@ -1212,6 +1238,25 @@
       }).join("") + "</ol>";
     }
     function chSt(v) { if (!v) return; var a = TK(); var c0 = a.filter(function (y) { return y.id === sel; })[0]; if (c0 && c0.st === "Orderan Selesai") { toast("Status sudah Orderan Selesai dan tidak bisa diubah lagi"); return draw(); } a.forEach(function (x) { if (x.id === sel && x.st !== v) { x.st = v; x.m.push({ w: "s", t: "Status diubah: " + v, d: "Baru saja", h: hm() }); syncOrd(x); nt(x, "tk", "Status diperbarui", x.id + " · " + v); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
+    /* Tooltip tombol info ticket: "Tampilkan detail" / "Sembunyikan detail" muncul di atas tombol saat di-hover */
+    var tipEl = null;
+    function tipHide() { if (tipEl) tipEl.classList.remove("on"); }
+    function tipShow(b) {
+      if (!tipEl) { tipEl = document.createElement("div"); tipEl.className = "nx-tip"; tipEl.setAttribute("role", "tooltip"); document.body.appendChild(tipEl); }
+      tipEl.textContent = b.getAttribute("data-tip") || ""; tipEl.classList.remove("on"); tipEl.style.left = "0px"; tipEl.style.top = "0px";
+      var r = b.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+      var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8), top = r.top - h - 10, below = top < 6;
+      if (below) top = r.bottom + 10;
+      tipEl.classList.toggle("below", below); tipEl.style.left = left + "px"; tipEl.style.top = top + "px";
+      tipEl.style.setProperty("--ax", (r.left + r.width / 2 - left) + "px");
+      void tipEl.offsetWidth; tipEl.classList.add("on");
+    }
+    document.addEventListener("pointerover", function (ev) { if (ev.pointerType === "touch") return; var b = ev.target.closest && ev.target.closest(".th-info"); if (b) tipShow(b); });
+    document.addEventListener("pointerout", function (ev) { var b = ev.target.closest && ev.target.closest(".th-info"); if (b && !(ev.relatedTarget && b.contains(ev.relatedTarget))) tipHide(); });
+    document.addEventListener("focusin", function (ev) { var b = ev.target.closest && ev.target.closest(".th-info"); if (b && ev.target.matches(":focus-visible")) tipShow(b); });
+    document.addEventListener("focusout", tipHide);
+    document.addEventListener("scroll", tipHide, true);
+    window.addEventListener("resize", tipHide);
     function navPush() {
       var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0);
       if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew }; if (hNav) history.pushState(stt, ""); else history.replaceState(stt, ""); } catch (xh) {} }
@@ -1247,8 +1292,11 @@
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
+      if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
+      if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
+      if (d.kcopy) { var cv = d.kcopy, cok = function () { toast("Nomor ticket disalin"); }, cfb = function () { var ta = document.createElement("textarea"); ta.value = cv; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); cok(); } catch (x) { toast("Gagal menyalin nomor ticket"); } ta.remove(); }; if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(cv).then(cok, cfb); else cfb(); return; }
       if (d.kr) { sel = d.kr; tv = "chat"; return draw(); }
       if (d.kf !== undefined) { if (adm) af = d.kf; else kf = d.kf; kpg = 1; $$("[data-kf]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); $(".tkx-res", root).innerHTML = kBody(); return; }
       if (d.kpg) { kpg += d.kpg === "next" ? 1 : -1; $(".tkx-res", root).innerHTML = kBody(); return; }
@@ -1277,7 +1325,7 @@
         toast("Akun " + nmk + (lkx[key] ? " diputuskan" : " terhubung (demo)")); return draw();
       }
       if (d.pf) { var P1 = ld("nx-prof", {}); P1[d.pf] = P1[d.pf] === false; sv("nx-prof", P1); toast((d.pf === "nBill" ? "Notifikasi tagihan " : "Notifikasi balasan ticket ") + (P1[d.pf] === false ? "dinonaktifkan" : "diaktifkan")); return draw(); }
-      if (d.cu) return custModal(d.cu);
+      if (d.cu) { if (adm && arole() === "Teknisi") return; return custModal(d.cu); }
       if (d.hc !== undefined) { hcat[tab] = d.hc; return draw(); }
       if (d.stab) { stab = d.stab; $$("[data-stab]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); var sl = $(".tks-list", root); if (sl) { sl.innerHTML = sideItems(); sl.scrollTop = 0; } return; }
       if (d.gt) { var x = TK().filter(function (y) { return y.id === d.gt; })[0]; sel = d.gt; tg = cl(x) ? "selesai" : "aktif"; tv = "chat"; tab = "tiket"; return draw(); }
