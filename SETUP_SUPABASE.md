@@ -46,17 +46,18 @@ Salin **Client ID** dan **Client Secret** ke Supabase > Providers > Discord.
 Di **Authentication > URL Configuration**:
 - **Site URL:** `https://nexoraminecraft.my.id`
 - **Redirect URLs** (tambahkan semuanya, ganti domain pages.dev sesuai milikmu):
-  - `https://nexoraminecraft.my.id/akun/dashboard.html`
-  - `https://nexoraminecraft.my.id/admin/nexora-admin.html`
-  - `https://NAMA-PROJECT.pages.dev/akun/dashboard.html`
-  - `https://NAMA-PROJECT.pages.dev/admin/nexora-admin.html`
-  - alamat preview branch `backend` (kalau mau diuji di sana)
+  - `https://nexoraminecraft.my.id/dashboard`
+  - `https://nexoraminecraft.my.id/nexora-admin`
+  - `https://NAMA-PROJECT.pages.dev/dashboard`
+  - `https://NAMA-PROJECT.pages.dev/nexora-admin`
+  - alamat preview branch `backend`, juga dengan `/dashboard` dan `/nexora-admin` (kalau mau diuji di sana)
+  - Alamat lama (`/akun/dashboard.html`, `/admin/nexora-admin.html`) boleh dihapus dari daftar setelah deploy ini.
 
 ## 5. Tes (centang satu per satu)
-- [ ] Buka `akun/masuk.html`, klik Google: kembali ke dashboard customer, nama terisi.
+- [ ] Buka `/masuk`, klik Google: kembali ke dashboard customer, nama terisi.
 - [ ] Profil: isi username Discord dan WhatsApp (`0812...` otomatis jadi `62812...`), simpan, muat ulang halaman: tetap ada.
 - [ ] Profil > akun terhubung: hubungkan Discord (atau Google). Setelah kembali, statusnya "terhubung".
-- [ ] Buka `admin/nexora-admin-access.html` dengan akun Founder: masuk dashboard admin dengan role Founder.
+- [ ] Buka `/nexora-admin-access` dengan akun Founder: masuk dashboard admin dengan role Founder.
 - [ ] Login halaman admin dengan akun lain (bukan staf): ditolak dengan pesan "tidak terdaftar sebagai tim".
 - [ ] Menu Tim & role: tambah anggota (email Google **atau** ID Discord), ubah role, hapus.
 - [ ] Anggota baru login lewat halaman admin: masuk sesuai rolenya. Teknisi tidak melihat menu Tim & role.

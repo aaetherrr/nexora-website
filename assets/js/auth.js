@@ -27,7 +27,7 @@
   function ssSet(k, v) { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (x) {} }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
   function fail(er) { throw er instanceof Error ? er : new Error((er && er.message) || "Terjadi kesalahan"); }
-  function sibling(file) { return new URL(file, location.href).href; }
+  function sibling(file) { return location.origin + "/" + file; } /* alamat absolut dari root situs */
 
   function waNorm(v) {
     var d = String(v || "").replace(/[^0-9+]/g, "").replace(/^\+/, "");
@@ -154,7 +154,7 @@
   NX.hydrate = function () { return NX.ready(NX._mode || "cust", true); };
 
   NX.login = function (provider, mode) {
-    var to = mode === "alogin" ? "nexora-admin.html" : "dashboard.html";
+    var to = mode === "alogin" ? "nexora-admin" : "dashboard";
     lsSet(PEND, "1");
     return sb.auth.signInWithOAuth({ provider: PROV[provider], options: { redirectTo: sibling(to) } }).then(function (r) { if (r.error) fail(r.error); });
   };
@@ -183,7 +183,10 @@
   };
 
   NX.link = function (provider) {
-    return sb.auth.linkIdentity({ provider: PROV[provider], options: { redirectTo: location.href.split("#")[0] } }).then(function (r) { if (r.error) fail(r.error); });
+    /* kembali ke /dashboard atau /nexora-admin (alamat yang didaftarkan di Supabase); menu terakhir diingat lewat sessionStorage */
+    var bs = /^\/nexora-admin(\/|$)/.test(location.pathname) ? "/nexora-admin" : "/dashboard";
+    try { sessionStorage.setItem("nx-ret", location.pathname); } catch (x) {}
+    return sb.auth.linkIdentity({ provider: PROV[provider], options: { redirectTo: location.origin + bs } }).then(function (r) { if (r.error) fail(r.error); });
   };
   NX.unlink = function (provider) {
     var id = NX.identities.filter(function (i) { return i.provider === PROV[provider]; })[0];
@@ -414,7 +417,7 @@
   function startLive() {
     if (NX._live) return; NX._live = true;
     function toLogin() {
-      if (document.querySelector("[data-dash]")) location.href = (NX._mode === "admin" ? "nexora-admin-access.html" : "masuk.html") + "?err=expired";
+      if (document.querySelector("[data-dash]")) location.href = (NX._mode === "admin" ? "/nexora-admin-access" : "/masuk") + "?err=expired";
       else location.reload();
     }
     function checkExpire() {

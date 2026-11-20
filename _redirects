@@ -1,0 +1,15 @@
+# NEXORA - Cloudflare Pages. Satu aturan per baris, urutan penting (static dulu, lalu yang pakai *).
+
+# --- Alamat lama -> alamat baru (bookmark dan link lama tetap hidup) ---
+/akun/dashboard.html             /dashboard             301
+/akun/dashboard                  /dashboard             301
+/akun/masuk.html                 /masuk                 301
+/akun/masuk                      /masuk                 301
+/admin/nexora-admin.html         /nexora-admin          301
+/admin/nexora-admin              /nexora-admin          301
+/admin/nexora-admin-access.html  /nexora-admin-access   301
+/admin/nexora-admin-access       /nexora-admin-access   301
+
+# --- Menu di dalam dashboard: alamatnya beda, halamannya sama (dibaca oleh dash.js) ---
+/dashboard/*     /dashboard.html      200
+/nexora-admin/*  /nexora-admin.html   200

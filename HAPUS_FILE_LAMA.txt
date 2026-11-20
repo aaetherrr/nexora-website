@@ -1,0 +1,9 @@
+Setelah file-file di zip ini ditimpa ke project, HAPUS 4 file lama berikut
+(sudah dipindah ke root, folder akun/ dan admin/ jadi kosong lalu bisa dihapus):
+
+  akun/dashboard.html
+  akun/masuk.html
+  admin/nexora-admin.html
+  admin/nexora-admin-access.html
+
+Alamat lama tetap hidup: _redirects mengalihkannya ke alamat baru.
