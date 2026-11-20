@@ -227,7 +227,7 @@
     });
     var by = {}; ms.forEach(function (o) { by[o.mid] = o; });
     ms.forEach(function (o) { if (o.rpid && by[o.rpid]) { var q = by[o.rpid]; o.rp = { mid: q.mid, w: q.w, n: q.n || "", t: q.t }; } delete o.rpid; });
-    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", m: ms };
+    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", hd: r.handler_nama ? { id: r.handler_id || "", n: r.handler_nama, r: r.handler_role || "Admin", a: r.handler_av || "", me: !!(NX.user && r.handler_id && r.handler_id === NX.user.id) } : null, m: ms };
   }
   NX.tkReload = function () {
     return sb.from("tickets").select("*, ticket_messages(*)").order("dibuat", { ascending: false }).then(function (r) {
@@ -262,6 +262,7 @@
     var run = ops.reduce(function (p, f) { return p.then(f); }, Promise.resolve());
     return run.then(function () { return NX.tkReload(); }, function (er) { return NX.tkReload().then(function () { throw er; }, function () { throw er; }); }).then(function () { if (window.nxDraw) window.nxDraw(); }, function (er) { if (window.nxToast) window.nxToast(er.message); if (window.nxDraw) window.nxDraw(); });
   };
+  NX.takeOver = function (tid) { return sb.rpc("take_over_ticket", { p_ticket: tid }).then(function (r) { if (r.error) fail(r.error); return NX.tkReload(); }).then(function () { if (window.nxDraw) window.nxDraw(); }); };
   NX.msgRead = function (tid) { return sb.rpc("mark_ticket_read", { p_ticket: tid }).then(function (r) { if (r.error) console.error("baca:", r.error.message); }, function () {}); };
   NX.msgPin = function (mid, on) { return sb.rpc("pin_message", { p_id: Number(mid), p_pin: !!on }).then(function (r) { if (r.error) { if (window.nxToast) window.nxToast(r.error.message); } return NX.tkReload(); }, function () {}).then(function () { if (window.nxDraw) window.nxDraw(); }); };
   NX.usersReload = function () {
