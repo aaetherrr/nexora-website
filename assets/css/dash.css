@@ -2913,7 +2913,9 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .ix-dots:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .ix-sw{display:flex}
 .ix-sort{display:inline-flex;align-items:center;gap:7px;padding:4px 6px;margin:0 -6px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;cursor:pointer}
-.ix-sort:hover{color:var(--text);background:color-mix(in srgb,var(--text) 6%,transparent)}
+.ix-sort:hover,.ix-sort:active,.ix-sort:focus{background:transparent;box-shadow:none}
+.ix-sort{-webkit-tap-highlight-color:transparent}
+.ix-sort:focus:not(:focus-visible){outline:none}
 .ix-sort .srt{display:inline-flex;flex-direction:column;gap:1px;font-size:.6rem;line-height:.7}
 .ix-sort .srt i{opacity:.35}
 .ix-sort .srt i.on{opacity:1;color:var(--accent)}
