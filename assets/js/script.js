@@ -134,7 +134,7 @@ function linkPesan(pesan) {
 }
 
 /* Tombol "Pesan paket ini" di Harga hosting: langsung ke form buka ticket (belum login diminta masuk dulu). */
-function linkOrder() { return ROOT + "akun/dashboard.html#buka"; }
+function linkOrder() { return ROOT + "dashboard/buka"; }
 function pasangOrder() {
   document.addEventListener("click", function (e) {
     const a = e.target.closest && e.target.closest("a[data-order]"); if (!a) return;
@@ -216,7 +216,7 @@ function pasangPanelMenu() {
     let role = ""; try { role = sessionStorage.getItem("nx-role") || ""; } catch (x) {}
     if (!role) { try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)) { role = "cust"; break; } } } catch (x) {} }
     const ac = document.createElement("div"); ac.className = "nv-ac nv-m"; ac.style.setProperty("--i", n++);
-    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html") + '">Dashboard</a><button type="button" class="btn ghost nv-out"><span>Keluar</span></button>' : '<a class="btn" href="' + ROOT + 'akun/masuk.html">Masuk</a>';
+    ac.innerHTML = role ? '<a class="btn" href="' + ROOT + (role === "admin" ? "nexora-admin" : "dashboard") + '">Dashboard</a><button type="button" class="btn ghost nv-out"><span>Keluar</span></button>' : '<a class="btn" href="' + ROOT + 'masuk">Masuk</a>';
     const nvOut = ac.querySelector(".nv-out");
     if (nvOut) nvOut.addEventListener("click", function () { konfirmasiKeluar(nvOut); });
     nav.insertBefore(ac, dc);
@@ -1009,7 +1009,7 @@ function konfirmasiKeluar(balik) {
 function pasangAkun() {
   const b = document.querySelector(".login-btn"); if (!b || b.id === "nav-logout") return;
   const I = sesInfo(); if (!I.role) return;
-  const dash = ROOT + (I.role === "admin" ? "admin/nexora-admin.html" : "akun/dashboard.html"), nm = I.name || (I.role === "admin" ? "Admin" : "Customer"), ini = escK(nm.trim().charAt(0).toUpperCase() || "?");
+  const dash = ROOT + (I.role === "admin" ? "nexora-admin" : "dashboard"), nm = I.name || (I.role === "admin" ? "Admin" : "Customer"), ini = escK(nm.trim().charAt(0).toUpperCase() || "?");
   const img = function (c) { return I.av ? '<img class="' + c + '" src="' + escK(I.av) + '" alt="" referrerpolicy="no-referrer" loading="lazy">' : ini; };
   const w = document.createElement("div"); w.className = "acct";
   w.innerHTML = '<button type="button" class="acct-b" aria-haspopup="true" aria-expanded="false" aria-label="Akun: ' + escK(nm) + '" title="' + escK(nm) + '">' + img("acct-i") + '<span class="acct-on" aria-hidden="true"></span></button>' +

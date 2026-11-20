@@ -8,20 +8,22 @@ pages/                     halaman publik
   kontak.html              Hubungi kami (isi diatur dari dashboard admin > Kontak)
   terms.html
   privacy.html
-akun/                      area customer
-  masuk.html               login dan daftar
-  dashboard.html           dashboard customer
-admin/                     area admin
-  nexora-admin-access.html login admin
-  nexora-admin.html        dashboard admin
+masuk.html                 login dan daftar              -> /masuk
+dashboard.html             dashboard customer            -> /dashboard
+nexora-admin-access.html   login admin                   -> /nexora-admin-access
+nexora-admin.html          dashboard admin               -> /nexora-admin
+_redirects                 aturan Cloudflare Pages (alamat lama -> baru, rute menu dashboard)
 assets/
   css/  style.css, dash.css
   js/   script.js, dash.js
   img/  logo.png, plugin/, paket/
 ```
 
-Semua link antar-file memakai path relatif, jadi folder ini bisa dibuka dari mana saja
-(file langsung, live server, atau hosting). Kalau menambah halaman baru di `pages/`,
+Halaman publik memakai path relatif. Halaman akun/admin (`masuk`, `dashboard`, `nexora-admin`,
+`nexora-admin-access`) memakai alamat absolut (`/assets/...`, `/dashboard`) karena menu dashboard punya
+alamat sendiri (`/dashboard/ticket`, `/dashboard/ticket/T-1043`, `/nexora-admin/tagihan`). Alamat itu hanya
+berfungsi di Cloudflare Pages (lewat `_redirects`) atau `npx wrangler pages dev .`, bukan di file langsung/Live Server.
+Kalau menambah halaman baru di `pages/`,
 pakai pola yang sama dengan `pages/faq.html`: `../assets/...` untuk css/js/gambar dan
 `../index.html` untuk link ke beranda.
 

@@ -1,0 +1,3 @@
+// Sama seperti dashboard customer, tapi untuk dashboard admin: /nexora-admin/...
+export const onRequest = ({ request, env }) =>
+  env.ASSETS.fetch(new URL("/nexora-admin", request.url));

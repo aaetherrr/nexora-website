@@ -147,7 +147,7 @@
     if (/[?&]err=staff/.test(location.search)) aerr("Akun ini terdaftar sebagai tim NEXORA, jadi tidak bisa dipakai di panel customer. Untuk order sebagai customer, masuk dengan akun Google/Discord yang lain.");
     if (/[?&]info=order/.test(location.search) && ae) { ae.textContent = "Masuk dulu untuk membuka ticket. Setelah login, kamu langsung diarahkan ke form buka ticket."; ae.classList.add("info"); ae.hidden = false; }
     if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
-    function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "nexora-admin.html" : "dashboard.html"); }
+    function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "/nexora-admin" : "/dashboard"); }
     if (location.hash === "#daftar") setTimeout(function () { var d = $('[data-m="daftar"]', root); if (d) d.click(); }, 0);
     $$("[data-m]", root).forEach(function (b) { b.addEventListener("click", function () {
       $$("[data-m]", root).forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
@@ -268,7 +268,7 @@
       window.addEventListener("resize", function () { if (!isMob()) root.classList.remove("open"), scrim.classList.remove("on"); syncT(); });
       syncT();
     })();
-    function out() { ss("nx-role", ""); ss("nx-arole", ""); var to = adm ? "nexora-admin-access.html" : "masuk.html"; if (window.NX && NX.live) return NX.logout().then(function () { go(to); }, function () { go(to); }); go(to); }
+    function out() { ss("nx-role", ""); ss("nx-arole", ""); var to = adm ? "/nexora-admin-access" : "/masuk"; if (window.NX && NX.live) return NX.logout().then(function () { go(to); }, function () { go(to); }); go(to); }
     function outAsk() {
       modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lo-t"><span class="warn-ic"><i class="bi bi-box-arrow-right"></i></span><div class="mb"><h3 id="lo-t">Keluar dari akun?</h3><p>Apakah kamu yakin ingin keluar dari akun?</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Ya, keluar</button></div></div>', function (m, close) {
         $("[data-ok]", m).addEventListener("click", out);
@@ -1430,9 +1430,9 @@
       var sm = $(".who small", root); if (sm) sm.textContent = arole() || "Admin";
     }
     function syncRole() {
-      if (window.NX && NX.live) { return NX.refresh().then(function (r) { if (!r) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); return setTimeout(function () { go("nexora-admin-access.html"); }, 1000); } if (r !== arole()) { ss("nx-arole", r); toast("Rolemu sekarang: " + r); applyPerms(); draw(); } }); }
+      if (window.NX && NX.live) { return NX.refresh().then(function (r) { if (!r) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); return setTimeout(function () { go("/nexora-admin-access"); }, 1000); } if (r !== arole()) { ss("nx-arole", r); toast("Rolemu sekarang: " + r); applyPerms(); draw(); } }); }
       var u = staffBy(ss("nx-email"));
-      if (!u) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); ss("nx-role", ""); ss("nx-arole", ""); return setTimeout(function () { go("nexora-admin-access.html"); }, 1000); }
+      if (!u) { toast("Aksesmu ke dashboard admin dicabut oleh Founder"); ss("nx-role", ""); ss("nx-arole", ""); return setTimeout(function () { go("/nexora-admin-access"); }, 1000); }
       if (u.role !== arole()) { ss("nx-arole", u.role); toast("Rolemu sekarang: " + u.role); applyPerms(); draw(); }
     }
     var hNav = "", hRest = false;
@@ -1481,9 +1481,31 @@
       t.style.height = Math.min(h, 140) + "px";
       t.style.overflowY = h > 140 ? "auto" : "hidden";
     }
+    /* Alamat (URL) tiap menu. Customer: /dashboard, /dashboard/ticket, /dashboard/ticket/T-1043.
+       Admin: /nexora-admin, /nexora-admin/ticket, dst. Cloudflare Pages menyajikan halaman yang sama lewat _redirects. */
+    var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = { tiket: "ticket" };
+    function urlFor() {
+      var u = BASE; if (tab && tab !== "ringkasan") u += "/" + (SLUG[tab] || tab);
+      if (tab === "tiket" && tv === "chat" && sel) u += "/" + encodeURIComponent(sel);
+      else if (tab === "tagihan" && bnew) u += "/baru";
+      return u;
+    }
+    function routeFrom(path) {
+      var r = { tab: "ringkasan", sel: null, bnew: false }, parts, TT = TITLES[adm ? "a" : "c"];
+      path = (path || "").replace(/\/+$/, "");
+      if (path.indexOf(BASE) !== 0) return r;
+      try { parts = path.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent); } catch (xr) { return r; }
+      var k = (parts[0] || "").toLowerCase(); if (k === "ticket") k = "tiket";
+      if (!k || !TT[k] || !PAN[k] || k === "buka") return r;
+      if (adm && !can(k)) return r;
+      r.tab = k;
+      if (k === "tiket" && parts[1]) { var id = parts[1]; if ((adm ? TK() : mine()).some(function (x) { return x.id === id; })) r.sel = id; }
+      if (k === "tagihan" && adm && parts[1] === "baru") r.bnew = true;
+      return r;
+    }
     function navPush() {
       var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0);
-      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew }; if (hNav) history.pushState(stt, ""); else history.replaceState(stt, ""); } catch (xh) {} }
+      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
       hNav = nk; hRest = false;
     }
     function draw() {
@@ -1510,7 +1532,9 @@
       mk();
     }
     window.addEventListener("popstate", function (ev) {
-      var st = ev.state; if (!st || !st.nx || !PAN[st.tab]) return; if (adm && !can(st.tab)) return;
+      var st = ev.state;
+      if (!st || !st.nx) { if (location.pathname.replace(/\/+$/, "") === urlFor()) return; var rr = routeFrom(location.pathname); st = { nx: 1, tab: rr.tab, sel: rr.sel, bnew: rr.bnew }; }
+      if (!PAN[st.tab]) return; if (adm && !can(st.tab)) return;
       tab = st.tab; bnew = !!st.bnew; if (st.sel) { sel = st.sel; tv = "chat"; } else { tv = "list"; if (isMob()) sel = null; }
       aq = ""; setOpen(false); hRest = true; draw();
     });
@@ -1665,6 +1689,9 @@
       } catch (x) {}
     }
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
+    var r0 = routeFrom(location.pathname), rt = ss("nx-ret");
+    if (rt) { ss("nx-ret", ""); if (location.pathname.replace(/\/+$/, "") === BASE) r0 = routeFrom(rt); } /* balik dari tautkan akun Google/Discord */
+    tab = r0.tab; bnew = r0.bnew; if (r0.sel) { sel = r0.sel; tv = "chat"; }
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
   }
@@ -1672,22 +1699,22 @@
   function boot(root, m) {
     var live = window.NX && NX.live;
     if (m === "login" || m === "alogin") {
-      if (live && ss("nx-role")) return go(m === "alogin" ? "nexora-admin.html" : "dashboard.html");
+      if (live && ss("nx-role")) return go(m === "alogin" ? "/nexora-admin" : "/dashboard");
       if (live && NX.user && m === "alogin") { var ae0 = $("#ae", root); if (ae0) { ae0.textContent = NX.err ? "Gagal memeriksa akses: " + NX.err : "Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu."; ae0.hidden = false; } }
       return authInit(m, root);
     }
     var need = m === "admin" ? "admin" : "cust";
-    if (live && m === "admin" && !ss("nx-role")) return go("nexora-admin-access.html" + (NX.sessEnd ? "?err=expired" : NX.user ? "?err=notstaff" : ss("nx-autherr") ? "?err=auth" : ""));
-    if (ss("nx-role") !== need) return go((m === "admin" ? "nexora-admin-access.html" : "masuk.html") + (live && NX.staffBlock ? "?err=staff" : live && NX.sessEnd ? "?err=expired" : live && ss("nx-autherr") ? "?err=auth" : m !== "admin" && ss("nx-next") === "buka" ? "?info=order" : ""));
+    if (live && m === "admin" && !ss("nx-role")) return go("/nexora-admin-access" + (NX.sessEnd ? "?err=expired" : NX.user ? "?err=notstaff" : ss("nx-autherr") ? "?err=auth" : ""));
+    if (ss("nx-role") !== need) return go((m === "admin" ? "/nexora-admin-access" : "/masuk") + (live && NX.staffBlock ? "?err=staff" : live && NX.sessEnd ? "?err=expired" : live && ss("nx-autherr") ? "?err=auth" : m !== "admin" && ss("nx-next") === "buka" ? "?info=order" : ""));
     if (m === "admin") {
       if (live) ss("nx-arole", NX.role);
-      else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("nexora-admin-access.html"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
+      else { var su = staffBy(ss("nx-email")); if (!su) { ss("nx-role", ""); ss("nx-arole", ""); return go("/nexora-admin-access"); } ss("nx-arole", su.role); ss("nx-name", su.nama); }
     }
     dashInit(m === "admin", root);
     root.classList.remove("loading");
   }
   window.nxDash = function () {
-    if (location.hash === "#buka") ss("nx-next", "buka");
+    if (location.hash === "#buka" || /^\/dashboard\/buka\/?$/.test(location.pathname)) ss("nx-next", "buka");
     var root = $("[data-dash]"); if (!root) return; var m = root.dataset.dash;
     if (window.NX && NX.live) {
       $$(".demo-note").forEach(function (n) { n.remove(); });
