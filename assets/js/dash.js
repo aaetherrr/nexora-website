@@ -372,7 +372,7 @@
         if (!s) { if (adm) toast("Ticket baru: " + x.id); return; }
         if (x.m.length > s[0] && l.w !== mw && l.w !== "s") toast("Pesan baru di " + x.id);
         if (!adm && !s[2] && cl(x)) toast("Ticket " + x.id + " ditutup oleh admin"); else if (!adm && s[1] !== x.st) toast("Status " + x.id + ": " + x.st); });
-      draw(); cm = $(".cmp", root); if (cm && val) { cm.value = val; if (foc) cm.focus(); }
+      draw(); cm = $(".cmp", root); if (cm && val) { cm.value = val; fitCmp(cm); if (foc) cm.focus(); }
     }
 
     /* ===== Ulasan / rating NEXORA ===== */
@@ -495,8 +495,8 @@
       var info = lkH ? '<div class="th-i">' + lkH + '</div>' : "";
       var cbd = "";
       var ibtn = '<button type="button" class="th-info' + (kinfo ? " on" : "") + '" data-kinfo aria-pressed="' + kinfo + '" aria-label="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '" data-tip="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '"><i class="bi bi-layout-sidebar-inset-reverse"></i></button>';
-      var act = adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : stDD(t)) + (lockC ? '<button class="btn dng sm lk" type="button" data-close-lock title="Ubah status ke Orderan Selesai dulu"><i class="bi bi-lock"></i> Tutup ticket</button>' : '<button class="btn dng sm" type="button" data-close><i class="bi bi-x-lg"></i> Tutup ticket</button>') + ibtn) : bd(t.st) + cbd + ibtn;
-      return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b>' + e(t.subj) + "</b><small>" + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" + info +
+      var act = adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : stDD(t)) + (lockC ? '<button class="btn dng sm lk" type="button" data-close-lock aria-label="Tutup ticket" title="Ubah status ke Orderan Selesai dulu"><i class="bi bi-lock"></i> Tutup ticket</button>' : '<button class="btn dng sm" type="button" data-close aria-label="Tutup ticket" data-tip="Tutup ticket" data-tipw="i"><i class="bi bi-x-lg"></i> Tutup ticket</button>') + ibtn) : bd(t.st) + cbd + ibtn;
+      return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(t.subj) + '" data-tipw="t">' + e(t.subj) + '</b><small data-tip="' + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '" data-tipw="t">' + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" + info +
         pinBar(t) + '<div class="th-m">' + body + "</div>" + rpBar(t) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
     }
@@ -1238,10 +1238,12 @@
       }).join("") + "</ol>";
     }
     function chSt(v) { if (!v) return; var a = TK(); var c0 = a.filter(function (y) { return y.id === sel; })[0]; if (c0 && c0.st === "Orderan Selesai") { toast("Status sudah Orderan Selesai dan tidak bisa diubah lagi"); return draw(); } a.forEach(function (x) { if (x.id === sel && x.st !== v) { x.st = v; x.m.push({ w: "s", t: "Status diubah: " + v, d: "Baru saja", h: hm() }); syncOrd(x); nt(x, "tk", "Status diperbarui", x.id + " · " + v); } }); sv("nx-tk", a); toast("Status diperbarui"); draw(); }
-    /* Tooltip tombol info ticket: "Tampilkan detail" / "Sembunyikan detail" muncul di atas tombol saat di-hover */
+    /* Tooltip [data-tip]: tombol info ticket, judul/nama yang terpotong, dan tombol yang tinggal ikon */
     var tipEl = null;
     function tipHide() { if (tipEl) tipEl.classList.remove("on"); }
     function tipShow(b) {
+      var w = b.getAttribute("data-tipw");
+      if ((w === "t" && b.scrollWidth <= b.clientWidth + 1) || (w === "i" && parseFloat(getComputedStyle(b).fontSize) > 0)) { tipHide(); return; }
       if (!tipEl) { tipEl = document.createElement("div"); tipEl.className = "nx-tip"; tipEl.setAttribute("role", "tooltip"); document.body.appendChild(tipEl); }
       tipEl.textContent = b.getAttribute("data-tip") || ""; tipEl.classList.remove("on"); tipEl.style.left = "0px"; tipEl.style.top = "0px";
       var r = b.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
@@ -1251,12 +1253,19 @@
       tipEl.style.setProperty("--ax", (r.left + r.width / 2 - left) + "px");
       void tipEl.offsetWidth; tipEl.classList.add("on");
     }
-    document.addEventListener("pointerover", function (ev) { if (ev.pointerType === "touch") return; var b = ev.target.closest && ev.target.closest(".th-info"); if (b) tipShow(b); });
-    document.addEventListener("pointerout", function (ev) { var b = ev.target.closest && ev.target.closest(".th-info"); if (b && !(ev.relatedTarget && b.contains(ev.relatedTarget))) tipHide(); });
-    document.addEventListener("focusin", function (ev) { var b = ev.target.closest && ev.target.closest(".th-info"); if (b && ev.target.matches(":focus-visible")) tipShow(b); });
+    document.addEventListener("pointerover", function (ev) { if (ev.pointerType === "touch") return; var b = ev.target.closest && ev.target.closest("[data-tip]"); if (b) tipShow(b); });
+    document.addEventListener("pointerout", function (ev) { var b = ev.target.closest && ev.target.closest("[data-tip]"); if (b && !(ev.relatedTarget && b.contains(ev.relatedTarget))) tipHide(); });
+    document.addEventListener("focusin", function (ev) { var b = ev.target.closest && ev.target.closest("[data-tip]"); if (b && ev.target.matches(":focus-visible")) tipShow(b); });
     document.addEventListener("focusout", tipHide);
     document.addEventListener("scroll", tipHide, true);
     window.addEventListener("resize", tipHide);
+    /* Tinggi kotak tulis chat mengikuti isi; scrollbar baru muncul kalau teks melebihi tinggi maksimal (140px) */
+    function fitCmp(t) {
+      t.style.height = "auto";
+      var h = t.scrollHeight + (t.offsetHeight - t.clientHeight);
+      t.style.height = Math.min(h, 140) + "px";
+      t.style.overflowY = h > 140 ? "auto" : "hidden";
+    }
     function navPush() {
       var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0);
       if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew }; if (hNav) history.pushState(stt, ""); else history.replaceState(stt, ""); } catch (xh) {} }
@@ -1361,7 +1370,7 @@
       if (t.matches("[data-kq]")) { kq = t.value; kpg = 1; $(".tkx-res", root).innerHTML = kBody(); return; }
       if (t.matches("[data-cq]")) { cq = t.value; $(".cu-grid", root).innerHTML = custCards(); return; }
       if (t.matches("[data-q]")) { aq = t.value; $(".tk-list", root).innerHTML = adm ? admList() : cList(); }
-      if (t.matches(".cmp")) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; }
+      if (t.matches(".cmp")) fitCmp(t);
       if (t.name === "msg" && $("#cc")) $("#cc").textContent = t.value.length;
       if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; tmpSync(); }
     });
