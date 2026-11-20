@@ -10,6 +10,6 @@
 /admin/nexora-admin-access.html  /nexora-admin-access   301
 /admin/nexora-admin-access       /nexora-admin-access   301
 
-# --- Menu di dalam dashboard: alamatnya beda, halamannya sama (dibaca oleh dash.js) ---
-/dashboard/*     /dashboard.html      200
-/nexora-admin/*  /nexora-admin.html   200
+# --- Menu di dalam dashboard (/dashboard/ticket, /nexora-admin/tagihan, dll) ditangani Pages Function di folder functions/ ---
+# (dipindah ke functions/dashboard/[[path]].js)
+# (dipindah ke functions/nexora-admin/[[path]].js)
