@@ -10,18 +10,18 @@
 <meta name="theme-color" content="#7c5cff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,700;1,800&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f6f4fa;--text:#1d1829;--muted:#6d6682;--accent:#6b55b8;--accent-soft:#ece6fa;--on-accent:#fff;
-    --grid:rgba(107,85,184,.08);--glow:rgba(124,92,255,.22);
+    --bg:#f8f6fd;--text:#120e1f;--muted:#4a4262;--accent:#5a42b5;--accent-soft:#e8e0fb;--on-accent:#fff;
+    --grid:rgba(90,66,181,.08);--glow:rgba(124,92,255,.22);
     --f-front:#7c5cff;--f-back:#5b43c9;--f-left:#6a4ee0;--f-right:#8f77ff;--f-top:#b3a2ff;--f-bottom:#4a36a8;
     --shadow:rgba(60,40,120,.28);
   }
   @media (prefers-color-scheme:dark){
     :root{
-      --bg:#14111c;--text:#ece8f5;--muted:#a49cba;--accent:#9a86d9;--accent-soft:#251f38;--on-accent:#14111c;
-      --grid:rgba(154,134,217,.08);--glow:rgba(154,134,217,.2);
+      --bg:#100d18;--text:#f6f3fc;--muted:#bcb3d4;--accent:#a995f0;--accent-soft:#2a2144;--on-accent:#100d18;
+      --grid:rgba(169,149,240,.08);--glow:rgba(169,149,240,.2);
       --f-front:#6a4ee0;--f-back:#3f2f8f;--f-left:#5a40c4;--f-right:#7a62f0;--f-top:#a190f5;--f-bottom:#2e2272;
       --shadow:rgba(0,0,0,.55);
     }
@@ -35,7 +35,7 @@
       linear-gradient(var(--grid) 1px,transparent 1px) 0 0/44px 44px,
       linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/44px 44px,
       var(--bg);
-    color:var(--text);font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center;
+    color:var(--text);font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center;
   }
   main{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center}
 
@@ -46,7 +46,7 @@
   .digit,.cube-wrap{position:absolute;top:50%;left:50%;transform-style:preserve-3d}
 
   /* extruded "4" digits built from stacked layers */
-  .digit{width:120px;height:170px;margin:-95px 0 0 -60px;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:190px;line-height:170px}
+  .digit{width:120px;height:170px;margin:-95px 0 0 -60px;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:190px;line-height:170px}
   .digit span{position:absolute;inset:0;display:block;color:var(--f-right)}
   .digit span:nth-child(1){transform:translateZ(-22px);color:var(--f-bottom)}
   .digit span:nth-child(2){transform:translateZ(-16px);color:var(--f-back)}
@@ -65,7 +65,7 @@
   .cube{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:spin 14s linear infinite}
   @keyframes spin{from{transform:rotateX(-22deg) rotateY(0)}to{transform:rotateX(-22deg) rotateY(360deg)}}
   .face{position:absolute;inset:0;display:grid;place-items:center;border-radius:18px;border:1px solid rgba(255,255,255,.18);backface-visibility:hidden}
-  .face.f{transform:translateZ(65px);background:linear-gradient(145deg,#1b1626,#2c2540)}
+  .face.f{transform:translateZ(65px);background:linear-gradient(145deg,#191324,#342b4d)}
   .face.b{transform:rotateY(180deg) translateZ(65px);background:var(--f-back)}
   .face.l{transform:rotateY(-90deg) translateZ(65px);background:var(--f-left)}
   .face.r{transform:rotateY(90deg) translateZ(65px);background:var(--f-right)}
@@ -73,7 +73,7 @@
   .face.bt{transform:rotateX(-90deg) translateZ(65px);background:var(--f-bottom)}
   .face img{width:70px;height:70px;object-fit:contain}
   .face.l::after,.face.r::after,.face.b::after{content:"";width:46px;height:46px;border-radius:14px;border:3px solid rgba(255,255,255,.35)}
-  .face.t::after{content:"?";font:700 64px "Bricolage Grotesque",sans-serif;color:rgba(255,255,255,.75)}
+  .face.t::after{content:"?";font:700 64px "Plus Jakarta Sans",sans-serif;color:rgba(255,255,255,.75)}
 
   /* small floating shapes */
   .orb{position:absolute;top:50%;left:50%;border-radius:50%;transform-style:preserve-3d;
@@ -95,7 +95,7 @@
   .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.85rem;font-weight:500;letter-spacing:.02em}
   .tag i{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.8s ease-in-out infinite}
   @keyframes pulse{50%{opacity:.35;transform:scale(.7)}}
-  h1{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.1;margin:18px 0 10px;letter-spacing:-.01em}
+  h1{font-family:"Plus Jakarta Sans",sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);line-height:1.1;margin:18px 0 10px;letter-spacing:-.01em}
   p{margin:0 0 28px;color:var(--muted);max-width:46ch;line-height:1.6;font-size:1.02rem}
   .actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:12px;font-weight:500;font-size:.98rem;text-decoration:none;border:1px solid transparent;transition:background .2s,border-color .2s,box-shadow .2s}
