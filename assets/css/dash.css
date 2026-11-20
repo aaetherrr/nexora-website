@@ -539,7 +539,7 @@ form.bkf{grid-template-columns:minmax(0,1fr)}
 .cdash{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
 .cmain,.cside{display:grid;gap:20px;min-width:0}
 @media (max-width:1100px){.cdash{grid-template-columns:minmax(0,1fr)}}
-.cg{padding:26px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 20%,var(--surface)),var(--surface) 80%)}
+.cg{padding:26px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .cg h2{margin:0 0 14px;font-size:clamp(1.3rem,3vw,1.7rem)}
 .cg-note{margin:0 0 16px;padding:14px 16px;border-radius:14px;background:color-mix(in srgb,var(--bg) 75%,transparent);border:1px solid var(--line)}
 .cg-a{display:flex;gap:10px;flex-wrap:wrap}
@@ -1247,24 +1247,6 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 @media (max-width:820px){.umenu{top:calc(100% + 32px)}}
 
 /* ===== v11: kelengkapan akun + akun terhubung ===== */
-.pcb{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:20px;padding:20px 24px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:22px;background:radial-gradient(70% 140% at 0 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%),var(--surface);position:relative;overflow:hidden}
-.pcb-r{display:grid;place-items:center;flex:none;width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),color-mix(in srgb,var(--accent) 14%,transparent) 0);position:relative}
-.pcb-r::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--surface)}
-.pcb-r b{position:relative;font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;line-height:1}
-.pcb-r small{font-size:.9rem;color:var(--muted);font-weight:500}
-.pcb-t h3{margin:0 0 4px;font-size:1.15rem}
-.pcb-t p{margin:0 0 12px;color:var(--muted);font-size:.92rem}
-.pcb-c{display:flex;flex-wrap:wrap;gap:8px}
-.pcb-c span{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px dashed var(--line);border-radius:99px;font-size:.82rem;color:var(--muted);background:var(--bg)}
-.pcb-c span.ok{border:1px solid color-mix(in srgb,#2a9a56 40%,transparent);background:color-mix(in srgb,#2a9a56 11%,transparent);color:#2a9a56}
-.pcb-c i{font-size:.8rem}
-.pcb .btn{white-space:nowrap}
-@media (max-width:760px){
-  .pcb{grid-template-columns:auto minmax(0,1fr);padding:18px;gap:14px 16px}
-  .pcb-r{width:68px;height:68px}.pcb-r::before{inset:7px}.pcb-r b{font-size:1.25rem}
-  .pcb-t{grid-column:2}
-  .pcb .btn{grid-column:1/-1;justify-content:center;width:100%}
-}
 .lk{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .lk:first-of-type{border-top:0}
 .lk-n{margin:0 0 6px;font-size:.88rem}
@@ -1455,32 +1437,6 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .st-r .av{width:42px;height:42px;flex:none}
 
 /* Lengkapi akun */
-.pcb{display:block;padding:20px 22px;margin-bottom:20px;border-radius:22px;grid-template-columns:none}
-.pcb-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center}
-.pcb-t h3{margin:0 0 2px}.pcb-t p{margin:0;font-size:.9rem}
-.pcb-bar{height:8px;margin:16px 0 14px;border-radius:99px;background:color-mix(in srgb,var(--accent) 14%,transparent);overflow:hidden}
-.pcb-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff));transition:width .6s cubic-bezier(.4,0,.2,1)}
-.pcb-l{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.pcb-l li{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px dashed var(--line);border-radius:14px;background:var(--bg)}
-.pcb-l li.ok{border:1px solid color-mix(in srgb,#2a9a56 38%,transparent);background:color-mix(in srgb,#2a9a56 8%,var(--surface))}
-.pcb-ic{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;background:var(--accent-soft);color:var(--accent);font-size:1rem}
-.pcb-l li.ok .pcb-ic{background:color-mix(in srgb,#2a9a56 16%,transparent);color:#2a9a56}
-.pcb-n{flex:1;min-width:0;display:grid}
-.pcb-n b{font-size:.84rem;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
-.pcb-n small{color:var(--muted);font-size:.74rem}
-.pcb-s{flex:none;font-size:1.05rem;color:var(--muted)}.pcb-l li.ok .pcb-s{color:#2a9a56}
-.pcb-b{white-space:nowrap}
-@media (max-width:1180px){.pcb-l{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:760px){
-  .pcb{padding:16px}
-  .pcb-top{grid-template-columns:auto minmax(0,1fr);gap:12px 14px}
-  .pcb-b{grid-column:1/-1;justify-content:center;width:100%}
-  .pcb-r{width:64px;height:64px}.pcb-r::before{inset:6px}.pcb-r b{font-size:1.15rem}
-  .pcb-l{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .pcb-l li:last-child:nth-child(odd){grid-column:1/-1}
-  .pcb-l li{padding:9px 10px}
-}
-@media (max-width:360px){.pcb-l{grid-template-columns:minmax(0,1fr)}}
 
 /* ===== v17: grup sidebar admin datar (tanpa dropdown) ===== */
 .side-nav>.sg{display:block;margin:0}
@@ -1531,11 +1487,6 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 .seg2.full{flex-wrap:wrap}
 .seg2.full button{flex:1 1 110px}
 @media (max-width:560px){.jbar .btn{flex:1 1 auto}.jseg{display:flex;width:100%}.jseg button{flex:1 1 auto;justify-content:center}}
-.cdash .pcb{padding:20px 22px;margin:0}
-@media (max-width:640px){.cdash .pcb{padding:16px}}
-.cdash .pcb-l{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
-.cdash .pcb-l li:last-child:nth-child(odd){grid-column:auto}
-.cdash .pcb-n b{overflow-wrap:normal;word-break:normal}
 
 /* v18: icon jasa bebas */
 .jic-in{display:flex;align-items:center;gap:10px}
@@ -2721,3 +2672,64 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .cmp::-webkit-scrollbar-button{display:none;width:0;height:0}
 .cmp::-webkit-scrollbar-track{background:transparent}
 .cmp::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text) 28%,transparent);border-radius:6px}
+
+/* ===== Ambil ticket (admin) ===== */
+.st-lk.hd{background:var(--accent-soft);color:var(--text);font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.st-lk.hd i{color:var(--muted)}
+.th-lock{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid var(--line);background:var(--surface)}
+.th-lock p{display:flex;align-items:center;gap:8px;margin:0;min-width:200px;flex:1 1 220px;font-size:.85rem;color:var(--muted)}
+.th-lock p i{flex:none}
+.th-lock p b{color:var(--text)}
+.th-lock .btn{flex:0 1 auto;white-space:normal;text-align:center;line-height:1.3}
+.sys.tko{display:inline-flex;align-items:center;gap:6px;max-width:92%;text-align:center}
+.tko-b{text-align:center}
+.tko-b h3{margin:14px 0 6px;font-size:1.05rem}
+.tko-b p{margin:0}
+.tko-r{position:relative;width:84px;height:84px;margin:4px auto 0}
+.tko-r svg{width:100%;height:100%;transform:rotate(-90deg)}
+.tko-r circle{fill:none;stroke-width:5}
+.tko-r .bg{stroke:var(--line)}
+.tko-r .fg{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:0}
+.tko-m.run .tko-r .fg{animation:tko-go 10s linear forwards}
+.tko-r b{position:absolute;inset:0;display:grid;place-items:center;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.tko-f{justify-content:center}
+.tko-f .btn{min-width:140px;justify-content:center}
+@keyframes tko-go{to{stroke-dashoffset:220}}
+@media (prefers-reduced-motion:reduce){.tko-m.run .tko-r .fg{animation-duration:10s}}
+@media (max-width:640px){.th-lock{padding-bottom:max(12px,env(safe-area-inset-bottom))}.th-lock .btn{flex:1 1 100%}}
+
+/* ===== Dashboard customer: kartu "Lengkapi akunmu" (simpel, satu warna) ===== */
+.pcb{display:flex;align-items:center;gap:28px;margin:0 0 20px;padding:24px 28px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.pcb-r{position:relative;display:grid;place-items:center;flex:none;width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0)}
+.pcb-r::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--surface)}
+.pcb-r b{position:relative;font-size:1rem;font-weight:600}
+.cdash .pcb{padding:26px 28px;margin:0}
+.pcb-m{flex:1;min-width:0}
+.pcb-m h3{margin:0 0 14px;font-size:1.1rem}
+.pcb-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pcb-l li{display:flex;align-items:center;gap:12px;min-height:46px;padding:8px 14px;border-radius:12px;color:var(--text);font-size:.95rem}
+.pcb-l li.ok{color:var(--muted)}
+.pcb-l li.ok .pcb-n{text-decoration:line-through}
+.pcb-l li.next{min-height:58px;padding:8px 10px 8px 14px;background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.pcb-s{flex:none;font-size:1.05rem;color:var(--accent)}
+.pcb-d{flex:none;width:17px;height:17px;border:1.5px dashed var(--accent);border-radius:50%}
+.pcb-n{flex:1;min-width:0;overflow-wrap:anywhere}
+.pcb-b{flex:none;white-space:nowrap;padding:8px 18px;font-size:.9rem;border:0;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:600;cursor:pointer;transition:filter .2s,transform .1s}
+.pcb-b:hover{filter:brightness(1.1)}
+.pcb-b:active{transform:scale(.97)}
+@media (max-width:640px){
+  .pcb,.cdash .pcb{flex-direction:column;align-items:stretch;gap:16px;padding:20px 16px}
+  .pcb-r{width:80px;height:80px;align-self:flex-start}
+  .pcb-l li{gap:10px;padding:8px 10px}
+  .pcb-l li.next{flex-wrap:nowrap;padding:8px 8px 8px 10px}
+  .pcb-n{font-size:.9rem}
+  .pcb-b{padding:7px 13px;font-size:.85rem}
+}
+
+/* ===== Dashboard customer: list ticket di kartu Pesananmu (gaya list Ticket) ===== */
+.cc-t .tkx-list{gap:0;padding:0;border-top:1px solid var(--line)}
+.cc-t .tkx-r{border-radius:0;padding:12px 22px}
+.cc-t .tkx-r{grid-template-columns:minmax(0,2.4fr) minmax(0,1.3fr) minmax(0,1fr)}
+@media (max-width:720px){.cc-t .tkx-r{grid-template-columns:minmax(0,1fr);padding:12px 14px}.cc-t .tkx-d{grid-column:auto}}
+.cc-ft{display:flex;justify-content:flex-end;padding:10px 22px 16px;border-top:1px solid var(--line)}
+@media (max-width:720px){.cc-ft{padding:10px 14px 14px}}
