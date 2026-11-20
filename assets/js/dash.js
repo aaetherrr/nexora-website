@@ -278,7 +278,7 @@
     }
     function tb() { var h = $(".topbar"); if (h) document.documentElement.style.setProperty("--tb", h.offsetHeight + "px"); }
     tb(); window.addEventListener("resize", tb);
-    if (window.visualViewport) { var vvf = function () { document.documentElement.style.setProperty("--vvh", window.visualViewport.height + "px"); var tmv = root.classList.contains("chatv") ? $(".th-m", root) : null; if (tmv) tmv.scrollTop = tmv.scrollHeight; }; window.visualViewport.addEventListener("resize", vvf); vvf(); }
+    if (window.visualViewport) { var vvf = function () { var vv = window.visualViewport, de = document.documentElement; de.style.setProperty("--vvh", vv.height + "px"); de.style.setProperty("--vvt", Math.max(0, vv.offsetTop) + "px"); de.classList.toggle("kbd", window.innerHeight - vv.height > 120); var tmv = root.classList.contains("chatv") ? $(".th-m", root) : null; if (tmv) tmv.scrollTop = tmv.scrollHeight; }; window.visualViewport.addEventListener("resize", vvf); window.visualViewport.addEventListener("scroll", vvf); vvf(); }
     window.__nxAdm = adm; if (!adm) { sv("nx-cust", me()); var UU = USR(), pp = ld("nx-prof", {}), nu = UU[me()] || {}; nu.email = ss("nx-email") || nu.email || ""; nu.discord = pp.discord || nu.discord || ""; nu.wa = pp.wa || nu.wa || ""; nu.joined = nu.joined || new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }); UU[me()] = nu; sv("nx-users", UU); }
     $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) setAv(wv, me()); applyPerms();
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
@@ -664,14 +664,14 @@
     function LK() { var P = ld("nx-prof", {}), via = ss("nx-via") || "email", L = P.lk || {}; return { P: P, via: via, g: via === "Google" || L.g === true, d: via === "Discord" || L.d === true }; }
     function PC() {
       var k = LK(), P = k.P;
-      var v = String(k.via || "").toLowerCase(), it = [["discord", "Username Discord", !!P.discord, "profile"], ["whatsapp", "Nomor WhatsApp", !!P.wa, "profile"]];
+      var v = String(k.via || "").toLowerCase(), it = [["whatsapp", "Nomor WhatsApp", !!P.wa, "profile"]];
       if (v !== "google") it.push(["google", "Akun Google", k.g, "profile"]);
       if (v !== "discord") it.push(["link-45deg", "Akun Discord", k.d, "profile"]);
       return { it: it, n: it.filter(function (x) { return x[2]; }).length, t: it.length };
     }
     function pcBanner() {
       var c = PC(); if (c.n >= c.t) return "";
-      var pct = Math.round(c.n / c.t * 100), TX = { "Nama akun": "Isi nama akun di profil", "Username Discord": "Isi username Discord", "Nomor WhatsApp": "Isi nomor WhatsApp supaya teknisi gampang menghubungimu", "Akun Google": "Hubungkan akun Google", "Akun Discord": "Hubungkan akun Discord" }, nx = -1;
+      var pct = Math.round(c.n / c.t * 100), TX = { "Nama akun": "Isi nama akun di profil", "Nomor WhatsApp": "Isi nomor WhatsApp supaya teknisi gampang menghubungimu", "Akun Google": "Hubungkan akun Google", "Akun Discord": "Hubungkan akun Discord" }, nx = -1;
       c.it.forEach(function (x, i) { if (!x[2] && nx < 0) nx = i; });
       return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-r" style="--p:' + pct + '" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><b>' + pct + '%</b></div><div class="pcb-m"><h3>Lengkapi akunmu</h3><ul class="pcb-l">' +
         c.it.map(function (x, i) { return '<li class="' + (x[2] ? "ok" : i === nx ? "next" : "") + '">' + (x[2] ? '<i class="bi bi-check-circle pcb-s"></i>' : '<span class="pcb-d" aria-hidden="true"></span>') + '<span class="pcb-n">' + e(TX[x[1]] || x[1]) + "</span>" + (i === nx ? '<button type="button" class="btn pcb-b" data-go="profile">' + (/^Akun /.test(x[1]) ? "Hubungkan" : "Isi profil") + "</button>" : "") + "</li>"; }).join("") + "</ul></div></section>";
