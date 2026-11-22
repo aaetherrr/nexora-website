@@ -216,7 +216,7 @@
         });
       }
       side.appendChild(sn); side.appendChild(sf);
-      var tl = document.createElement("div"); tl.className = "tb-l"; tl.appendChild(st);
+      var tl = document.createElement("div"); tl.className = "tb-l"; tl.appendChild(st); if (!adm) { var tbk = document.createElement("button"); tbk.type = "button"; tbk.className = "tgl tb-bk"; tbk.setAttribute("data-ibk", ""); tbk.setAttribute("aria-label", "Kembali ke invoice"); tbk.innerHTML = '<i class="bi bi-chevron-left"></i>'; tl.appendChild(tbk); }
       var dl = document.createElement("span"); dl.className = "tb-sub"; dl.textContent = adm ? "Dashboard Admin" : "Dashboard"; tl.appendChild(dl);
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-", AVU = safeAv(ss("nx-avatar"));
@@ -279,6 +279,22 @@
     function tb() { var h = $(".topbar"); if (h) document.documentElement.style.setProperty("--tb", h.offsetHeight + "px"); }
     tb(); window.addEventListener("resize", tb);
     if (window.visualViewport) { var vvf = function () { var vv = window.visualViewport, de = document.documentElement; de.style.setProperty("--vvh", vv.height + "px"); de.style.setProperty("--vvt", Math.max(0, vv.offsetTop) + "px"); de.classList.toggle("kbd", window.innerHeight - vv.height > 120); var tmv = root.classList.contains("chatv") ? $(".th-m", root) : null; if (tmv) tmv.scrollTop = tmv.scrollHeight; }; window.visualViewport.addEventListener("resize", vvf); window.visualViewport.addEventListener("scroll", vvf); vvf(); }
+    /* Chat ticket di HP: halaman di belakang tidak boleh ikut ter-scroll/tergeser (terutama saat keyboard terbuka).
+       Gerakan jari hanya boleh menggulung daftar pesan / panel info / kotak ketik kalau memang masih bisa digulung. */
+    (function () {
+      var ty = 0;
+      document.addEventListener("touchstart", function (ev) { if (ev.touches.length) ty = ev.touches[0].clientY; }, { passive: true });
+      document.addEventListener("touchmove", function (ev) {
+        if (!root.classList.contains("chatv") || !isMob() || !ev.touches.length) return;
+        var t = ev.target; if (!t || !t.closest || t.closest(".side,.mbox,.umenu,.nmenu,.mmenu")) return;
+        var sc = t.closest(".th-m,.th-i,textarea"), dy = ev.touches[0].clientY - ty;
+        if (sc && sc.scrollHeight > sc.clientHeight + 1) {
+          var top = sc.scrollTop <= 0, bot = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1;
+          if (!((dy > 0 && top) || (dy < 0 && bot))) return;
+        }
+        if (ev.cancelable) ev.preventDefault();
+      }, { passive: false });
+    })();
     window.__nxAdm = adm; if (!adm) { sv("nx-cust", me()); var UU = USR(), pp = ld("nx-prof", {}), nu = UU[me()] || {}; nu.email = ss("nx-email") || nu.email || ""; nu.discord = pp.discord || nu.discord || ""; nu.wa = pp.wa || nu.wa || ""; nu.joined = nu.joined || new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }); UU[me()] = nu; sv("nx-users", UU); }
     $("#who").textContent = ss("nx-name") || (adm ? "Admin" : "Customer"); var wv = $("#wav"); if (wv) setAv(wv, me()); applyPerms();
     function mine() { return TK().filter(function (x) { return x.user === "__me" || x.user === me(); }); }
@@ -396,6 +412,14 @@
       return '<div class="dd stdd" data-stdd><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Ubah status ticket">' + dot(t.st) + '<span class="dd-val">' + e(t.st) + '</span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' +
         ["Pesanan Diproses", "Orderan Selesai"].map(function (st) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(st) + '" aria-selected="' + (st === t.st) + '"' + (st === t.st ? " disabled" : "") + '>' + dot(st) + '<span class="tx"><b>' + e(st) + '</b></span><i class="bi bi-check2 ck"></i></button>'; }).join("") + "</div></div>";
     }
+    /* Satu tombol icon (titik tiga) untuk admin: ubah status + tutup ticket */
+    function stMenu(t, lockC) {
+      var dot = function (st) { return '<i class="sdot ' + (BC[st] || "b6") + '"></i>'; }, fin = t.st === "Orderan Selesai";
+      var opts = fin ? "" : '<div class="dd-grp">Ubah status</div>' + ["Pesanan Diproses", "Orderan Selesai"].map(function (st) { return '<button class="dd-opt" type="button" role="option" data-v="' + e(st) + '" aria-selected="' + (st === t.st) + '"' + (st === t.st ? " disabled" : "") + '>' + dot(st) + '<span class="tx"><b>' + e(st) + '</b></span><i class="bi bi-check2 ck"></i></button>'; }).join("") + '<div class="tkm-sep"></div>';
+      var cls = lockC ? '<button class="dd-opt tkm-x lk" type="button" role="menuitem" data-v="__close"><i class="bi bi-lock"></i><span class="tx"><b>Tutup ticket</b><small>Ubah status ke Orderan Selesai dulu</small></span></button>' : '<button class="dd-opt tkm-x" type="button" role="menuitem" data-v="__close"><i class="bi bi-x-circle"></i><span class="tx"><b>Tutup ticket</b></span></button>';
+      var hb = lockC ? '<button type="button" hidden tabindex="-1" aria-hidden="true" data-close-lock></button>' : '<button type="button" hidden tabindex="-1" aria-hidden="true" data-close></button>';
+      return '<div class="dd stdd tkm" data-stdd><button class="dd-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menu ticket" data-tip="Menu ticket" data-tipw="i"><i class="bi bi-gear"></i></button><div class="dd-menu" role="menu" hidden>' + opts + cls + hb + '</div></div>';
+    }
     /* ===== Chat: balas, sematkan, salin, info, centang ===== */
     var rpl = null, pinI = 0, rdTry = {};
     function curT() { return TK().filter(function (x) { return x.id === sel; })[0]; }
@@ -495,12 +519,13 @@
         return dv + '<div class="row ' + (mn ? "me" : "ot") + (first ? " first" : "") + (m.pin ? " pinned" : "") + '" data-mid="' + e(mid) + '">' + (mn ? "" : first ? (m.w === "a" ? (m.av ? av(who, m.av) : '<span class="av nx"><i class="bi bi-box2"></i></span>') : av(uname(t), t.cav)) : '<span class="av gh"></span>') + '<div class="col"><div class="bub">' + (mn ? "" : '<span class="bn" style="--nc:' + nc + '">' + e(who) + "</span>") + (m.pin ? '<i class="bi bi-pin-angle-fill pn" title="Disematkan"></i>' : "") + qt + e(m.t) + "<time>" + tm + tick + "</time></div>" + mact + "</div></div>";
       }).join("") + (closed && last(t).w !== "s" ? '<div class="sys">Ticket ditutup</div>' : "") + rvBlock(t);
       var lockC = adm && !closed && (t.st === "Pembayaran Dikonfirmasi" || t.st === "Pesanan Diproses"), si = ST.indexOf(t.st), nmsg = t.m.filter(function (m) { return m.w !== "s"; }).length;
-      var lkH = (lockC ? '<p class="th-lk"><i class="bi bi-lock"></i> <span>Ubah status ke <b>Orderan Selesai</b> dulu sebelum menutup ticket.</span></p>' : "");
+      var lkH = "";
       var info = lkH ? '<div class="th-i">' + lkH + '</div>' : "";
       var cbd = "";
-      var ibtn = '<button type="button" class="th-info' + (kinfo ? " on" : "") + '" data-kinfo aria-pressed="' + kinfo + '" aria-label="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '" data-tip="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '"><i class="bi bi-layout-sidebar-inset-reverse"></i></button>';
-      var act = lk0 ? bd(t.st) + '<span class="st-lk hd" title="Status hanya bisa diubah admin yang menangani ticket"><i class="bi bi-lock-fill"></i> Ditangani ' + e(t.hd.n) + "</span>" + ibtn : adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : stDD(t)) + (lockC ? '<button class="btn dng sm lk" type="button" data-close-lock aria-label="Tutup ticket" title="Ubah status ke Orderan Selesai dulu"><i class="bi bi-lock"></i> Tutup ticket</button>' : '<button class="btn dng sm" type="button" data-close aria-label="Tutup ticket" data-tip="Tutup ticket" data-tipw="i"><i class="bi bi-x-lg"></i> Tutup ticket</button>') + ibtn) : bd(t.st) + cbd + ibtn;
-      return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(t.subj) + '" data-tipw="t">' + e(t.subj) + '</b><small data-tip="' + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '" data-tipw="t">' + e(t.id) + (adm ? " · " + e(uname(t)) : "") + '</small></div><div class="th-a">' + act + "</div></div>" + info +
+      var ibtn = '<button type="button" class="th-info' + (kinfo ? " on" : "") + '" data-kinfo aria-pressed="' + kinfo + '" aria-label="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '" data-tip="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '"><i class="bi bi-layout-sidebar-inset' + (kinfo ? "-reverse" : "") + '"></i></button>';
+      var act = lk0 ? bd(t.st) + '<span class="st-lk hd" title="Status hanya bisa diubah admin yang menangani ticket"><i class="bi bi-lock-fill"></i> Ditangani ' + e(t.hd.n) + "</span>" + ibtn : adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : bd(t.st)) + stMenu(t, lockC) + ibtn) : bd(t.st) + cbd + ibtn;
+      var chd = !adm && t.hd ? t.hd : null, ttl = chd ? chd.n : t.subj, sub = t.id + (adm ? " · " + uname(t) : chd ? " · " + (chd.r || "Admin") : "");
+      return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : chd ? av(chd.n, chd.a) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(ttl) + '" data-tipw="t">' + e(ttl) + '</b><small data-tip="' + e(sub) + '" data-tipw="t">' + e(sub) + '</small></div><div class="th-a">' + act + "</div></div>" + info +
         pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : lk0 ? '<div class="th-lock" role="group" aria-label="Ticket sedang ditangani admin lain"><p><i class="bi bi-lock-fill"></i><span>Ticket ini sedang ditangani <b>' + e(t.hd.n) + "</b> (" + e(t.hd.r) + '). Kamu tidak bisa membalas chat.</span></p><button type="button" class="btn" data-takeover="' + e(t.id) + '"><i class="bi bi-arrow-left-right"></i> Apakah kamu ingin mengambil alih ticket ini?</button></div>' : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
     }
@@ -1110,12 +1135,18 @@
     }
     function iView(b) {
       var hs = bj(b) === "hosting", un = b.st === "Belum dibayar", l = iLbl(b), st = iStat(b), tkid = hs ? b.ticket : (TK().some(function (x) { return x.id === b.tk; }) ? b.tk : ""), em = ss("nx-email") || "";
-      var rows = iRows2(b).map(function (r) { return '<div class="iv-li"><div><b>' + e(r.n) + "</b>" + (r.s ? "<small>" + e(r.s) + "</small>" : "") + "</div><span>" + r.v + "</span></div>"; }).join("");
-      var inf = [["Order", tkid || b.tk || "-"], ["Paket", b.item], ["Jenis", hs ? "Hosting berkala" : "Bill order"], ["Siklus", b.siklus || "-"]];
-      return '<div class="tkx ix iv"><div class="iv-top"><button type="button" class="btn ghost" data-ibk><i class="bi bi-arrow-left"></i> Kembali ke invoice</button></div><div class="iv-g">' +
-        '<section class="iv-doc"><div class="iv-hd"><div><b class="iv-br">NEXORA</b><small>' + (hs ? "Hosting " + e(b.siklus || "") : "Bill order") + '</small></div><div class="iv-id"><small>Invoice</small><b>' + e(b.id) + '</b><span class="iv-st ' + st[0] + '"><i></i>' + e(l) + "</span></div></div>" +
-        '<div class="iv-mt"><div><small>Ditagihkan ke</small><b>' + e(me()) + "</b>" + (em ? "<span>" + e(em) + "</span>" : "") + '</div><div class="r"><small>Tanggal</small><b>' + fdt(b.dibuat || b.jatuh) + "</b><small>" + (l === "Lunas" ? "Dibayar" : "Jatuh tempo") + "</small><b>" + (l === "Lunas" ? fdt(iso(iPaid(b))) : fdt(b.jatuh)) + "</b></div></div>" +
-        '<div class="iv-sc">' + rows + '</div><div class="iv-tt"><b>Total</b><span>' + rp(b.total) + '</span></div><div class="iv-in"><h4><i class="bi bi-receipt"></i> Informasi order</h4><dl>' + inf.map(function (x) { return "<div><dt>" + x[0] + "</dt><dd>" + e(x[1]) + "</dd></div>"; }).join("") + "</dl></div></section>" +
+      var rows = iRows2(b).map(function (r, ri) { return '<div class="iv-li"><span class="iv-no">' + (ri + 1) + "</span><div><b>" + e(r.n) + "</b>" + (r.s ? "<small>" + e(r.s) + "</small>" : "") + "</div><span>" + r.v + "</span></div>"; }).join("");
+      var inf = [["hash", "Order", tkid || b.tk || "-"], ["box-seam", "Paket", b.item], ["tag", "Jenis", hs ? "Hosting berkala" : "Bill order"], ["arrow-repeat", "Siklus", b.siklus || "-"]];
+      var ini = String(me() || "?").charAt(0).toUpperCase(), paid = l === "Lunas", sp2;
+      if (paid) sp2 = ["done", "check-lg", "Dibayar", fdt(iso(iPaid(b)))];
+      else if (l === "Dibatalkan") sp2 = ["bad", "x-lg", "Dibatalkan", "Tidak perlu dibayar"];
+      else if (l === "Kedaluwarsa") sp2 = ["bad", "exclamation-lg", "Kedaluwarsa", "Jatuh tempo " + fdt(b.jatuh)];
+      else sp2 = ["now", "hourglass-split", b.lapor ? "Menunggu dicek admin" : "Menunggu pembayaran", "Jatuh tempo " + fdt(b.jatuh)];
+      var steps = '<ol class="iv-sp" aria-label="Alur invoice"><li class="done"><i class="bi bi-check-lg"></i><div><b>Diterbitkan</b><small>' + fdt(b.dibuat || b.jatuh) + '</small></div></li><li class="' + sp2[0] + '"><i class="bi bi-' + sp2[1] + '"></i><div><b>' + e(sp2[2]) + "</b><small>" + e(sp2[3]) + "</small></div></li></ol>";
+      return '<div class="tkx ix iv"><div class="iv-g">' +
+        '<section class="iv-doc ' + st[0] + '"><div class="iv-hd"><div class="iv-bw"><span class="iv-lg"><img src="/assets/img/logo.png" alt="" width="44" height="44"></span><div><b class="iv-br">NEXORA</b><small>' + (hs ? "Hosting " + e(b.siklus || "") : "Bill order") + '</small></div></div><div class="iv-id"><small>Invoice</small><b>' + e(b.id) + '</b><span class="iv-st ' + st[0] + '"><i></i>' + e(l) + "</span></div></div>" +
+        '<div class="iv-mx"><div class="iv-bt"><span class="iv-av">' + e(ini) + '</span><div><small>Ditagihkan ke</small><b>' + e(me()) + "</b>" + (em ? "<span>" + e(em) + "</span>" : "") + '</div></div><div class="iv-dt"><div><small><i class="bi bi-calendar-plus"></i> Tanggal terbit</small><b>' + fdt(b.dibuat || b.jatuh) + '</b></div><div><small><i class="bi bi-' + (paid ? "calendar-check" : "calendar-event") + '"></i> ' + (paid ? "Dibayar" : "Jatuh tempo") + "</small><b>" + (paid ? fdt(iso(iPaid(b))) : fdt(b.jatuh)) + "</b></div></div></div>" + steps +
+        '<div class="iv-lh"><span>Deskripsi</span><span>Jumlah</span></div><div class="iv-sc">' + rows + '</div><div class="iv-tt"><b>Total</b><span>' + rp(b.total) + '</span></div><div class="iv-in"><h4><i class="bi bi-receipt"></i> Informasi order</h4><dl>' + inf.map(function (x) { return '<div><i class="bi bi-' + x[0] + '"></i><div><dt>' + x[1] + "</dt><dd>" + e(x[2]) + "</dd></div></div>"; }).join("") + '</dl></div><p class="iv-ft"><i class="bi bi-patch-check"></i><span>Dokumen ini dibuat otomatis oleh NEXORA dan sah tanpa tanda tangan.</span></p></section>' +
         '<aside class="iv-sd"><div class="iv-tg"><small>Total Tagihan</small><b>' + rp(b.total) + '</b></div><div class="iv-sb ' + st[0] + '"><i class="bi bi-' + st[1] + '"></i><div><b>' + st[2] + "</b><span>" + e(st[3]) + "</span></div></div>" +
         (un && !hs && b.kode ? '<p class="iv-nt"><i class="bi bi-hash"></i><span>Nominal ' + rp(b.dasar) + " + kode unik <b>" + rp(b.kode) + "</b>. Transfer tepat sampai digit terakhir supaya langsung terdeteksi.</span></p>" : "") +
         (un && hs ? '<p class="iv-nt"><i class="bi bi-info-circle"></i><span>Pembayaran hosting dilakukan lewat ticket.</span></p>' : "") +
@@ -1483,29 +1514,31 @@
     }
     /* Alamat (URL) tiap menu. Customer: /dashboard, /dashboard/ticket, /dashboard/ticket/T-1043.
        Admin: /nexora-admin, /nexora-admin/ticket, dst. Cloudflare Pages menyajikan halaman yang sama lewat _redirects. */
-    var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = { tiket: "ticket" };
+    var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = adm ? { tiket: "ticket" } : { tiket: "ticket", tagihan: "invoice" };
     function urlFor() {
       var u = BASE; if (tab && tab !== "ringkasan") u += "/" + (SLUG[tab] || tab);
       if (tab === "tiket" && tv === "chat" && sel) u += "/" + encodeURIComponent(sel);
-      else if (tab === "tagihan" && bnew) u += "/baru";
+      else if (tab === "tagihan" && adm && bnew) u += "/baru";
+      else if (tab === "tagihan" && !adm && idet) u += "/" + encodeURIComponent(idet);
       return u;
     }
     function routeFrom(path) {
-      var r = { tab: "ringkasan", sel: null, bnew: false }, parts, TT = TITLES[adm ? "a" : "c"];
+      var r = { tab: "ringkasan", sel: null, bnew: false, inv: "" }, parts, TT = TITLES[adm ? "a" : "c"];
       path = (path || "").replace(/\/+$/, "");
       if (path.indexOf(BASE) !== 0) return r;
       try { parts = path.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent); } catch (xr) { return r; }
-      var k = (parts[0] || "").toLowerCase(); if (k === "ticket") k = "tiket";
+      var k = (parts[0] || "").toLowerCase(); if (k === "ticket") k = "tiket"; else if (k === "invoice" && !adm) k = "tagihan";
       if (!k || !TT[k] || !PAN[k] || k === "buka") return r;
       if (adm && !can(k)) return r;
       r.tab = k;
       if (k === "tiket" && parts[1]) { var id = parts[1]; if ((adm ? TK() : mine()).some(function (x) { return x.id === id; })) r.sel = id; }
       if (k === "tagihan" && adm && parts[1] === "baru") r.bnew = true;
+      if (k === "tagihan" && !adm && parts[1] && BL().some(function (x) { return x.id === parts[1] && bmine(x); })) r.inv = parts[1];
       return r;
     }
     function navPush() {
-      var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0);
-      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
+      var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0) + "|" + (tab === "tagihan" && !adm ? idet : "");
+      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew, inv: tab === "tagihan" && !adm ? idet : "" }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
       hNav = nk; hRest = false;
     }
     function draw() {
@@ -1522,9 +1555,9 @@
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
       lastTab = tab; tkAr(); setTimeout(tkAr, 250); if (nfUp) nfUp();
-      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : tt[0].replace("{n}", me());
+      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : (!adm && tab === "tagihan" && idet) ? idet : tt[0].replace("{n}", me());
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
-      root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat");
+      root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat"); root.classList.toggle("ivdet", !adm && tab === "tagihan" && !!idet);
       autoSide(root.classList.contains("chatv"));
       var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Menunggu admin balas" && !cl(x); }) : mine().filter(function (x) { return !cl(x); })).length; ct.textContent = cc; ct.hidden = !cc; }
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
@@ -1533,16 +1566,16 @@
     }
     window.addEventListener("popstate", function (ev) {
       var st = ev.state;
-      if (!st || !st.nx) { if (location.pathname.replace(/\/+$/, "") === urlFor()) return; var rr = routeFrom(location.pathname); st = { nx: 1, tab: rr.tab, sel: rr.sel, bnew: rr.bnew }; }
+      if (!st || !st.nx) { if (location.pathname.replace(/\/+$/, "") === urlFor()) return; var rr = routeFrom(location.pathname); st = { nx: 1, tab: rr.tab, sel: rr.sel, bnew: rr.bnew, inv: rr.inv }; }
       if (!PAN[st.tab]) return; if (adm && !can(st.tab)) return;
-      tab = st.tab; bnew = !!st.bnew; if (st.sel) { sel = st.sel; tv = "chat"; } else { tv = "list"; if (isMob()) sel = null; }
+      tab = st.tab; bnew = !!st.bnew; idet = st.tab === "tagihan" && st.inv ? st.inv : ""; if (st.sel) { sel = st.sel; tv = "chat"; } else { tv = "list"; if (isMob()) sel = null; }
       aq = ""; setOpen(false); hRest = true; draw();
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
       var t = ev.target.closest("[data-bc],[data-takeover],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
-      if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
+      if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
       if (d.takeover) return takeModal(d.takeover);
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
       if (d.kcopy) { var cv = d.kcopy, cok = function () { toast("Nomor ticket disalin"); }, cfb = function () { var ta = document.createElement("textarea"); ta.value = cv; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); cok(); } catch (x) { toast("Gagal menyalin nomor ticket"); } ta.remove(); }; if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(cv).then(cok, cfb); else cfb(); return; }
@@ -1557,7 +1590,7 @@
         if (dd.hasAttribute("data-kkd")) { kk = d.v; kpg = 1; $(".dd-val", dd).textContent = kk; $$(".dd-opt", dd).forEach(function (o) { o.setAttribute("aria-selected", o.dataset.v === kk); }); $(".tkx-res", root).innerHTML = kBody(); return; }
         if (dd.hasAttribute("data-rdd")) return trole({ dataset: { trole: dd.dataset.rdd }, value: d.v });
         if (dd.hasAttribute("data-afdd")) { af = d.v; return draw(); }
-        if (dd.hasAttribute("data-stdd")) { return chSt(d.v); }
+        if (dd.hasAttribute("data-stdd")) { if (d.v === "__close") { var hbc = $("[data-close],[data-close-lock]", dd); if (hbc) hbc.click(); return; } return chSt(d.v); }
         if (dd.hasAttribute("data-jdd")) { hs = d.v; hcat.jasa = "semua"; return draw(); }
         if (dd.hasAttribute("data-bdd")) return bdd(dd.id, d.v); $("#f-buka").paket.value = d.v; return bukaSync(); }
       if (d.bx) return bAct(d);
@@ -1568,7 +1601,7 @@
       if (t.id === "side-t") return setWide();
       if (d.bc) { tab = d.bc; if (isMob()) sel = null; tv = "list"; bnew = false; aq = ""; setOpen(false); return draw(); }
       if (d.ct) { ctab = d.ct; return draw(); }
-      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
+      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
       if (d.lk) {
         var lkx = LK(), key = d.lk === "google" ? "g" : "d", nmk = d.lk === "google" ? "Google" : "Discord";
         if (lkx.via === nmk) return toast("Ini metode login utamamu");
@@ -1691,7 +1724,7 @@
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     var r0 = routeFrom(location.pathname), rt = ss("nx-ret");
     if (rt) { ss("nx-ret", ""); if (location.pathname.replace(/\/+$/, "") === BASE) r0 = routeFrom(rt); } /* balik dari tautkan akun Google/Discord */
-    tab = r0.tab; bnew = r0.bnew; if (r0.sel) { sel = r0.sel; tv = "chat"; }
+    tab = r0.tab; bnew = r0.bnew; idet = r0.inv || ""; if (r0.sel) { sel = r0.sel; tv = "chat"; }
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
   }
