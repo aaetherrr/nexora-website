@@ -8,7 +8,7 @@
   function ordFromTk() {
     var H = HG(), nm = {};
     Object.keys(H.jasa).forEach(function (k) { H.jasa[k].forEach(function (p) { nm[p.nama] = (H.meta && H.meta[k] && H.meta[k].nama) || k; }); }); H.hosting.forEach(function (p) { nm[p.nama] = "Hosting"; });
-    return NX.tkGet().filter(function (x) { return x.kat === "Order baru"; }).map(function (x) { return { id: "ORD-" + String(x.id).replace(/^[A-Z]-/, ""), tk: x.id, item: x.paket, jenis: nm[x.paket] || "Order via ticket", tgl: x.tgl, st: x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu" }; });
+    return NX.tkGet().filter(function (x) { return x.kat === "Order baru"; }).map(function (x) { return { id: "ORD-" + String(x.id).replace(/^[A-Z]-/, ""), tk: x.id, item: x.paket, jenis: nm[x.paket] || nm[String(x.paket).split(" + ")[0]] || "Order via ticket", tgl: x.tgl, st: x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu" }; });
   }
   var LIVESET = { "nx-tampilan": "tampilan", "nx-kontak": "kontak", "nx-sosmed": "sosmed", "nx-bayar": "bayar" };
   function liveMsg(er) {
@@ -674,9 +674,12 @@
     }
     /* ===== Buka ticket: kartu paket (pengganti dropdown) ===== */
     function pkUnit() { return bsv === "hosting" ? "per bulan" : "sekali bayar"; }
+    var PSEP = " + ";
+    function pkList(v) { return v ? String(v).split(PSEP).filter(Boolean) : []; }
+    function pkSubj(l) { return "Order " + (l[0] || "") + (l.length > 1 ? " +" + (l.length - 1) : ""); }
     function pkDraw(rows) {
       var f = $("#f-buka"), box = $("#pk-box"); if (!f || !box) return;
-      var cats = [], cur = f.paket.value;
+      var cats = [], sl = pkList(f.paket.value), cur = sl[0];
       rows.forEach(function (p) { if (cats.indexOf(p.kat) < 0) cats.push(p.kat); });
       if (bcat !== "semua" && cats.indexOf(bcat) < 0) bcat = "semua";
       var chips = cats.length > 1 ? '<div class="chips mini pk-chips" role="group" aria-label="Kategori paket">' + ["semua"].concat(cats).map(function (c) { var n = c === "semua" ? rows.length : rows.filter(function (p) { return p.kat === c; }).length; return '<button class="chip" type="button" data-pkc="' + e(c) + '" aria-pressed="' + (c === bcat) + '">' + (c === "semua" ? "Semua" : e(c)) + " <b>" + n + "</b></button>"; }).join("") + "</div>" : "";
@@ -685,13 +688,13 @@
       if (bpg > np) bpg = np;
       var cards = lst.slice((bpg - 1) * ps, bpg * ps).map(function (p) {
         var fi = (p.fitur || []).slice(0, 3);
-        return '<button type="button" class="pk" data-pk="' + e(p.nama) + '" aria-pressed="' + (p.nama === cur) + '"><span class="pk-ck" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="pk-nm"><b>' + e(p.nama) + "</b>" + (p.populer ? '<em class="pk-pop"><i class="bi bi-stars"></i> Populer</em>' : "") + "</span>" +
+        return '<button type="button" class="pk" data-pk="' + e(p.nama) + '" aria-pressed="' + (sl.indexOf(p.nama) >= 0) + '"><span class="pk-ck" aria-hidden="true"><i class="bi bi-check-lg"></i></span><span class="pk-nm"><b>' + e(p.nama) + "</b>" + (p.populer ? '<em class="pk-pop"><i class="bi bi-stars"></i> Populer</em>' : "") + "</span>" +
           (p.ringkas ? '<span class="pk-ds">' + e(p.ringkas) + "</span>" : "") +
           (fi.length ? '<span class="pk-ft">' + fi.map(function (x) { return "<span>" + e(x) + "</span>"; }).join("") + "</span>" : "") +
           '<span class="pk-pr"><strong>' + rp(p.harga) + "</strong><small>" + pkUnit() + "</small></span></button>";
       }).join("");
       var a0 = (bpg - 1) * ps, foot = np > 1 ? '<div class="pk-foot"><span class="pk-rg">' + (a0 + 1) + "–" + Math.min(a0 + ps, lst.length) + " dari " + lst.length + ' paket</span><div class="pk-nav"><button type="button" class="tkx-pb" data-pkpg="prev" aria-label="Halaman sebelumnya"' + (bpg <= 1 ? " disabled" : "") + '><i class="bi bi-chevron-left"></i></button><span class="pk-pn">' + bpg + " / " + np + '</span><button type="button" class="tkx-pb" data-pkpg="next" aria-label="Halaman berikutnya"' + (bpg >= np ? " disabled" : "") + '><i class="bi bi-chevron-right"></i></button></div></div>' : "";
-      box.innerHTML = rows.length ? chips + '<div class="pk-grid" role="group" aria-label="Pilih paket">' + cards + "</div>" + foot : '<div class="pk-empty"><i class="bi bi-inbox"></i><span>Belum ada paket untuk layanan ini.</span></div>';
+      box.innerHTML = !bsv ? '<div class="pk-empty"><i class="bi bi-hand-index-thumb"></i><span>Pilih jenis layanan di atas dulu, nanti daftar paketnya muncul di sini.</span></div>' : rows.length ? chips + '<div class="pk-grid' + (bsv === "hosting" ? "" : " multi") + '" role="group" aria-label="Pilih paket">' + cards + "</div>" + foot : '<div class="pk-empty"><i class="bi bi-inbox"></i><span>Belum ada paket untuk layanan ini.</span></div>';
     }
     function ddClose() { $$(".dd-menu").forEach(function (m) { m.hidden = true; if (m.previousElementSibling) m.previousElementSibling.setAttribute("aria-expanded", "false"); }); }
     document.addEventListener("click", function (ev) { if (!ev.target.closest(".dd")) ddClose(); });
@@ -720,22 +723,38 @@
         row("google", "google", "Google", k.g, k.g ? (k.via === "Google" ? "Kamu login lewat Google" : "Bisa dipakai untuk masuk") : "Belum terhubung") +
         row("discord", "discord", "Discord", k.d, k.d ? (k.via === "Discord" ? "Kamu login lewat Discord" : (k.P.discord ? "@" + e(k.P.discord) : "Bisa dipakai untuk masuk")) : "Belum terhubung") + "</section>";
     }
+    /* indikator tab (latar yang bergeser ke tab terpilih): layanan di Mulai Order, filter di Ticket dan Invoice */
+    function tabInd(tb, anim) {
+      if (!tb) return;
+      var sl = $('button[aria-selected="true"]', tb), ind = $(".tkx-ind", tb); if (!sl) return;
+      tb.classList.add("sl-tabs");
+      if (!ind) { ind = document.createElement("span"); ind.className = "tkx-ind nt"; ind.setAttribute("aria-hidden", "true"); tb.insertBefore(ind, tb.firstChild); }
+      if (!anim) ind.classList.add("nt"); else if (ind.classList.contains("nt")) { void ind.offsetWidth; ind.classList.remove("nt"); }
+      ind.style.left = sl.offsetLeft + "px"; ind.style.width = sl.offsetWidth + "px";
+    }
+    function bkInd(anim) { tabInd($("#p-buka .tkx-tabs"), anim); }
+    function allInd() { if (adm) return; $$("#p-buka .tkx-tabs,#p-tiket .tkx-tabs,#p-tagihan .tkx-tabs", root).forEach(function (tb) { tabInd(tb, false); }); }
+    window.addEventListener("resize", allInd);
     function bukaSync() {
       var f = $("#f-buka"); if (!f) return;
       var k = f.kat.value, ord = k === "Order baru";
       $("#ord").hidden = !ord; $("#rq").hidden = ord; f.subj.required = !ord; $("#n3").textContent = ord ? "3" : "2";
       var rows = JR(bsv);
-      if (ord && f.paket.dataset.l !== bsv) { f.paket.value = rows[0] ? rows[0].nama : ""; f.paket.dataset.l = bsv; bcat = "semua"; bpg = 0; pkDraw(rows); }
-      var p = rows.filter(function (x) { return x.nama === f.paket.value; })[0];
-      $$(".pk", f).forEach(function (b) { b.setAttribute("aria-pressed", !!p && b.dataset.pk === p.nama); });
-      var svn = bsv === "hosting" ? "Hosting" : JM(bsv).nama;
-      $("#bsum-l").innerHTML = "<div><dt>Jenis</dt><dd>" + e(k) + "</dd></div>" + (ord ? "<div><dt>Layanan</dt><dd>" + e(svn) + "</dd></div>" : "") + "<div><dt>Ticket aktif</dt><dd>" + actCount() + " / " + MAXT + "</dd></div>";
+      if (ord && f.paket.dataset.l !== bsv) { f.paket.value = ""; f.paket.dataset.l = bsv; bcat = "semua"; bpg = 0; pkDraw(rows); }
+      var sl = pkList(f.paket.value), ps = rows.filter(function (x) { return sl.indexOf(x.nama) >= 0; }), p = ps[0], tot = ps.reduce(function (a, x) { return a + x.harga; }, 0), multi = ps.length > 1;
+      $$(".pk", f).forEach(function (b) { b.setAttribute("aria-pressed", sl.indexOf(b.dataset.pk) >= 0); });
+      var ohs = $("#ord h3 small"); if (ohs) ohs.textContent = !bsv ? "Pilih jenis layanan, lalu paket yang paling cocok." : bsv === "hosting" ? "Pilih jenis layanan, lalu paket hosting yang paling cocok." : "Pilih jenis layanan, lalu satu atau beberapa paket sekaligus.";
+      var svn = !bsv ? "Belum dipilih" : bsv === "hosting" ? "Hosting" : JM(bsv).nama;
+      var sh = $("#bsum .bsum-h"), sj = f.subj.value.trim();
+      if (sh) { $("b", sh).textContent = ord ? "Ringkasan" : "Ringkasan bantuan"; $("small", sh).textContent = ord ? "Cek dulu sebelum dikirim" : "Tim NEXORA siap membantu"; $(".bsum-hi i", sh).className = "bi bi-" + (ord ? "receipt-cutoff" : "life-preserver"); }
+      $("#bsum-l").innerHTML = ord ? "<div><dt>Jenis</dt><dd>" + e(k) + "</dd></div><div><dt>Layanan</dt><dd>" + e(svn) + "</dd></div>"
+        : "<div><dt>Jenis</dt><dd>" + e(k) + '</dd></div><div><dt>Topik</dt><dd class="ell' + (sj ? "" : " mut") + '">' + (sj ? e(sj) : "Belum diisi") + '</dd></div>';
       var bt = $("#bsum-t"); bt.className = "bsum-t" + (ord ? "" : " free");
       bt.innerHTML = ord
-        ? '<div class="bsum-pk"><small>' + (p ? e(p.kat) : "Paket") + "</small><b>" + (p ? e(p.nama) : "Belum dipilih") + '</b></div><div class="bsum-pr"><b>' + (p ? rp(p.harga) : "-") + "</b>" + (p ? "<small>" + pkUnit() + "</small>" : "") + "</div>"
-        : '<div class="bsum-pk"><small>Tanpa pilih paket</small><b>' + e(k) + '</b></div><div class="bsum-pr free"><small>Tim NEXORA membalas di ticketmu.</small></div>';
-      $("#bsum-n").textContent = ord ? "Harga final dikonfirmasi tim NEXORA setelah ticket dibalas." : "Kamu dapat notifikasi saat admin membalas.";
-      f.subj.placeholder = ord ? "Boleh dikosongkan, otomatis jadi Order " + (p ? p.nama : "") : "Ringkas masalah atau pertanyaanmu";
+        ? '<div class="bsum-pk' + (multi ? " multi" : "") + '"><small>' + (multi ? ps.length + " paket dipilih" : p ? e(p.kat) : "Paket") + "</small><b>" + (p ? e(ps.map(function (x) { return x.nama; }).join(", ")) : "Belum dipilih") + '</b></div><div class="bsum-pr"><b>' + (p ? rp(tot) : "-") + "</b>" + (p ? "<small>" + pkUnit() + "</small>" : "") + "</div>"
+        : '<div class="bsum-pk"><b>Konsultasi dengan tim</b></div>';
+      var bn = $("#bsum-n"); bn.textContent = ord ? "Harga final dikonfirmasi tim NEXORA setelah ticket dibalas." : ""; bn.hidden = !ord;
+      f.subj.placeholder = ord ? (ps.length ? "Boleh dikosongkan, otomatis jadi " + pkSubj(ps.map(function (x) { return x.nama; })) : "Boleh dikosongkan, otomatis mengikuti paket yang dipilih") : "Ringkas masalah atau pertanyaanmu";
       f.msg.placeholder = ord ? "Ceritakan kebutuhanmu: versi Minecraft, jumlah pemain, plugin atau mod yang diinginkan, dll." : "Tulis pesanmu dengan jelas agar cepat kami bantu.";
     }
     function li(a) { return a.map(function (x) { return '<button class="li" data-gt="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.tgl) + "</small></span>" + bd(x.st, 1) + "</button>"; }).join("") || '<p class="muted">Belum ada.</p>'; }
@@ -858,10 +877,16 @@
     function rel(b) { var n = dleft(b.jatuh); return n < 0 ? "Terlambat " + (-n) + " hari" : n === 0 ? "Jatuh tempo hari ini" : "Dalam " + n + " hari"; }
     function bmine(b) { return b.user === "__me" || b.user === me(); }
     function bcust(b) { return b.user === "__me" ? ld("nx-cust", "Demo Customer") : b.user; }
-    function pk(n) {
+    function pk1(n) {
       var H = HG(), f = function (r) { return r.filter(function (x) { return x.nama === n; })[0]; }, p = f(H.hosting);
       if (p) return { harga: p.harga, host: true };
       Object.keys(H.jasa).forEach(function (k) { if (!p) p = f(H.jasa[k]); }); return p ? { harga: p.harga, host: false } : null;
+    }
+    /* paket bisa lebih dari satu (hanya jasa setup): nama digabung " + ", harga dijumlah */
+    function pk(n) {
+      var q = pk1(n); if (q || String(n).indexOf(PSEP) < 0) return q;
+      var tot = 0, ok = true; pkList(n).forEach(function (x) { var y = pk1(x); if (!y || y.host) ok = false; else tot += y.harga; });
+      return ok ? { harga: tot, host: false } : null;
     }
     function OTL() { return TK().filter(function (x) { if (x.kat !== "Order baru" || cl(x) || x.st === "Orderan Selesai") return false; if (BF.jenis === "bill") return true; var q = pk(x.paket); return !!(q && q.host); }); }
     function sik(t) { var q = pk(t.paket); return q && q.host ? ["Bulanan", "Tahunan"] : ["Sekali bayar"]; }
@@ -1081,7 +1106,7 @@
         var hs = bj(b) === "hosting", un = b.st === "Belum dibayar";
         return '<div class="ix-row"><div class="ix-r" data-iv="' + e(b.id) + '" role="link" tabindex="0" aria-label="Lihat detail invoice ' + e(b.id) + '"><span class="ix-t"><b>' + e(b.item) + "</b><small><code>" + e(b.id) + "</code><span>" + (hs ? e(b.siklus) : "Bill order") + '</span></small></span><span class="ix-a">' + rp(b.total) + '</span><span class="ix-d">' + fdt(b.dibuat || b.jatuh) + '</span><span class="ix-j">' + fdt(b.jatuh) + (un ? "<small>" + rel(b) + "</small>" : "") + '</span><span class="ix-s">' + iBd(b) + '</span><span class="ix-m"><button type="button" class="ix-dots" data-imn="' + e(b.id) + '" aria-haspopup="menu" aria-label="Menu invoice ' + e(b.id) + '"><i class="bi bi-three-dots"></i></button></span></div></div>';
       }).join("");
-      return '<div class="ix-h"><span>Invoice</span><span>Jumlah</span><span class="ix-sw"><button type="button" class="ix-sort" data-isort aria-label="Urutkan tanggal terbit: ' + (isort === "asc" ? "terlama" : "terbaru") + ' dulu" title="' + (isort === "asc" ? "Terlama dulu" : "Terbaru dulu") + '">Tanggal Terbit<span class="srt" aria-hidden="true"><i class="bi bi-chevron-' + (isort === "asc" ? "up" : "down") + '"></i></span></button></span><span>Jatuh Tempo</span><span>Status</span><span></span></div><div class="ix-list">' + list + "</div>" +
+      return '<div class="ix-scr"><div class="ix-sin"><div class="ix-h"><span>Invoice</span><span>Jumlah</span><span class="ix-sw"><button type="button" class="ix-sort" data-isort aria-label="Urutkan tanggal terbit: ' + (isort === "asc" ? "terlama" : "terbaru") + ' dulu" title="' + (isort === "asc" ? "Terlama dulu" : "Terbaru dulu") + '">Tanggal Terbit<span class="srt" aria-hidden="true"><i class="bi bi-chevron-' + (isort === "asc" ? "up" : "down") + '"></i></span></button></span><span>Jatuh Tempo</span><span>Status</span><span></span></div><div class="ix-list">' + list + "</div></div></div>" +
         (np > 1 ? '<div class="tkx-foot"><span class="tkx-rg">' + (a + 1) + "–" + (a + pg.length) + " dari " + tot + '</span><button type="button" class="tkx-pb" data-ipg="prev" aria-label="Halaman sebelumnya"' + (ipg <= 1 ? " disabled" : "") + '><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-pb" data-ipg="next" aria-label="Halaman berikutnya"' + (ipg >= np ? " disabled" : "") + '><i class="bi bi-chevron-right"></i></button></div>' : "");
     }
     /* ===== Filter tanggal invoice: kalender buatan sendiri (bukan bawaan browser) ===== */
@@ -1441,17 +1466,13 @@
       bayar: function () { $("#p-bayar").innerHTML = edList("b"); },
       tagihan: function () { $("#p-tagihan").innerHTML = adm ? (bnew ? bForm() : bList()) : cBills(); if (adm && bnew) updSum(); },
       buka: function () {
-        bsv = JK()[0] || "hosting"; bcat = "semua"; bpg = 0;
-        var HWS = [["send", "Kirim ticket", "Kirim", "Isi form lalu klik Kirim ticket."], ["chat-dots", "Admin membalas", "Balas", "Balasan masuk ke ticketmu dan kamu dapat notifikasi."], ["wallet2", "Bayar tagihan", "Bayar", "Admin mengirim tagihan. Bayar lewat transfer, kirim bukti di ticket."], ["box-seam", "Pesanan diproses", "Proses", "Setelah pembayaran dikonfirmasi, admin mengerjakan pesananmu."], ["patch-check", "Selesai", "Selesai", "Pesanan diserahkan. Ticket ditutup admin kalau sudah beres."]];
-        $("#p-buka").innerHTML = '<div class="bk"><form class="bkf" id="f-buka"><section class="bs"><h3><i>1</i>Pilih jenis</h3><div class="opts">' +
-          [["Order baru", "receipt", "Pesan setup atau hosting"], ["Bantuan", "chat-dots", "Tanya atau lapor kendala"], ["Lainnya", "three-dots", "Keperluan lain"]].map(function (o, i) { return '<label class="opt"><input type="radio" name="kat" value="' + o[0] + '"' + (i ? "" : " checked") + '><span class="opt-ic"><i class="bi bi-' + o[1] + '"></i></span><b>' + o[0] + "</b><small>" + o[2] + '</small><span class="opt-ck" aria-hidden="true"><i class="bi bi-check-lg"></i></span></label>'; }).join("") +
-          '</div></section><section class="bs" id="ord"><h3><i>2</i>Pilih layanan dan paket</h3><div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Pilih layanan">' + JK().map(function (k) { return [k, JM(k).nama]; }).concat([["hosting", "Hosting"]]).map(function (s, i) { return '<button type="button" role="tab" data-svc="' + s[0] + '" aria-selected="' + (i === 0) + '">' + e(s[1]) + "<em>" + JR(s[0]).length + "</em></button>"; }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div><input type="hidden" name="paket"><div id="pk-box"></div></section>' +
-          '<section class="bs"><h3><i id="n3">3</i>Ceritakan kebutuhanmu</h3><label class="fld"><span>Subjek <em class="req" id="rq">*</em></span><input class="inp" name="subj" maxlength="80"></label><label class="fld"><span>Pesan <em class="req">*</em></span><textarea class="txa" name="msg" maxlength="1000" required></textarea><small class="hint"><span id="cc">0</span>/1000</small></label></section></form>' +
-          '<div class="bk-side"><aside class="bsum" id="bsum" aria-label="Ringkasan ticket"><div class="bsum-h"><span class="bsum-hi"><i class="bi bi-receipt-cutoff"></i></span><div><b>Ringkasan</b><small>Cek dulu sebelum dikirim</small></div></div><dl class="bsum-l" id="bsum-l"></dl><div class="bsum-t" id="bsum-t"></div><button class="btn bsum-go" id="bsum-go" type="submit" form="f-buka"><i class="bi bi-send"></i> <span>Kirim ticket</span></button><p class="bsum-n" id="bsum-n"></p></aside>' +
-          '<section class="bhw" id="bhw"><button type="button" class="bhw-h" data-hwt aria-expanded="false" aria-controls="bhw-l"><span class="bhw-ic"><i class="bi bi-signpost-split"></i></span><span class="bhw-ti"><b>Cara kerjanya</b><small>Dari kirim ticket sampai selesai</small></span><i class="bi bi-chevron-down bhw-chev" aria-hidden="true"></i></button>' +
-          '<ol class="bhw-s" aria-hidden="true">' + HWS.map(function (x) { return '<li><i class="bi bi-' + x[0] + '"></i><span>' + x[2] + "</span></li>"; }).join("") + '</ol>' +
-          '<ol class="bhw-l" id="bhw-l">' + HWS.map(function (x) { return '<li><span class="bhw-n"><i class="bi bi-' + x[0] + '"></i></span><div><b>' + x[1] + "</b><p>" + x[3] + "</p></div></li>"; }).join("") + "</ol></section></div></div>";
-        bukaSync();
+        bsv = ""; bcat = "semua"; bpg = 0;
+        $("#p-buka").innerHTML = '<div class="bk"><form class="bkf" id="f-buka"><section class="bs"><h3><i>1</i><span>Pilih jenis<small>Mau pesan layanan atau tanya dulu ke tim NEXORA?</small></span></h3><div class="opts">' +
+          [["Order baru", "receipt", "Pesan setup atau hosting"], ["Bantuan", "chat-dots", "Tanya atau lapor kendala"]].map(function (o, i) { return '<label class="opt"><input type="radio" name="kat" value="' + o[0] + '"' + (i ? "" : " checked") + '><span class="opt-ic"><i class="bi bi-' + o[1] + '"></i></span><b>' + o[0] + "</b><small>" + o[2] + '</small><span class="opt-ck" aria-hidden="true"><i class="bi bi-check-lg"></i></span></label>'; }).join("") +
+          '</div></section><section class="bs" id="ord"><h3><i>2</i><span>Pilih layanan dan paket<small>Pilih jenis layanan, lalu paket yang paling cocok.</small></span></h3><div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Pilih layanan">' + JK().map(function (k) { return [k, JM(k).nama]; }).concat([["hosting", "Hosting"]]).map(function (s, i) { return '<button type="button" role="tab" data-svc="' + s[0] + '" aria-selected="false">' + e(s[1]) + "<em>" + JR(s[0]).length + "</em></button>"; }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div><input type="hidden" name="paket"><div id="pk-box"></div></section>' +
+          '<section class="bs"><h3><i id="n3">3</i><span>Ceritakan kebutuhanmu<small>Makin jelas ceritamu, makin cepat pesananmu dikerjakan.</small></span></h3><label class="fld"><span>Subjek <em class="req" id="rq">*</em></span><input class="inp" name="subj" maxlength="80"></label><label class="fld"><span>Pesan <em class="req">*</em></span><textarea class="txa" name="msg" maxlength="1000" required></textarea><small class="hint"><span id="cc">0</span>/1000</small></label></section></form>' +
+          '<div class="bk-side"><aside class="bsum" id="bsum" aria-label="Ringkasan ticket"><div class="bsum-h"><span class="bsum-hi"><i class="bi bi-receipt-cutoff"></i></span><div><b>Ringkasan</b><small>Cek dulu sebelum dikirim</small></div></div><dl class="bsum-l" id="bsum-l"></dl><div class="bsum-t" id="bsum-t"></div><button class="btn bsum-go" id="bsum-go" type="submit" form="f-buka"><i class="bi bi-send"></i> <span>Kirim ticket</span></button><p class="bsum-n" id="bsum-n"></p></aside></div></div>';
+        bukaSync(); bkInd(false); requestAnimationFrame(function () { bkInd(false); }); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { bkInd(false); });
       },
       profile: function () {
         var P = ld("nx-prof", { discord: "", wa: "" }), mi = mine(), nT = mi.filter(function (x) { return !cl(x); }).length, nO = OR().length, nB = BL().filter(function (b) { return bmine(b) && b.st === "Belum dibayar"; }).length, em = ss("nx-email") || "";
@@ -1572,7 +1593,7 @@
         var on = $('[aria-pressed="true"],[aria-current="true"],[aria-selected="true"]', el);
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
-      lastTab = tab; tkAr(); setTimeout(tkAr, 250); if (nfUp) nfUp();
+      lastTab = tab; allInd(); requestAnimationFrame(allInd); if (document.fonts && document.fonts.ready) document.fonts.ready.then(allInd); tkAr(); setTimeout(tkAr, 250); if (nfUp) nfUp();
       var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : (!adm && tab === "tagihan" && idet) ? idet : tt[0].replace("{n}", me());
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
       root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat"); root.classList.toggle("ivdet", !adm && tab === "tagihan" && !!idet);
@@ -1591,17 +1612,17 @@
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-takeover],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-hwt],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-takeover],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
       if (d.takeover) return takeModal(d.takeover);
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
       if (d.kcopy) { var cv = d.kcopy, cok = function () { toast("Nomor ticket disalin"); }, cfb = function () { var ta = document.createElement("textarea"); ta.value = cv; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); cok(); } catch (x) { toast("Gagal menyalin nomor ticket"); } ta.remove(); }; if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(cv).then(cok, cfb); else cfb(); return; }
-      if (d.ifl !== undefined) { ifl = d.ifl; ipg = 1; iopen = ""; $$("[data-ifl]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); $(".ix-res", root).innerHTML = iBody(); return; }
+      if (d.ifl !== undefined) { ifl = d.ifl; ipg = 1; iopen = ""; $$("[data-ifl]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); if (!adm) tabInd(t.closest(".tkx-tabs"), true); $(".ix-res", root).innerHTML = iBody(); return; }
       if (d.ipg) { ipg += d.ipg === "next" ? 1 : -1; iopen = ""; $(".ix-res", root).innerHTML = iBody(); return; }
       if (d.idp !== undefined) { var di = $("[data-id1]", root), dj = $("[data-id2]", root), dx = di && di.value && dj && !dj.value ? dj : di; if (dx) { try { dx.showPicker(); } catch (x) { dx.focus(); } } return; }
       if (d.kr) { sel = d.kr; tv = "chat"; return draw(); }
-      if (d.kf !== undefined) { if (adm) af = d.kf; else kf = d.kf; kpg = 1; $$("[data-kf]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); $(".tkx-res", root).innerHTML = kBody(); return; }
+      if (d.kf !== undefined) { if (adm) af = d.kf; else kf = d.kf; kpg = 1; $$("[data-kf]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); if (!adm) tabInd(t.closest(".tkx-tabs"), true); $(".tkx-res", root).innerHTML = kBody(); return; }
       if (d.kpg) { kpg += d.kpg === "next" ? 1 : -1; $(".tkx-res", root).innerHTML = kBody(); return; }
       if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose();
@@ -1632,11 +1653,15 @@
       if (d.hc !== undefined) { hcat[tab] = d.hc; return draw(); }
       if (d.stab) { stab = d.stab; $$("[data-stab]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); var sl = $(".tks-list", root); if (sl) { sl.innerHTML = sideItems(); sl.scrollTop = 0; } return; }
       if (d.gt) { var x = TK().filter(function (y) { return y.id === d.gt; })[0]; sel = d.gt; tg = cl(x) ? "selesai" : "aktif"; tv = "chat"; tab = "tiket"; return draw(); }
-      if (d.svc) { bsv = d.svc; $$("[data-svc]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); $("#f-buka").paket.dataset.l = ""; if (t.scrollIntoView) t.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" }); return bukaSync(); }
-      if (d.pk !== undefined) { $("#f-buka").paket.value = d.pk; return bukaSync(); }
+      if (d.svc) { var svs = $$("[data-svc]", root), pi = -1, ni = svs.indexOf(t); svs.forEach(function (b, i) { if (b.getAttribute("aria-selected") === "true") pi = i; }); if (pi === ni) return; bsv = d.svc; svs.forEach(function (b) { b.setAttribute("aria-selected", b === t); }); $("#f-buka").paket.dataset.l = ""; if (t.scrollIntoView) t.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" }); bukaSync(); bkInd(pi >= 0); var pbx = $("#pk-box"); if (pbx) { pbx.classList.remove("sl-r", "sl-l"); void pbx.offsetWidth; pbx.classList.add(ni > pi ? "sl-r" : "sl-l"); } return; }
+      if (d.pk !== undefined) {
+        var pf = $("#f-buka"), pl = pkList(pf.paket.value);
+        if (bsv === "hosting") pl = [d.pk];
+        else { var pi2 = pl.indexOf(d.pk); if (pi2 >= 0) { if (pl.length > 1) pl.splice(pi2, 1); } else pl.push(d.pk); var po = JR(bsv).map(function (x) { return x.nama; }); pl.sort(function (a, b) { return po.indexOf(a) - po.indexOf(b); }); }
+        pf.paket.value = pl.join(PSEP); return bukaSync();
+      }
       if (d.pkc !== undefined) { bcat = d.pkc; bpg = 0; pkDraw(JR(bsv)); return bukaSync(); }
       if (d.pkpg !== undefined) { bpg += d.pkpg === "next" ? 1 : -1; pkDraw(JR(bsv)); var pb = $("#pk-box"); if (pb && pb.scrollIntoView) pb.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
-      if (d.hwt !== undefined) { var hw = t.closest(".bhw"), hwo = !hw.classList.contains("open"); hw.classList.toggle("open", hwo); t.setAttribute("aria-expanded", hwo); return; }
       if (d.tg) { tg = d.tg; sel = null; return draw(); }
       if (t.classList.contains("tk-item") || t.classList.contains("tk-pill")) { sel = d.id; tv = "chat"; return draw(); }
       if (d.back !== undefined) { tv = "list"; return draw(); }
@@ -1673,6 +1698,7 @@
       if (t.matches("[data-q]")) { aq = t.value; $(".tk-list", root).innerHTML = adm ? admList() : cList(); }
       if (t.matches(".cmp")) fitCmp(t);
       if (t.name === "msg" && $("#cc")) { $("#cc").textContent = t.value.length; var chn = $("#cc").parentNode; if (chn) chn.classList.toggle("warn", t.value.length >= 900); if (t.closest("#f-buka")) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, 420) + "px"; } }
+      if ((t.name === "subj" || t.name === "msg") && t.closest("#f-buka") && t.form.kat.value === "Bantuan") bukaSync();
       if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; tmpSync(); }
     });
     root.addEventListener("keydown", function (ev) {
@@ -1727,9 +1753,10 @@
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         if (needWa()) return waModal();
+        if (f.kat.value === "Order baru" && !f.paket.value) { var ob = $("#ord"); if (ob && ob.scrollIntoView) ob.scrollIntoView({ block: "center", behavior: "smooth" }); return toast("Pilih layanan dan paket dulu ya."); }
         if (f.dataset.busy) return; f.dataset.busy = "1";
         var b = TK(), id = nextTid(), k = f.kat.value, p = k === "Order baru" ? f.paket.value : "-";
-        b.unshift({ id: id, subj: f.subj.value || ("Order " + p), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [nm({ w: "c", t: f.msg.value, d: "Baru saja", h: hm() })] }); sv("nx-tk", b);
+        b.unshift({ id: id, subj: f.subj.value || pkSubj(pkList(p)), kat: k, paket: p, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [nm({ w: "c", t: f.msg.value, d: "Baru saja", h: hm() })] }); sv("nx-tk", b);
         if (k === "Order baru") { var o = OR(); o.unshift({ id: "ORD-" + (2045 + o.length), tk: id, item: p, jenis: "Order via ticket", tgl: "Hari ini", st: "Menunggu" }); sv("nx-or", o); }
         var gb = $("#bsum-go"); if (gb) { gb.disabled = true; gb.classList.add("ok"); gb.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>Ticket terkirim</span>'; }
         setTimeout(function () { if (tab === "buka") { sel = id; tg = "aktif"; tab = "tiket"; draw(); } toast("Ticket " + id + " dibuat. Nanti notifikasi otomatis masuk ke Discord NEXORA."); }, 650);
