@@ -2787,10 +2787,6 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .is-i{width:34px;height:34px;font-size:.95rem}
   .is-c b{font-size:.98rem}
   .ix-dt{min-width:0;width:100%}
-  .ix-h{display:none}
-  .ix-r{grid-template-columns:minmax(0,1fr) auto 18px;grid-template-areas:"t a ch" "s j ch";gap:6px 12px;padding:12px}
-  .ix-t{grid-area:t}.ix-a{grid-area:a;text-align:right}.ix-s{grid-area:s}.ix-j{grid-area:j;text-align:right}.ix-ch{grid-area:ch;grid-row:1/3}
-  .ix-d{display:none}
   .ix-dg{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (prefers-reduced-motion:reduce){.ix-ch,.ix-row{transition:none}}
@@ -2919,13 +2915,6 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .ix-sort .srt{display:inline-flex;flex-direction:column;gap:1px;font-size:.6rem;line-height:.7}
 .ix-sort .srt i{opacity:.35}
 .ix-sort .srt i.on{opacity:1;color:var(--accent)}
-@media (max-width:900px){
-  .ix-h{display:flex;justify-content:flex-end;height:42px;padding:0 16px}
-  .ix-h>span{display:none}
-  .ix-h>.ix-sw{display:flex}
-  .ix-r{grid-template-columns:minmax(0,1fr) auto 34px;grid-template-areas:"t a m" "s j m";gap:6px 12px;padding:12px 16px}
-  .ix-m{grid-area:m;grid-row:1/3;align-items:center}
-}
 .iv-top{margin-bottom:16px}
 .iv-g{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
 .iv-doc,.iv-sd{border:1px solid var(--line);border-radius:20px;background:var(--surface)}
@@ -3391,3 +3380,190 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 
 /* ===== v-sl: label grup sidebar (Utama, Akun) hanya huruf depan kapital ===== */
 .side .sl,.side .sg>.sl{text-transform:none;letter-spacing:.02em;font-size:.8rem}
+
+/* ===== v-inv13: list invoice di HP tetap tampil seperti desktop (bisa digeser ke samping) + isi detail invoice rapi di HP ===== */
+.ix-scr{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.ix-sin{min-width:860px}
+.ix-scr::-webkit-scrollbar{height:6px}
+.ix-scr::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+@media (max-width:700px){
+  .iv-hd{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px}
+  .iv-id{text-align:right;justify-items:end}
+  .iv-mx{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 16px;padding:14px}
+  .iv-bt{grid-column:1/-1;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .iv-bt>div{gap:1px}
+  .iv-bt small{display:block;margin:0;line-height:1.3;font-size:.74rem}
+  .iv-bt b{margin:0;line-height:1.3;font-size:.95rem}
+  .iv-dt>div{gap:2px}
+  .iv-dt small{margin:0;line-height:1.3;font-size:.74rem}
+  .iv-dt b{margin:0;line-height:1.3;font-size:.9rem}
+  .iv-sp{flex-direction:column;flex-wrap:nowrap;gap:0;padding:16px 4px}
+  .iv-sp li{position:relative;align-items:flex-start;gap:12px;padding-bottom:16px}
+  .iv-sp li:last-child{padding-bottom:0}
+  .iv-sp li>i{flex:none;width:24px;height:24px;font-size:.75rem;position:relative;z-index:1}
+  .iv-sp li:not(:last-child)::after{content:"";position:absolute;left:11px;top:26px;bottom:2px;width:2px;border-radius:2px;background:var(--line)}
+  .iv-sp li>div{display:grid;gap:1px;min-width:0}
+  .iv-sp li b{line-height:1.3;font-size:.9rem}
+  .iv-sp li small{line-height:1.3;font-size:.76rem}
+  .iv-li{gap:12px}
+  .iv-li b{overflow-wrap:anywhere}
+  .iv-in dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 14px}
+  .iv-ft{align-items:flex-start;line-height:1.4}
+}
+
+/* ===== v-inv14: scrollbar list invoice di HP lebih jelas & enak digeser + isi detail invoice rata tengah (tidak mentok garis) ===== */
+.ix-scr{scrollbar-width:auto;scrollbar-color:var(--accent) var(--accent-soft);padding-bottom:2px}
+.ix-scr::-webkit-scrollbar{height:12px}
+.ix-scr::-webkit-scrollbar-track{margin:0 16px;border-radius:99px;background:var(--accent-soft)}
+.ix-scr::-webkit-scrollbar-thumb{border:3px solid transparent;border-radius:99px;background:var(--accent);background-clip:padding-box;min-width:60px}
+@media (max-width:700px){
+  .iv-mx{align-items:center}
+  .iv-sp{padding:18px 4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:16px}
+  .iv-sp li{align-items:center;padding:0;margin-bottom:16px}
+  .iv-sp li:last-child{margin-bottom:0}
+  .iv-sp li>div{align-content:center}
+  .iv-sp li:not(:last-child)::after{top:calc(50% + 15px);bottom:-19px}
+  .iv-lh{align-items:center;padding:18px 0 10px}
+  .iv-sc{padding:0;border-top:1px solid var(--line)}
+  .iv-li{align-items:center;padding:14px 0}
+  .iv-tt{align-items:center;padding:16px 0}
+  .iv-in{padding-top:18px}
+  .iv-in dl>div{align-items:center}
+  .iv-ft{align-items:center;margin-top:18px;padding-top:0}
+}
+
+/* ===== v-inv15: alur status invoice: hapus garis ganda/menabrak (border bawaan li), isi rata tengah di antara garis ===== */
+.iv .iv-sp li{border:0;border-radius:0;background:none;box-shadow:none}
+@media (max-width:700px){
+  .iv .iv-sp{margin-top:0;padding:18px 4px;border-top:0;border-bottom:1px solid var(--line)}
+  .iv .iv-mx{margin-bottom:0}
+  .iv .iv-lh{padding:14px 0}
+}
+
+/* ===== v-buka2: Mulai Order dirapikan (tanpa Cara kerja & Pilih jenis) ===== */
+#p-buka .bk{grid-template-columns:minmax(0,1fr) 330px;gap:24px;max-width:none;margin-inline:0}
+#p-buka form.bkf{gap:20px}
+#p-buka .bs{padding:26px;border-radius:22px;box-shadow:none;background:var(--surface)}
+#p-buka .bs h3{display:flex;align-items:center;gap:14px;margin:0 0 22px;font-size:1.08rem;line-height:1.3}
+#p-buka .bs h3>i{flex:none;width:34px;height:34px;border-radius:11px;font-size:.95rem;font-weight:700;box-shadow:none}
+#p-buka .bs h3>span{display:grid;gap:2px;min-width:0}
+#p-buka .bs h3 small{color:var(--muted);font-size:.84rem;font-weight:400;line-height:1.4}
+#p-buka .tkx-tw{margin-bottom:18px}
+#p-buka .pk-chips{margin-bottom:18px}
+#p-buka .pk-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#p-buka .pk{gap:10px;padding:18px;border-radius:18px}
+#p-buka .pk:hover{transform:none;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 10px 24px -16px color-mix(in srgb,var(--accent) 55%,transparent)}
+#p-buka .pk-ck{top:16px;right:16px;width:24px;height:24px}
+#p-buka .pk-nm b{font-size:1.05rem}
+#p-buka .pk-ds{font-size:.88rem;min-height:2.9em}
+#p-buka .pk-ft span{padding:4px 10px;font-size:.76rem;background:var(--accent-soft);color:var(--accent)}
+#p-buka .pk[aria-pressed="true"] .pk-ft span{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--text)}
+#p-buka .pk-pr{padding-top:12px}
+#p-buka .pk-pr strong{font-size:1.2rem}
+#p-buka .pk-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+#p-buka .fld{margin-bottom:16px}
+#p-buka .fld>span{display:block;margin-bottom:8px;font-size:.92rem;font-weight:500}
+#p-buka .txa{min-height:160px}
+#p-buka .bk-side{gap:0}
+#p-buka .bsum{gap:16px;padding:22px;border-radius:22px;background:var(--surface);overflow:hidden}
+#p-buka .bsum::before{display:none}
+#p-buka .bsum>*{position:relative}
+#p-buka .bsum-hi{width:42px;height:42px;border-radius:13px}
+#p-buka .bsum-l{padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);gap:10px}
+#p-buka .bsum-t{padding-top:0;border-top:0}
+#p-buka .bsum-pr b{font-size:1.45rem}
+#p-buka .bsum-go{min-height:50px;border-radius:14px}
+#p-buka .bsum-n{font-size:.78rem}
+@media (max-width:980px){
+  #p-buka .bk{display:flex;flex-direction:column;gap:16px;max-width:none}
+  #p-buka .bsum{padding:10px 10px 10px 16px;border-radius:18px;overflow:visible}
+  #p-buka .bsum::before{display:none}
+  #p-buka .bsum-l{padding:0;border:0}
+}
+@media (max-width:700px){
+  #p-buka .pk-grid{grid-template-columns:minmax(0,1fr)}
+  #p-buka .pk-ds{min-height:0}
+}
+@media (max-width:560px){
+  #p-buka .bs{padding:18px 16px;border-radius:20px}
+  #p-buka .bs h3{gap:12px;margin-bottom:18px;font-size:1rem}
+  #p-buka .bs h3>i{width:30px;height:30px;border-radius:10px;font-size:.88rem}
+  #p-buka .bs h3 small{font-size:.8rem}
+  #p-buka .pk{padding:16px}
+}
+
+#p-buka .pk-chips{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto}
+#p-buka .pk-chips .chip{flex:none;white-space:nowrap}
+@media (max-width:980px){
+  #p-buka .bsum-pr{flex-wrap:nowrap;white-space:nowrap}
+  #p-buka .bsum-pr b{white-space:nowrap}
+  #p-buka .bsum-pr small{display:none}
+}
+
+/* ===== v-buka3: pilihan jenis ticket kembali (Order baru + Bantuan), tanpa "Lainnya" ===== */
+#p-buka .opts{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#p-buka .opt{flex-direction:row;align-items:center;gap:14px;padding:16px 18px;border-radius:18px;min-height:0}
+#p-buka .opt-ic{width:46px;height:46px;margin:0;border-radius:14px}
+#p-buka .opt>b,#p-buka .opt>small{display:block}
+#p-buka .opt-tx{min-width:0}
+#p-buka .opt-ck{top:50%;right:16px;transform:translateY(-50%)}
+#p-buka .opt{padding-right:52px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"ic t" "ic s";column-gap:14px;row-gap:1px}
+#p-buka .opt-ic{grid-area:ic}
+#p-buka .opt b{grid-area:t;align-self:end}
+#p-buka .opt small{grid-area:s;align-self:start}
+@media (max-width:560px){
+  #p-buka .opts{grid-template-columns:minmax(0,1fr);gap:10px}
+  #p-buka .opt{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"ic t" "ic s";min-height:68px;padding:12px 52px 12px 14px}
+  #p-buka .opt-ic{width:42px;height:42px}
+  #p-buka .opt-ck{grid-area:auto;position:absolute;top:50%;right:14px}
+}
+
+/* ===== v-buka4: ringkasan 1 warna, pindah layanan dengan efek geser kiri/kanan ===== */
+#p-buka .bsum{background:var(--surface);background-image:none}
+#p-buka #ord{overflow-x:clip}
+#p-buka #pk-box.sl-r{animation:pkslr .38s cubic-bezier(.22,.8,.3,1) both}
+#p-buka #pk-box.sl-l{animation:pksll .38s cubic-bezier(.22,.8,.3,1) both}
+@keyframes pkslr{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
+@keyframes pksll{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#p-buka #pk-box.sl-r,#p-buka #pk-box.sl-l{animation:none}}
+
+/* ===== v-buka5: latar tab layanan bergeser halus saat pindah tab ===== */
+#p-buka .tkx-tabs{position:relative}
+#p-buka .tkx-tabs button{position:relative;z-index:1;font-weight:500}
+#p-buka .tkx-tabs button[aria-selected="true"]{background:transparent}
+#p-buka .tkx-tabs button:not([aria-selected="true"]) em{padding:0 6px}
+#p-buka .tkx-ind{position:absolute;z-index:0;top:5px;bottom:5px;left:0;width:0;border-radius:99px;background:var(--accent-soft);pointer-events:none;transition:left .38s cubic-bezier(.22,.8,.3,1),width .38s cubic-bezier(.22,.8,.3,1)}
+#p-buka .tkx-ind.nt{transition:none}
+@media (prefers-reduced-motion:reduce){#p-buka .tkx-ind{transition:none}}
+
+/* ===== v-tabs-sl: latar tab filter (Ticket, Invoice, layanan Mulai Order) bergeser halus ===== */
+.tkx-tabs.sl-tabs{position:relative}
+.tkx-tabs.sl-tabs button{position:relative;z-index:1;font-weight:500}
+.tkx-tabs.sl-tabs button[aria-selected="true"]{background:transparent}
+.tkx-tabs.sl-tabs button:not([aria-selected="true"]) em{padding:0 6px}
+.tkx-tabs.sl-tabs .tkx-ind{position:absolute;z-index:0;top:5px;bottom:5px;left:0;width:0;border-radius:99px;background:var(--accent-soft);pointer-events:none;transition:left .38s cubic-bezier(.22,.8,.3,1),width .38s cubic-bezier(.22,.8,.3,1)}
+.tkx-tabs.sl-tabs .tkx-ind.nt{transition:none}
+@media (prefers-reduced-motion:reduce){.tkx-tabs.sl-tabs .tkx-ind{transition:none}}
+
+/* Mulai Order: ringkasan untuk jenis Bantuan */
+#p-buka .bsum-l{grid-template-columns:minmax(0,1fr)}
+#p-buka .bsum-l>div{align-items:baseline;min-width:0}
+#p-buka .bsum-l dt{flex:none}
+#p-buka .bsum-l dd{min-width:0;overflow-wrap:anywhere}
+#p-buka .bsum-l dd.ell{max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#p-buka .bsum-l dd.mut{color:var(--muted);font-weight:400}
+#p-buka .bsum-t.free{display:grid;justify-content:stretch;align-items:start;gap:2px}
+#p-buka .bsum-t.free .bsum-pr{text-align:left}
+#p-buka .bsum-t.free .bsum-pr.free small{max-width:none}
+/* Mulai Order > Pilih jenis: aktif lebih kalem, hover tanpa naik */
+#p-buka .opt{transition:border-color .18s,background .18s}
+#p-buka .opt:hover{transform:none}
+#p-buka .opt:has(input:checked){background:color-mix(in srgb,var(--accent) 8%,var(--bg));border-color:color-mix(in srgb,var(--accent) 70%,var(--line));box-shadow:none}
+/* Mulai Order > Pilih layanan dan paket: kartu paket aktif lebih kalem, hover tanpa naik */
+#p-buka .pk{transition:border-color .18s,background .18s}
+#p-buka .pk:hover{transform:none}
+#p-buka .pk[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 8%,var(--bg));border-color:color-mix(in srgb,var(--accent) 70%,var(--line));box-shadow:none}
+#p-buka .pk[aria-pressed="true"] .pk-ft span{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* Pilih paket: boleh lebih dari satu (kecuali hosting) */
+#p-buka .pk-grid.multi .pk-ck{border-radius:7px}
+#p-buka .bsum-pk.multi b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;line-height:1.3}
