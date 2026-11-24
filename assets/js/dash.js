@@ -183,7 +183,7 @@
 
   function dashInit(adm, root) {
     var bcat = "semua", bpg = 0;
-    var pfSw = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -1558,6 +1558,7 @@
         var P = ld("nx-prof", { discord: "", wa: "" }), em = ss("nx-email") || "", k = LK();
         var TABS = [["profil", "person", "Profil"], ["keamanan", "shield-check", "Keamanan"], ["notif", "bell", "Notifikasi"], ["akun", "link-45deg", "Akun terhubung"]];
         if (!TABS.some(function (x) { return x[0] === ptab; })) ptab = "profil";
+        if (ptab === "keamanan" && mfaSt === null) mfaLoad();
         var foto = myFoto() || safeAv(ss("nx-avatar")), mine0 = !!myFoto();
         var tg = function (key, ic, t, sub) { var on = P[key] !== false; return '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-' + ic + '"></i></span><div><b>' + t + "</b><small>" + sub + '</small></div><button type="button" class="swt" role="switch" aria-checked="' + on + '" aria-label="' + t + '" data-pf="' + key + '"></button></div>'; };
         var sec = function (t, sub, body) { return '<section class="pf-sec"><div class="pf-sh"><h3>' + t + "</h3><p>" + sub + '</p></div><div class="pf-card">' + body + "</div></section>"; };
@@ -1568,10 +1569,7 @@
             '<label class="fld"><span>Nama tampilan <em class="req">*</em></span><input class="inp" name="nama" required maxlength="40" value="' + e(me()) + '"></label><small class="hint">Dipakai di ticket dan invoice.</small>' +
             '<label class="fld"><span>Nomor WhatsApp</span><input class="inp" name="wa" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="wa-err" placeholder="0812 3456 7890" value="' + e(waShow(P.wa)) + '"></label><small class="hint bad" id="wa-err" role="alert"></small>' +
             '<small class="hint">Dipakai teknisi kalau perlu menghubungimu. Wajib diisi untuk membuka ticket.</small><input type="hidden" name="dc" value="' + e(P.discord || "") + '"><button class="btn pf-save" type="submit">Simpan profil</button></form>') + sec("Privasi", "Atur apakah admin yang menangani ticketmu bisa melihat kamu sedang online.", '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-broadcast"></i></span><div><b>Tampilkan status online</b><small>Kalau dimatikan, admin tidak melihat status online atau offline-mu di chat ticket.</small></div><button type="button" class="swt" role="switch" aria-checked="' + showOn() + '" aria-label="Tampilkan status online" data-onl="1"></button></div>'),
-          keamanan: sec("Keamanan", "Cara kamu masuk dan keluar dari akunmu.",
-            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-box-arrow-in-right"></i></span><div><b>Metode login</b><small>' + e(k.via === "email" ? "Email" : k.via) + '</small></div><span class="bd b4"><i class="bi bi-check2"></i> Aktif</span></div>' +
-            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-envelope-check"></i></span><div><b>Email</b><small>' + e(em || "-") + '</small></div>' + (em ? '<span class="bd b4"><i class="bi bi-check2"></i> Terverifikasi</span>' : "") + "</div>" +
-            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-box-arrow-right"></i></span><div><b>Keluar dari akun</b><small>Akhiri sesi di browser ini.</small></div><button type="button" class="btn ghost pf-out" id="logout2">Keluar</button></div>'),
+          keamanan: '<section class="pf-sec tf-sec"><div class="pf-card tf-card"><div id="pf-2fa">' + mfaHtml() + "</div></div></section>",
           notif: sec("Notifikasi", "Pilih kabar apa yang mau kamu terima dari tim NEXORA.",
             tg("nTk", "chat-dots", "Balasan ticket", "Kabari saat admin membalas ticketmu.") + tg("nBill", "cash-stack", "Invoice", "Pengingat saat ada invoice dan jatuh tempo.")),
           akun: sec("Akun terhubung", "Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya.",
@@ -1684,6 +1682,76 @@
       if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew, inv: tab === "tagihan" && !adm ? idet : "" }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
       hNav = nk; hRest = false;
     }
+    /* ===== Verifikasi 2 langkah (opsional) di tab Keamanan ===== */
+    function mfaDemo() { return !(window.NX && NX.live); }
+    function mfaFakeQr() {
+      var n = 25, c = "", r = 7, i, j, on;
+      function fnd(x, y) { return (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7); }
+      for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+        if (fnd(j, i)) { var fx = j >= n - 7 ? j - (n - 7) : j, fy = i >= n - 7 ? i - (n - 7) : i; on = fx === 0 || fx === 6 || fy === 0 || fy === 6 || (fx >= 2 && fx <= 4 && fy >= 2 && fy <= 4); }
+        else { r = (r * 9301 + 49297) % 233280; on = r / 233280 > 0.52; }
+        if (on) c += '<rect x="' + (j + 1) + '" y="' + (i + 1) + '" width="1" height="1"/>';
+      }
+      return "data:image/svg+xml;utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 2) + " " + (n + 2) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><g fill="#111">' + c + "</g></svg>");
+    }
+    function mfaNote() { return mfaDemo() ? '<p class="pf-ht mfa-demo"><i class="bi bi-info-circle"></i> Contoh tampilan' + DEMOTXT + ". QR dan kodenya palsu: kode 6 digit apa saja diterima.</p>" : ""; }
+    function tfApps() { return '<div class="tf-apps"><a class="tf-app" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener noreferrer"><i class="bi bi-google-play"></i>Google Authenticator</a><a class="tf-app" href="https://authy.com/download/" target="_blank" rel="noopener noreferrer"><i class="bi bi-phone"></i>Authy</a><a class="tf-app" href="https://1password.com/downloads/mobile/" target="_blank" rel="noopener noreferrer"><i class="bi bi-lock"></i>1Password</a></div>'; }
+    function tfHead(right) { return '<div class="tf-h"><div><h3>Two-Factor Authentication</h3><p>Verifikasi 2 langkah dengan aplikasi authenticator.</p></div>' + (right ? '<div class="tf-hr">' + right + "</div>" : "") + "</div>"; }
+    function tfStep(n, t, sub, body) { return '<div class="tf-s"><span class="tf-n">' + n + '</span><div class="tf-b"><b>' + t + "</b>" + (sub ? "<small>" + sub + "</small>" : "") + (body || "") + "</div></div>"; }
+    function tfSt(ic, t, sub, right) { return '<div class="tf-st"><span class="tf-ic"><i class="bi bi-' + ic + '"></i></span><div class="tf-stt"><b>' + t + "</b><small>" + sub + "</small></div>" + (right ? '<span class="tf-sr">' + right + "</span>" : "") + "</div>"; }
+    function mfaHtml() { return mfaHtml0() + mfaNote(); }
+    function mfaHtml0() {
+      if (mfaSt === null || mfaSt === "load") return tfHead() + '<p class="tf-m">Memuat status…</p>';
+      if (mfaSt === "err") return tfHead() + tfSt("exclamation-circle", "Status belum bisa dimuat", "Periksa koneksimu, lalu coba lagi.", '<button type="button" class="btn ghost pf-out" id="mfa-retry">Coba lagi</button>');
+      if (mfaEn) {
+        var sc = String(mfaEn.secret || ""), qrOk = /^data:image\/svg\+xml/i.test(mfaEn.qr || "");
+        return tfHead('<button type="button" class="btn ghost pf-out" id="mfa-cancel">Batal</button>') + '<form class="tf-f" id="f-mfa" novalidate>' +
+          tfStep(1, "Install authenticator app", "Pilih salah satu aplikasi di HP kamu.", tfApps()) +
+          tfStep(2, "Scan QR atau masukkan kode manual", "", '<div class="tf-qr">' + (qrOk ? '<div class="tf-qw"><img class="mfa-qr" src="' + e(mfaEn.qr) + '" alt="QR code untuk aplikasi authenticator" width="160" height="160"></div>' : "") + '<div class="tf-kw"><p>Tidak bisa scan? Masukkan kode ini secara manual:</p><div class="tf-kr"><code class="tf-key">' + e(sc) + '</code><button type="button" class="tf-cp" id="mfa-copy" aria-label="Salin kode"><i class="bi bi-copy"></i></button></div><p class="tf-sv"><i class="bi bi-exclamation-triangle"></i><span>Simpan kode ini di tempat aman, untuk mendaftarkan ulang kalau HP hilang atau ganti.</span></p></div></div>') +
+          tfStep(3, "Masukkan kode 6-digit", "Buka aplikasi authenticator, ambil kode untuk akun ini.", '<div class="tf-cr"><input class="tf-in" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Kode 6 digit"><button class="tf-go" type="submit"><i class="bi bi-check2"></i> Verifikasi</button></div><small class="hint bad mfa-err" role="alert"></small>') + "</form>";
+      }
+      if (mfaSt.id) {
+        if (mfaOff) return tfHead() + '<form class="tf-f" id="f-mfaoff" novalidate>' + tfStep(1, "Matikan verifikasi 2 langkah", "Masukkan kode 6 digit dari aplikasi authenticator-mu.", '<div class="tf-cr"><input class="tf-in" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Kode 6 digit"><button class="tf-go" type="submit">Matikan 2FA</button></div><small class="hint bad mfa-err" role="alert"></small><button type="button" class="tf-bk" id="mfa-offc">Batal</button>') + "</form>";
+        return tfHead() + tfSt("shield-check", "Verifikasi 2 langkah aktif", "Setiap kali login, kamu diminta kode 6 digit dari aplikasi authenticator.", '<span class="bd b4"><i class="bi bi-check2"></i> Aktif</span><button type="button" class="btn ghost pf-out" id="mfa-off">Matikan</button>');
+      }
+      return tfHead() + tfSt("shield-lock", "Belum aktif", "Disarankan, tapi tidak wajib. Setiap login diminta kode 6 digit dari aplikasi authenticator.", '<button type="button" class="tf-go tf-on" id="mfa-on">Aktifkan</button>') + '<div class="tf-pre"><b>Aplikasi yang bisa dipakai</b>' + tfApps() + "</div>";
+    }
+    function mfaPaint() { var b = $("#pf-2fa"); if (b) b.innerHTML = mfaHtml(); }
+    function mfaLoad() {
+      if (mfaDemo()) { mfaSt = { id: ld("nx-prof", {}).mfa ? "demo" : "" }; return mfaPaint(); }
+      if (mfaSt === "load") return;
+      mfaSt = "load"; mfaPaint();
+      NX.mfa.factors().then(function (f) { mfaSt = { id: f.verified[0] ? f.verified[0].id : "" }; }, function () { mfaSt = "err"; }).then(mfaPaint);
+    }
+    function mfaErr(f, m) { var s = $(".mfa-err", f); if (s) s.textContent = m || ""; if (f.code) f.code.classList.toggle("bad", !!m); }
+    function mfaStart() {
+      if (mfaDemo()) { mfaEn = { id: "demo", qr: mfaFakeQr(), secret: "DEMODEMODEMODEMODEMODEMO" }; mfaPaint(); var di = $("#f-mfa .inp"); if (di) di.focus(); return; }
+      if (mfaBusy) return; mfaBusy = true;
+      NX.mfa.enroll().then(function (en) { mfaBusy = false; mfaEn = en; mfaPaint(); var i = $("#f-mfa .inp"); if (i) i.focus(); }, function (er) { mfaBusy = false; toast(NX.mfa.msg(er)); });
+    }
+    function mfaCancel() { var id = mfaEn && mfaEn.id; mfaEn = null; mfaPaint(); if (id && !mfaDemo()) NX.mfa.cancel(id); }
+    function mfaCopy() {
+      var s = mfaEn && mfaEn.secret; if (!s) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(s).then(function () { toast("Kunci setup disalin"); }, function () { toast("Gagal menyalin, salin manual ya"); });
+      else toast("Gagal menyalin, salin manual ya");
+    }
+    function mfaSubmit(f) {
+      var cd = String(f.code.value || "").replace(/\D/g, "");
+      if (cd.length !== 6) return mfaErr(f, "Masukkan 6 digit kode.");
+      if (mfaDemo()) {
+        var Pd = ld("nx-prof", {});
+        if (f.id === "f-mfa") { Pd.mfa = true; sv("nx-prof", Pd); mfaSt = { id: "demo" }; mfaEn = null; toast("Verifikasi 2 langkah aktif" + DEMOTXT); }
+        else { Pd.mfa = false; sv("nx-prof", Pd); mfaSt = { id: "" }; mfaOff = false; toast("Verifikasi 2 langkah dimatikan" + DEMOTXT); }
+        return mfaPaint();
+      }
+      if (mfaBusy) return; mfaBusy = true; mfaErr(f, "");
+      if (f.id === "f-mfa") {
+        var en = mfaEn;
+        NX.mfa.verify(en.id, cd).then(function () { mfaBusy = false; mfaSt = { id: en.id }; mfaEn = null; toast("Verifikasi 2 langkah aktif"); mfaPaint(); }, function (er) { mfaBusy = false; mfaErr(f, NX.mfa.msg(er)); f.code.value = ""; f.code.focus(); });
+      } else {
+        NX.mfa.disable(mfaSt.id, cd).then(function () { mfaBusy = false; mfaSt = { id: "" }; mfaOff = false; toast("Verifikasi 2 langkah dimatikan"); mfaPaint(); }, function (er) { mfaBusy = false; mfaErr(f, NX.mfa.msg(er)); f.code.value = ""; f.code.focus(); });
+      }
+    }
     function pfFoto(file) {
       if (!file) return;
       if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return toast("Format foto harus PNG, JPG, atau WebP");
@@ -1724,7 +1792,7 @@
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
       if (d.takeover) return takeModal(d.takeover);
@@ -1756,6 +1824,12 @@
       if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
       if (d.ptab) { if (d.ptab === ptab) return; ptab = d.ptab; pfSw = true; return draw(); }
       if (t.id === "pf-rm") return pfHapus();
+      if (t.id === "mfa-on") return mfaStart();
+      if (t.id === "mfa-cancel") return mfaCancel();
+      if (t.id === "mfa-off") { mfaOff = true; mfaPaint(); var oi = $("#f-mfaoff .inp"); if (oi) oi.focus(); return; }
+      if (t.id === "mfa-offc") { mfaOff = false; return mfaPaint(); }
+      if (t.id === "mfa-copy") return mfaCopy();
+      if (t.id === "mfa-retry") { mfaSt = null; return mfaLoad(); }
       if (d.lk) {
         var lkx = LK(), key = d.lk === "google" ? "g" : "d", nmk = d.lk === "google" ? "Google" : "Discord";
         if (lkx.via === nmk) return toast("Ini metode login utamamu");
@@ -1873,6 +1947,7 @@
           });
         });
       }
+      if (f.id === "f-mfa" || f.id === "f-mfaoff") return mfaSubmit(f);
       if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); ss("nx-name", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();

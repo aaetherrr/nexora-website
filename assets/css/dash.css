@@ -3652,3 +3652,102 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .pf-sec{gap:32px}
 @media (max-width:900px){.pfx{gap:28px}.pf-sec{gap:12px}.pf-sh p{max-width:none}}
 @media (max-width:560px){.pfx>.tkx-tw{margin-bottom:-4px}}
+
+/* ===== v-2fa: verifikasi 2 langkah (tab Keamanan + layar kode saat login) ===== */
+.pf-tg.mfa-w{flex-wrap:wrap}
+.mfa-r{display:flex;align-items:center;gap:8px;flex:none}
+.mfa-ap{margin:10px 0 0}
+.mfa-ap a,.mfa-warn a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.mfa-f{display:grid;gap:12px;justify-items:start;margin-top:14px}
+.mfa-f .hint{margin:0}
+.mfa-st{display:flex;align-items:center;gap:10px;margin:0;font-weight:600;font-size:.92rem}
+.mfa-n{display:grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:.78rem;font-weight:700}
+.mfa-qw{padding:10px;border-radius:14px;background:#fff;line-height:0}
+.mfa-qr{display:block;width:168px;height:168px}
+.mfa-kr{display:flex;align-items:center;flex-wrap:wrap;gap:8px;max-width:100%}
+.mfa-key{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem;letter-spacing:.06em;overflow-wrap:anywhere}
+.mfa-warn{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid color-mix(in srgb,#e0a030 45%,var(--line));border-radius:12px;background:color-mix(in srgb,#e0a030 9%,transparent);font-size:.82rem;line-height:1.55}
+.mfa-warn i{flex:none;margin-top:2px;color:#e0a030}
+.mfa-in{width:min(100%,220px);text-align:center;font-size:1.2rem;letter-spacing:.35em;font-variant-numeric:tabular-nums}
+.mfa-in::placeholder{letter-spacing:.35em}
+.mfa-ac{display:flex;flex-wrap:wrap;gap:8px}
+.mfa-ac .btn{padding:10px 22px;font-size:.92rem}
+.mfa-ov{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.mfa-box{display:grid;justify-items:center;gap:12px;width:min(100%,380px);padding:28px 24px;border:1px solid var(--line);border-radius:20px;background:var(--surface);text-align:center}
+.mfa-box h2{margin:0;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.2rem}
+.mfa-box p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.6}
+.mfa-ic{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);font-size:1.4rem}
+.mfa-box .hint{margin:0;min-height:1.2em}
+.mfa-go{width:100%;padding:12px;border-radius:12px;font-weight:600}
+.mfa-out{padding:6px 10px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.86rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.mfa-out:hover{color:var(--text)}
+@media (max-width:560px){.mfa-r{width:100%;justify-content:flex-end}.mfa-ac .btn{flex:1}}
+.mfa-demo{display:flex;gap:8px;align-items:flex-start;margin:12px 0 0;padding:9px 12px;border:1px dashed var(--line);border-radius:12px}
+.mfa-demo i{flex:none;margin-top:2px;color:var(--accent)}
+
+/* ===== v-tf: kartu Two-Factor Authentication (3 langkah) di Profile > Keamanan ===== */
+.tf-sec{display:block}
+.tf-card{padding:28px 30px}
+.tf-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px}
+.tf-h h3{margin:0 0 6px;font-size:1.2rem}
+.tf-h p{margin:0;color:var(--muted);font-size:.92rem}
+.tf-hr{flex:none}
+.tf-f{display:block}
+.tf-s{display:grid;grid-template-columns:30px minmax(0,1fr);gap:0 14px;padding:20px 0;border-bottom:1px solid var(--line)}
+.tf-s:last-child{border-bottom:0;padding-bottom:0}
+.tf-f>.tf-s:first-child{margin-top:18px;border-top:0}
+.tf-n{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--accent);font-size:.85rem;font-weight:700}
+.tf-b{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;min-width:0;align-content:start}
+.tf-b>b{font-size:.98rem;line-height:30px}
+.tf-b>small{color:var(--muted);font-size:.88rem;margin-top:-4px}
+.tf-b>*:nth-child(n+3){margin-top:10px}
+.tf-apps{display:flex;flex-wrap:wrap;gap:10px}
+.tf-app{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;background:color-mix(in srgb,var(--text) 6%,transparent);color:var(--muted);font-size:.9rem;text-decoration:none;transition:background .2s,color .2s}
+.tf-app:hover{background:var(--accent-soft);color:var(--text)}
+.tf-app i{font-size:1rem}
+.tf-qr{display:flex;align-items:flex-start;gap:18px}
+.tf-qw{flex:none;padding:10px;border-radius:16px;background:#fff;line-height:0}
+.tf-qw .mfa-qr{display:block;width:160px;height:160px}
+.tf-kw{flex:1;min-width:0;display:grid;gap:10px;align-content:start}
+.tf-kw>p{margin:0;color:var(--muted);font-size:.88rem}
+.tf-kr{display:flex;align-items:center;gap:10px}
+.tf-key{flex:1;min-width:0;padding:13px 16px;border-radius:12px;background:color-mix(in srgb,var(--text) 6%,transparent);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;font-weight:600;letter-spacing:.06em;overflow-wrap:anywhere}
+.tf-cp{display:grid;place-items:center;flex:none;width:46px;height:46px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--muted);font-size:1.05rem;cursor:pointer;transition:background .2s,color .2s}
+.tf-cp:hover{background:var(--accent-soft);color:var(--text)}
+.tf-sv{display:flex;gap:8px;align-items:flex-start;color:var(--muted);font-size:.8rem;line-height:1.5}
+.tf-sv i{flex:none;margin-top:2px;color:#e0a030}
+.tf-cr{display:flex;align-items:center;gap:12px}
+.tf-in{flex:1 1 0;width:0;min-width:0;height:48px;padding:0 16px;border:1px solid transparent;border-radius:12px;background:color-mix(in srgb,var(--text) 6%,transparent);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:1.15rem;letter-spacing:.4em;text-align:center;outline:0;transition:border-color .2s,box-shadow .2s}
+.tf-in::placeholder{letter-spacing:.4em;color:var(--muted);opacity:.7}
+.tf-in:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.tf-in.bad{border-color:#e5534b}
+.tf-go{display:inline-flex;align-items:center;justify-content:center;flex:none;gap:8px;height:48px;padding:0 26px;border:0;border-radius:99px;background:var(--accent);color:var(--on-accent,#fff);font:inherit;font-size:.95rem;font-weight:600;cursor:pointer;box-shadow:none;transition:transform .15s,filter .2s}
+.tf-go:hover{filter:brightness(1.08)}
+.tf-go:active{transform:scale(.98)}
+.tf-on{height:42px;padding:0 22px}
+.tf-b .mfa-err{margin:6px 0 0;min-height:0}
+.tf-bk{justify-self:start;margin-top:6px;padding:6px 2px;border:0;background:none;color:var(--muted);font:inherit;font-size:.88rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.tf-st{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px 18px;border-radius:16px;background:color-mix(in srgb,var(--text) 5%,transparent)}
+.tf-ic{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:var(--accent-soft);color:var(--accent);font-size:1.2rem}
+.tf-stt{flex:1;min-width:0;display:grid;gap:2px}
+.tf-stt b{font-size:.96rem}
+.tf-stt small{color:var(--muted);font-size:.84rem;line-height:1.5}
+.tf-sr{display:flex;align-items:center;gap:10px;flex:none}
+.tf-pre{display:grid;gap:10px;margin-top:20px}
+.tf-pre>b{font-size:.88rem;color:var(--muted);font-weight:500}
+.tf-m{margin:18px 0 0;color:var(--muted)}
+.tf-card .mfa-demo{margin-top:18px}
+@media (max-width:700px){
+  .tf-card{padding:20px 16px}
+  .tf-h h3{font-size:1.08rem}
+  .tf-s{grid-template-columns:26px minmax(0,1fr);gap:0 12px;padding:18px 0}
+  .tf-n{width:26px;height:26px;font-size:.8rem}
+  .tf-b>b{line-height:26px;font-size:.94rem}
+  .tf-qr{flex-direction:column;gap:14px}
+  .tf-qw .mfa-qr{width:148px;height:148px}
+  .tf-kw{width:100%}
+  .tf-cr{gap:8px}
+  .tf-go{padding:0 18px}
+  .tf-st{flex-wrap:wrap}
+  .tf-sr{width:100%;justify-content:flex-end}
+}
