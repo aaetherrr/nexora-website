@@ -34,7 +34,7 @@
   var TOAST_I = { ok: "check-circle-fill", err: "x-octagon-fill", warn: "exclamation-triangle-fill", info: "info-circle-fill" }, TOAST_T = { ok: "Berhasil", err: "Gagal", warn: "Perhatian", info: "Info" };
   function toast(t, type) {
     t = String(t == null ? "" : t); if (!t) return;
-    var ty = type || (/^(pesan baru|ticket baru|status )/i.test(t) ? "info" : /gagal|tidak (bisa|boleh|valid|diizinkan|ditemukan)|belum (bisa|termuat)|ditolak|minimal|wajib|salah|error|hanya (founder|ticket)/i.test(t) ? "err" : /dicabut|dihapus|dikembalikan|sementara|dibuang/i.test(t) ? "warn" : /tersimpan|berhasil|diperbarui|disalin|terkirim|dibuat|makasih|dipindah|diaktifkan|dinonaktifkan|tampil|disembunyikan|ditutup|diganti|ditambah|diputuskan|diambil alih/i.test(t) ? "ok" : "info");
+    var ty = type || (/^(pesan baru|ticket baru|status )/i.test(t) ? "info" : /gagal|tidak (bisa|boleh|valid|diizinkan|ditemukan)|belum (bisa|termuat)|ditolak|minimal|wajib|salah|error|hanya (founder|ticket)/i.test(t) ? "err" : /dicabut|dihapus|dikembalikan|sementara|dibuang/i.test(t) ? "warn" : /tersimpan|berhasil|diperbarui|disalin|terkirim|dibuat|makasih|dipindah|diaktifkan|dinonaktifkan|tampil|disembunyikan|ditutup|diganti|ditambah|diputuskan|diambil alih|ditampilkan|disembunyikan/i.test(t) ? "ok" : "info");
     var box = document.querySelector(".nxt-box"); if (!box) { box = document.createElement("div"); box.className = "nxt-box"; box.setAttribute("aria-live", "polite"); document.body.appendChild(box); }
     [].slice.call(box.children).forEach(function (c) { if (c.dataset.m === t) c.remove(); });
     while (box.children.length >= 4) box.firstChild.remove();
@@ -50,7 +50,8 @@
   function avImg(u) { return '<img src="' + e(u) + '" alt="" referrerpolicy="no-referrer" loading="lazy">'; }
   function av(n, u) { u = safeAv(u); return u ? '<span class="av">' + avImg(u) + "</span>" : '<span class="av">' + e(String(n || "?").trim().charAt(0).toUpperCase()) + "</span>"; }
   function avh(u, cls, fb) { u = safeAv(u); return '<span class="av' + (cls ? " " + cls : "") + '">' + (u ? avImg(u) : fb) + "</span>"; }
-  function setAv(el, name) { var u = safeAv(ss("nx-avatar")); if (u) el.innerHTML = avImg(u); else el.textContent = String(name || "?").charAt(0).toUpperCase(); }
+  function myFoto() { try { var d0 = document.querySelector(".dash"); if (!d0 || d0.dataset.dash !== "cust") return ""; var f = (JSON.parse(localStorage.getItem("nx-prof") || "{}") || {}).foto; return /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f || "") ? f : ""; } catch (x) { return ""; } }
+  function setAv(el, name) { var u = myFoto() || safeAv(ss("nx-avatar")); if (u) el.innerHTML = avImg(u); else el.textContent = String(name || "?").charAt(0).toUpperCase(); }
   var ST = ["Menunggu admin balas", "Terhubung dengan admin", "Menunggu pembayaran", "Pembayaran Dikonfirmasi", "Pesanan Diproses", "Orderan Selesai"];
   var SHORT = { "Menunggu admin balas": "Menunggu balas", "Terhubung dengan admin": "Terhubung", "Menunggu pembayaran": "Pembayaran", "Pembayaran Dikonfirmasi": "Dikonfirmasi", "Pesanan Diproses": "Diproses", "Orderan Selesai": "Order selesai" };
   var BC = { "Menunggu admin balas": "b1", "Terhubung dengan admin": "b2", "Menunggu pembayaran": "b3", "Pembayaran Dikonfirmasi": "b7", "Pesanan Diproses": "b8", "Orderan Selesai": "b4", Menunggu: "b3", Selesai: "b4", Diproses: "b8", Terbuka: "b1", "Belum dibayar": "b1", Terlambat: "b5", Lunas: "b4", Dibatalkan: "b6", Ditutup: "b6" };
@@ -119,7 +120,7 @@
   }
   function shrink(file, max, type, cb) {
     var fr = new FileReader();
-    fr.onload = function () { var im = new Image(); im.onload = function () { var s = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); cb(c.toDataURL(type, 0.82)); }; im.src = fr.result; };
+    fr.onload = function () { var im = new Image(); im.onload = function () { var s = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); var cx = c.getContext("2d"); if (type === "image/jpeg") { cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height); } cx.drawImage(im, 0, 0, c.width, c.height); cb(c.toDataURL(type, 0.8)); }; im.src = fr.result; };
     fr.readAsDataURL(file);
   }
 
@@ -182,7 +183,7 @@
 
   function dashInit(adm, root) {
     var bcat = "semua", bpg = 0;
-    var ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var pfSw = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -222,7 +223,7 @@
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-", AVU = safeAv(ss("nx-avatar"));
       var uw = document.createElement("div"); uw.className = "uwrap";
-      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></div><div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
+      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></div>' + (adm ? '<div class="um-sep"></div><button type="button" class="ux-tg" role="switch" aria-checked="' + showOn() + '"><i class="bi bi-broadcast" aria-hidden="true"></i><span>Status online</span><span class="swt" aria-hidden="true"></span></button>' : "") + '<div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
       nr.appendChild(uw);
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
@@ -258,6 +259,7 @@
         nfUp();
       }
       var uc = $(".uchip", uw), um = $(".umenu", uw);
+      var utg = $(".ux-tg", uw); if (utg) utg.addEventListener("click", function (ev) { ev.stopPropagation(); setOnl(!showOn()); });
       function uOpen(o) { um.hidden = !o; uc.setAttribute("aria-expanded", String(o)); }
       uc.addEventListener("click", function (ev) { ev.stopPropagation(); if (nfClose) nfClose(); uOpen(um.hidden); });
       $(".ux-out", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
@@ -303,12 +305,88 @@
     /* ambil ticket: admin yang chat duluan jadi penangan; admin lain terkunci sampai mengambil alih */
     function hdMe(t) { return !!(t.hd && (window.NX && NX.live ? t.hd.me : t.hd.n === me())); }
     function locked(t) { return adm && !cl(t) && !!t.hd && !hdMe(t); }
+    /* ===== status online / offline (hanya tampil di header chat ticket) =====
+       live: Supabase Realtime Presence (lihat auth.js) | demo tanpa Supabase: detak jantung lewat localStorage antar-tab */
+    var PRS = { key: "", off: null, tm: null, st: null, pref: null }, prHid = 0;
+    function isLive() { return !!(window.NX && NX.live); }
+    function showOn() { if (isLive()) return !(NX.profile && NX.profile.show_online === false); try { return localStorage.getItem("nx-onl:" + me()) !== "0"; } catch (x) { return true; } }
+    function prActive() { return !document.hidden || Date.now() - prHid < 120000; }
+    function prBeat() {
+      if (isLive()) { if (NX.presTrackOn) NX.presTrackOn(); return; }
+      try {
+        var k = "nx-pr:" + me(), kv = "nx-prv:" + me();
+        localStorage.setItem(kv, showOn() ? "1" : "0");
+        if (showOn() && prActive()) localStorage.setItem(k, String(Date.now())); else localStorage.removeItem(k);
+      } catch (x) {}
+    }
+    function prBoot() {
+      if (window.__nxPrBoot) return; window.__nxPrBoot = 1;
+      prBeat(); setInterval(prBeat, 8000);
+      document.addEventListener("visibilitychange", function () { if (document.hidden) prHid = Date.now(); prBeat(); });
+      window.addEventListener("pagehide", function () { if (!isLive()) try { localStorage.removeItem("nx-pr:" + me()); } catch (x) {} });
+    }
+    function prPeer(t) { return isLive() ? (adm ? t.cid : (t.hd && t.hd.id)) || "" : adm ? uname(t) : (t.hd && t.hd.n) || ""; }
+    function prStop() { if (PRS.off) { try { PRS.off(); } catch (x) {} } PRS.off = null; clearInterval(PRS.tm); PRS.tm = null; }
+    function prStart(key) {
+      if (isLive()) {
+        var ask = function () { NX.presPref(key).then(function (v) { if (PRS.key === key) { PRS.pref = v; prPaint(); } }); };
+        ask(); PRS.tm = setInterval(ask, 60000);
+        PRS.off = NX.presWatch(key, function (on) { if (PRS.key === key) { PRS.st = on; prPaint(); } });
+      } else {
+        var rd = function () {
+          try { PRS.pref = localStorage.getItem("nx-prv:" + key) !== "0"; PRS.st = Date.now() - (Number(localStorage.getItem("nx-pr:" + key)) || 0) < 20000; } catch (x) {}
+          prPaint();
+        };
+        rd(); PRS.tm = setInterval(rd, 3000);
+      }
+    }
+    function prPaint() {
+      var dot = $(".th-h .pdot", root), tx = $(".th-h .pst", root); if (!dot) return;
+      var ok = PRS.pref === true && PRS.st !== null, on = ok && PRS.st === true;
+      dot.hidden = !ok; dot.classList.toggle("on", on);
+      if (tx) { tx.hidden = !ok; tx.classList.toggle("on", on); tx.textContent = ok ? " · " + (on ? "Online" : "Offline") : ""; }
+    }
+    function presSync() {
+      var dot = $(".th-h .pdot", root), t = dot ? curT() : null, key = t && !cl(t) ? prPeer(t) : "";
+      if (key !== PRS.key) { prStop(); PRS.key = key; PRS.st = null; PRS.pref = null; if (key) prStart(key); }
+      prPaint();
+    }
+    function onlUi() {
+      var on = showOn(), m = document.querySelector(".ux-tg"); if (m) m.setAttribute("aria-checked", String(on));
+      var sw = $("[data-onl]", root); if (sw) sw.setAttribute("aria-checked", String(on));
+    }
+    function setOnl(v) {
+      var done = function () { toast(v ? "Status online ditampilkan" : "Status online disembunyikan"); onlUi(); prBeat(); };
+      if (isLive()) { NX.setShowOnline(v).then(done, function (er) { toast(liveMsg(er)); onlUi(); }); return; }
+      try { localStorage.setItem("nx-onl:" + me(), v ? "1" : "0"); } catch (x) {} done();
+    }
     function USR() {
       if (window.NX && NX.live && adm) return NX.users;
       var u = ld("nx-users", { "Demo Customer": { email: "demo@example.com", discord: "democustomer", wa: "081234567890", joined: "10 Okt 2026" }, "Rizky": { email: "rizky@example.com", discord: "rizky_gg", wa: "085711112222", joined: "02 Okt 2026" }, "Andi": { email: "", discord: "", wa: "", joined: "28 Sep 2026" } });
       return u;
     }
     function waNum(v) { var d = String(v || "").replace(/\D/g, ""); if (!d) return ""; if (d.charAt(0) === "0") d = "62" + d.slice(1); return d; }
+    /* validasi nomor WhatsApp: nomor seluler Indonesia (08xx / 62xx / +62xx) */
+    function waCheck(v) {
+      var raw = String(v || "").trim();
+      if (!raw) return { ok: true, val: "" };
+      if (!/^\+?[\d\s().-]+$/.test(raw)) return { ok: false, msg: "Nomor WhatsApp hanya boleh berisi angka. Contoh: 0812 3456 7890." };
+      var d = raw.replace(/\D/g, ""), r;
+      if (d.indexOf("62") === 0) { r = d.slice(2); if (r.charAt(0) === "0") r = r.slice(1); }
+      else if (d.charAt(0) === "0") r = d.slice(1);
+      else if (d.charAt(0) === "8") r = d;
+      else return { ok: false, msg: "Nomor harus diawali 08, 62, atau +62. Contoh: 0812 3456 7890." };
+      if (r.charAt(0) !== "8") return { ok: false, msg: "Gunakan nomor seluler Indonesia yang diawali 08. Contoh: 0812 3456 7890." };
+      if (r.length < 9) return { ok: false, msg: "Nomor terlalu pendek. Nomor seluler Indonesia minimal 10 digit." };
+      if (r.length > 12) return { ok: false, msg: "Nomor terlalu panjang. Nomor seluler Indonesia maksimal 13 digit." };
+      if (/^(\d)\1+$/.test(r)) return { ok: false, msg: "Nomor WhatsApp tidak valid. Periksa lagi nomormu." };
+      return { ok: true, val: "62" + r };
+    }
+    function waShow(v) { var d = String(v || "").replace(/\D/g, ""); if (!d) return ""; if (d.indexOf("62") === 0) d = "0" + d.slice(2); return d.replace(/^(\d{4})(\d{4})(\d+)$/, "$1 $2 $3"); }
+    function waErr(f, msg) {
+      var el = $("#wa-err", f), inp = f.wa; if (!el || !inp) return;
+      el.textContent = msg || ""; if (msg) { inp.classList.add("bad"); inp.setAttribute("aria-invalid", "true"); } else { inp.classList.remove("bad"); inp.removeAttribute("aria-invalid"); }
+    }
     function custNames() {
       var n = Object.keys(USR());
       TK().forEach(function (x) { var u = uname(x); if (n.indexOf(u) < 0) n.push(u); });
@@ -526,7 +604,7 @@
       var ibtn = '<button type="button" class="th-info' + (kinfo ? " on" : "") + '" data-kinfo aria-pressed="' + kinfo + '" aria-label="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '" data-tip="' + (kinfo ? "Sembunyikan detail" : "Tampilkan detail") + '"><i class="bi bi-layout-sidebar-inset' + (kinfo ? "-reverse" : "") + '"></i></button>';
       var act = lk0 ? bd(t.st) + '<span class="st-lk hd" title="Status hanya bisa diubah admin yang menangani ticket"><i class="bi bi-lock-fill"></i> Ditangani ' + e(t.hd.n) + "</span>" + ibtn : adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : bd(t.st)) + stMenu(t, lockC) + ibtn) : bd(t.st) + cbd + ibtn;
       var chd = !adm && t.hd ? t.hd : null, ttl = chd ? chd.n : t.subj, sub = t.id + (adm ? " · " + uname(t) : chd ? " · " + (chd.r || "Admin") : "");
-      return '<div class="th"><div class="th-h">' + (adm ? av(uname(t), t.cav) : chd ? av(chd.n, chd.a) : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(ttl) + '" data-tipw="t">' + e(ttl) + '</b><small data-tip="' + e(sub) + '" data-tipw="t">' + e(sub) + '</small></div><div class="th-a">' + act + "</div></div>" + info +
+      return '<div class="th"><div class="th-h">' + (adm || chd ? '<span class="th-aw">' + (adm ? av(uname(t), t.cav) : av(chd.n, chd.a)) + '<i class="pdot" hidden></i></span>' : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(ttl) + '" data-tipw="t">' + e(ttl) + '</b><small data-tip="' + e(sub) + '" data-tipw="t">' + e(sub) + '<span class="pst" hidden></span></small></div><div class="th-a">' + act + "</div></div>" + info +
         pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : lk0 ? '<div class="th-lock" role="group" aria-label="Ticket sedang ditangani admin lain"><p><i class="bi bi-lock-fill"></i><span>Ticket ini sedang ditangani <b>' + e(t.hd.n) + "</b> (" + e(t.hd.r) + '). Kamu tidak bisa membalas chat.</span></p><button type="button" class="btn" data-takeover="' + e(t.id) + '"><i class="bi bi-arrow-left-right"></i> Apakah kamu ingin mengambil alih ticket ini?</button></div>' : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
     }
@@ -713,15 +791,15 @@
       return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-r" style="--p:' + pct + '" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><b>' + pct + '%</b></div><div class="pcb-m"><h3>Lengkapi akunmu</h3><ul class="pcb-l">' +
         c.it.map(function (x, i) { return '<li class="' + (x[2] ? "ok" : i === nx ? "next" : "") + '">' + (x[2] ? '<i class="bi bi-check-circle pcb-s"></i>' : '<span class="pcb-d" aria-hidden="true"></span>') + '<span class="pcb-n">' + e(TX[x[1]] || x[1]) + "</span>" + (i === nx ? '<button type="button" class="btn pcb-b" data-go="profile">' + (/^Akun /.test(x[1]) ? "Hubungkan" : "Isi profil") + "</button>" : "") + "</li>"; }).join("") + "</ul></div></section>";
     }
-    function lkCard() {
+    function lkCard(bare) {
       var k = LK(), row = function (key, ic, nm, on, sub) {
         var utama = k.via.toLowerCase() === key;
         return '<div class="lk"><span class="lk-i ' + key + '"><i class="bi bi-' + ic + '"></i></span><div class="lk-t"><b>' + nm + "</b><small>" + sub + '</small></div>' + (on ? '<span class="bd b4"><i class="bi bi-check2"></i> Terhubung</span>' : "") +
           '<button type="button" class="btn ' + (on ? "ghost" : "") + ' lk-b" data-lk="' + key + '"' + (utama ? " disabled" : "") + ">" + (on ? (utama ? "Login utama" : "Putuskan") : "Hubungkan") + "</button></div>";
       };
-      return '<section class="dcard"><h3><i class="bi bi-link-45deg"></i> Akun terhubung</h3><p class="muted lk-n">Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya dengan akun yang sama.</p>' +
+      return (bare ? '' : '<section class="dcard"><h3><i class="bi bi-link-45deg"></i> Akun terhubung</h3>') + '<p class="muted lk-n">Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya dengan akun yang sama.</p>' +
         row("google", "google", "Google", k.g, k.g ? (k.via === "Google" ? "Kamu login lewat Google" : "Bisa dipakai untuk masuk") : "Belum terhubung") +
-        row("discord", "discord", "Discord", k.d, k.d ? (k.via === "Discord" ? "Kamu login lewat Discord" : (k.P.discord ? "@" + e(k.P.discord) : "Bisa dipakai untuk masuk")) : "Belum terhubung") + "</section>";
+        row("discord", "discord", "Discord", k.d, k.d ? (k.via === "Discord" ? "Kamu login lewat Discord" : (k.P.discord ? "@" + e(k.P.discord) : "Bisa dipakai untuk masuk")) : "Belum terhubung") + (bare ? "" : "</section>");
     }
     /* indikator tab (latar yang bergeser ke tab terpilih): layanan di Mulai Order, filter di Ticket dan Invoice */
     function tabInd(tb, anim) {
@@ -729,11 +807,13 @@
       var sl = $('button[aria-selected="true"]', tb), ind = $(".tkx-ind", tb); if (!sl) return;
       tb.classList.add("sl-tabs");
       if (!ind) { ind = document.createElement("span"); ind.className = "tkx-ind nt"; ind.setAttribute("aria-hidden", "true"); tb.insertBefore(ind, tb.firstChild); }
+      var tl = sl.offsetLeft + "px", tw = sl.offsetWidth + "px";
+      if (!anim && ind.style.left === tl && ind.style.width === tw) return;
       if (!anim) ind.classList.add("nt"); else if (ind.classList.contains("nt")) { void ind.offsetWidth; ind.classList.remove("nt"); }
-      ind.style.left = sl.offsetLeft + "px"; ind.style.width = sl.offsetWidth + "px";
+      ind.style.left = tl; ind.style.width = tw;
     }
     function bkInd(anim) { tabInd($("#p-buka .tkx-tabs"), anim); }
-    function allInd() { if (adm) return; $$("#p-buka .tkx-tabs,#p-tiket .tkx-tabs,#p-tagihan .tkx-tabs", root).forEach(function (tb) { tabInd(tb, false); }); }
+    function allInd() { if (adm) return; $$("#p-buka .tkx-tabs,#p-tiket .tkx-tabs,#p-tagihan .tkx-tabs,#p-profile .tkx-tabs", root).forEach(function (tb) { tabInd(tb, false); }); }
     window.addEventListener("resize", allInd);
     function bukaSync() {
       var f = $("#f-buka"); if (!f) return;
@@ -1394,7 +1474,7 @@
     function needWa() { var P = ld("nx-prof", {}); return !P.wa; }
     function waModal() {
       return modal('<div class="mbox sm"><div class="mh"><b>Isi nomor WhatsApp dulu</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Untuk membuka ticket, kami butuh nomor WhatsApp-mu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-whatsapp"></i> Isi di Profil</button></div></div>', function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profile"; draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); });
+        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profile"; ptab = "profil"; draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); });
       });
     }
     function tmAct(d) {
@@ -1475,13 +1555,37 @@
         bukaSync(); bkInd(false); requestAnimationFrame(function () { bkInd(false); }); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { bkInd(false); });
       },
       profile: function () {
-        var P = ld("nx-prof", { discord: "", wa: "" }), mi = mine(), nT = mi.filter(function (x) { return !cl(x); }).length, nO = OR().length, nB = BL().filter(function (b) { return bmine(b) && b.st === "Belum dibayar"; }).length, em = ss("nx-email") || "";
-        var tg = function (k, ic, t, sub) { var on = P[k] !== false; return '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-' + ic + '"></i></span><div><b>' + t + "</b><small>" + sub + '</small></div><button type="button" class="swt" role="switch" aria-checked="' + on + '" aria-label="' + t + '" data-pf="' + k + '"></button></div>'; };
-        var st = function (ic, l, v) { return '<div class="pf-s"><i class="bi bi-' + ic + '"></i><b>' + v + "</b><small>" + l + "</small></div>"; };
-        $("#p-profile").innerHTML = '<div class="pfx"><section class="pf-hero"><span class="pf-av">' + e(me().charAt(0).toUpperCase()) + '</span><div class="pf-id"><b>' + e(me()) + "</b>" + (em ? "<small>" + e(em) + "</small>" : "") + '<div class="pf-b"><span class="bd b4"><i class="bi bi-patch-check"></i> Customer</span><span class="bd b2">Akun aktif</span></div></div></section>' +
-          '<div class="pf-sts">' + st("chat-dots", "Ticket aktif", nT) + st("receipt", "Total pesanan", nO) + st("wallet2", "Invoice aktif", nB) + "</div>" +
-          '<div class="pf-g"><form class="dcard pf-f" id="f-prof"><h3><i class="bi bi-person-lines-fill"></i> Data akun</h3><label class="fld"><span>Nama</span><input class="inp" name="nama" required maxlength="40" value="' + e(me()) + '"></label><label class="fld"><span>Email</span><input class="inp" disabled value="' + e(em || "-") + '"></label><div class="row2"><label class="fld"><span>Username Discord</span><input class="inp" name="dc" placeholder="contoh: nexora_user" value="' + e(P.discord || "") + '"></label><label class="fld"><span>Nomor WhatsApp</span><input class="inp" name="wa" inputmode="tel" placeholder="08xxxxxxxxxx" value="' + e(P.wa || "") + '"></label></div><small class="hint">Discord dan WhatsApp dipakai tim NEXORA untuk menghubungimu soal order.</small><button class="btn" type="submit"><i class="bi bi-check2"></i> Simpan profile</button></form>' +
-          '<div class="pf-col">' + lkCard() + '<section class="dcard"><h3><i class="bi bi-bell"></i> Notifikasi</h3>' + tg("nTk", "chat-dots", "Balasan ticket", "Kabari saat admin membalas ticketmu.") + tg("nBill", "cash-stack", "Invoice", "Pengingat saat ada invoice dan jatuh tempo.") + '</section><section class="dcard"><h3><i class="bi bi-life-preserver"></i> Bantuan cepat</h3><div class="pf-ln"><button type="button" class="qk" data-go="buka"><i class="bi bi-rocket-takeoff"></i><span>Mulai Order</span></button><button type="button" class="qk" data-go="tagihan"><i class="bi bi-wallet2"></i><span>Invoice</span></button><button type="button" class="qk" id="logout2"><i class="bi bi-box-arrow-right"></i><span>Keluar</span></button></div></section></div></div></div>';
+        var P = ld("nx-prof", { discord: "", wa: "" }), em = ss("nx-email") || "", k = LK();
+        var TABS = [["profil", "person", "Profil"], ["keamanan", "shield-check", "Keamanan"], ["notif", "bell", "Notifikasi"], ["akun", "link-45deg", "Akun terhubung"]];
+        if (!TABS.some(function (x) { return x[0] === ptab; })) ptab = "profil";
+        var foto = myFoto() || safeAv(ss("nx-avatar")), mine0 = !!myFoto();
+        var tg = function (key, ic, t, sub) { var on = P[key] !== false; return '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-' + ic + '"></i></span><div><b>' + t + "</b><small>" + sub + '</small></div><button type="button" class="swt" role="switch" aria-checked="' + on + '" aria-label="' + t + '" data-pf="' + key + '"></button></div>'; };
+        var sec = function (t, sub, body) { return '<section class="pf-sec"><div class="pf-sh"><h3>' + t + "</h3><p>" + sub + '</p></div><div class="pf-card">' + body + "</div></section>"; };
+        var body = {
+          profil: sec("Profil", "Nama dan nomor yang dilihat teknisi saat menangani ticketmu.",
+            '<form class="pf-form" id="f-prof"><span class="pf-lb">Foto profil</span><div class="pf-photo"><label class="pf-ava" for="pf-file" title="Klik atau seret foto ke sini">' + (foto ? '<img src="' + e(foto) + '" alt="" referrerpolicy="no-referrer">' : e(me().charAt(0).toUpperCase())) + '</label><div class="pf-pu"><div class="pf-pb"><input type="file" id="pf-file" accept="image/png,image/jpeg,image/webp" hidden><label class="btn ghost pf-up" for="pf-file"><i class="bi bi-image"></i> Unggah foto</label>' + (mine0 ? '<button type="button" class="btn ghost pf-up" id="pf-rm"><i class="bi bi-trash3"></i> Hapus</button>' : "") + '</div><p class="pf-ht">PNG, JPG, atau WebP. Otomatis dikompres saat diunggah.<br>Tanpa foto, kami pakai foto Google atau Discord, lalu inisial namamu.</p></div></div>' +
+            '<span class="pf-lb">Email</span><div class="pf-em"><span class="pf-ev">' + e(em || "-") + "</span>" + (em ? '<span class="bd b4 pf-ok">Terverifikasi</span>' : "") + "</div>" +
+            '<label class="fld"><span>Nama tampilan <em class="req">*</em></span><input class="inp" name="nama" required maxlength="40" value="' + e(me()) + '"></label><small class="hint">Dipakai di ticket dan invoice.</small>' +
+            '<label class="fld"><span>Nomor WhatsApp</span><input class="inp" name="wa" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="wa-err" placeholder="0812 3456 7890" value="' + e(waShow(P.wa)) + '"></label><small class="hint bad" id="wa-err" role="alert"></small>' +
+            '<small class="hint">Dipakai teknisi kalau perlu menghubungimu. Wajib diisi untuk membuka ticket.</small><input type="hidden" name="dc" value="' + e(P.discord || "") + '"><button class="btn pf-save" type="submit">Simpan profil</button></form>') + sec("Privasi", "Atur apakah admin yang menangani ticketmu bisa melihat kamu sedang online.", '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-broadcast"></i></span><div><b>Tampilkan status online</b><small>Kalau dimatikan, admin tidak melihat status online atau offline-mu di chat ticket.</small></div><button type="button" class="swt" role="switch" aria-checked="' + showOn() + '" aria-label="Tampilkan status online" data-onl="1"></button></div>'),
+          keamanan: sec("Keamanan", "Cara kamu masuk dan keluar dari akunmu.",
+            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-box-arrow-in-right"></i></span><div><b>Metode login</b><small>' + e(k.via === "email" ? "Email" : k.via) + '</small></div><span class="bd b4"><i class="bi bi-check2"></i> Aktif</span></div>' +
+            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-envelope-check"></i></span><div><b>Email</b><small>' + e(em || "-") + '</small></div>' + (em ? '<span class="bd b4"><i class="bi bi-check2"></i> Terverifikasi</span>' : "") + "</div>" +
+            '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-box-arrow-right"></i></span><div><b>Keluar dari akun</b><small>Akhiri sesi di browser ini.</small></div><button type="button" class="btn ghost pf-out" id="logout2">Keluar</button></div>'),
+          notif: sec("Notifikasi", "Pilih kabar apa yang mau kamu terima dari tim NEXORA.",
+            tg("nTk", "chat-dots", "Balasan ticket", "Kabari saat admin membalas ticketmu.") + tg("nBill", "cash-stack", "Invoice", "Pengingat saat ada invoice dan jatuh tempo.")),
+          akun: sec("Akun terhubung", "Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya.",
+            lkCard(true) + '<form class="pf-form pf-dc" id="f-dc"><label class="fld"><span>Username Discord</span><input class="inp" name="dc" placeholder="contoh: nexora_user" value="' + e(P.discord || "") + '"></label><small class="hint">Dipakai tim NEXORA untuk menghubungimu soal order.</small><button class="btn pf-save" type="submit">Simpan Discord</button></form>')
+        };
+        var pf0 = $("#p-profile .pfx");
+        if (pfSw && pf0 && $(".tkx-tabs", pf0)) {
+          pfSw = false; var bar = $(".tkx-tabs", pf0);
+          $$("[data-ptab]", bar).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.ptab === ptab); });
+          while (pf0.children.length > 1) pf0.removeChild(pf0.lastChild);
+          pf0.insertAdjacentHTML("beforeend", body[ptab]); tabInd(bar, true); return;
+        }
+        pfSw = false;
+        $("#p-profile").innerHTML = '<div class="pfx"><div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Pengaturan akun">' + TABS.map(function (x) { return '<button type="button" role="tab" data-ptab="' + x[0] + '" aria-selected="' + (ptab === x[0]) + '"><i class="bi bi-' + x[1] + '"></i><span>' + x[2] + "</span></button>"; }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div>' + body[ptab] + "</div>";
       },
       customer: function () {
         $("#p-customer").innerHTML = '<div class="tkhead"><span class="muted">' + custNames().length + ' customer · data untuk menghubungi jika ada kendala</span><label class="sbox cu-sb"><i class="bi bi-search"></i><input class="inp" data-cq type="search" placeholder="Cari nama, email, Discord, WA…" value="' + e(cq) + '"></label></div><div class="cu-grid">' + custCards() + "</div>";
@@ -1580,6 +1684,14 @@
       if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew, inv: tab === "tagihan" && !adm ? idet : "" }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
       hNav = nk; hRest = false;
     }
+    function pfFoto(file) {
+      if (!file) return;
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return toast("Format foto harus PNG, JPG, atau WebP");
+      if (file.size > 20 * 1024 * 1024) return toast("Ukuran foto terlalu besar, maksimal 20 MB");
+      shrink(file, 320, "image/jpeg", function (d) { var P = ld("nx-prof", {}); P.foto = d; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil diganti"); pfSync(); });
+    }
+    function pfSync() { var a = $(".pf-ava"), pb = $(".pf-pb"); if (!a) return; var f = myFoto() || safeAv(ss("nx-avatar")); a.innerHTML = f ? avImg(f) : e(me().charAt(0).toUpperCase()); var rm = $("#pf-rm"); if (myFoto() && !rm && pb) pb.insertAdjacentHTML("beforeend", '<button type="button" class="btn ghost pf-up" id="pf-rm"><i class="bi bi-trash3"></i> Hapus</button>'); else if (!myFoto() && rm) rm.remove(); }
+    function pfHapus() { var P = ld("nx-prof", {}); P.foto = ""; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil dihapus"); pfSync(); }
     function draw() {
       if (adm && !can(tab)) tab = "ringkasan";
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
@@ -1612,10 +1724,11 @@
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-takeover],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
       if (d.takeover) return takeModal(d.takeover);
+      if (d.onl) return setOnl(!showOn());
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
       if (d.kcopy) { var cv = d.kcopy, cok = function () { toast("Nomor ticket disalin"); }, cfb = function () { var ta = document.createElement("textarea"); ta.value = cv; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); cok(); } catch (x) { toast("Gagal menyalin nomor ticket"); } ta.remove(); }; if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(cv).then(cok, cfb); else cfb(); return; }
       if (d.ifl !== undefined) { ifl = d.ifl; ipg = 1; iopen = ""; $$("[data-ifl]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); if (!adm) tabInd(t.closest(".tkx-tabs"), true); $(".ix-res", root).innerHTML = iBody(); return; }
@@ -1641,6 +1754,8 @@
       if (d.bc) { tab = d.bc; if (isMob()) sel = null; tv = "list"; bnew = false; aq = ""; setOpen(false); return draw(); }
       if (d.ct) { ctab = d.ct; return draw(); }
       if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
+      if (d.ptab) { if (d.ptab === ptab) return; ptab = d.ptab; pfSw = true; return draw(); }
+      if (t.id === "pf-rm") return pfHapus();
       if (d.lk) {
         var lkx = LK(), key = d.lk === "google" ? "g" : "d", nmk = d.lk === "google" ? "Google" : "Discord";
         if (lkx.via === nmk) return toast("Ini metode login utamamu");
@@ -1689,6 +1804,7 @@
     });
     root.addEventListener("input", function (ev) {
       var t = ev.target;
+      if (t.name === "wa" && t.closest("#f-prof")) { var cl0 = t.value.replace(/[^\d+\s().-]/g, ""); if (cl0 !== t.value) t.value = cl0; waErr(t.form, ""); }
       if (t.dataset.bf) { BF[t.dataset.bf] = t.value; updSum(); }
       if (t.matches("[data-sq]")) { kq = t.value; kpg = 1; var sl2 = $(".tks-list", root); if (sl2) sl2.innerHTML = sideItems(); return; }
       if (t.matches("[data-iq]")) { iq = t.value; ipg = 1; iopen = ""; $(".ix-res", root).innerHTML = iBody(); return; }
@@ -1710,15 +1826,23 @@
       }
       if (ev.key === "Enter" && !ev.shiftKey && ev.target.matches(".cmp")) { ev.preventDefault(); var f = ev.target.form; if (f.requestSubmit) f.requestSubmit(); else f.dispatchEvent(new Event("submit", { cancelable: true })); }
     });
+    root.addEventListener("focusout", function (ev) {
+      var t = ev.target; if (t.name !== "wa" || !t.closest || !t.closest("#f-prof")) return;
+      var wc2 = waCheck(t.value); waErr(t.form, wc2.ok ? "" : wc2.msg);
+    });
     root.addEventListener("change", function (ev) {
       var t = ev.target;
       if (t.closest("#f-buka")) bukaSync();
+      if (t.id === "pf-file") { var pff = t.files && t.files[0]; t.value = ""; return pfFoto(pff); }
       if (t.matches("[data-trole]")) return trole(t);
       if (t.matches("[data-st]")) { return chSt(t.value); }
     });
     root.addEventListener("dragover", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.add("drag"); });
     root.addEventListener("dragleave", function (ev) { var b = ev.target.closest(".upl-box"); if (b) b.classList.remove("drag"); });
     root.addEventListener("drop", function (ev) { var b = ev.target.closest(".upl-box"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); });
+    root.addEventListener("dragover", function (ev) { var b = ev.target.closest(".pf-ava"); if (!b) return; ev.preventDefault(); b.classList.add("drag"); });
+    root.addEventListener("dragleave", function (ev) { var b = ev.target.closest(".pf-ava"); if (b) b.classList.remove("drag"); });
+    root.addEventListener("drop", function (ev) { var b = ev.target.closest(".pf-ava"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); pfFoto(ev.dataTransfer && ev.dataTransfer.files[0]); });
     root.addEventListener("mousedown", function (ev) { if (ev.target.closest && ev.target.closest(".rvin label")) ev.preventDefault(); });
     root.addEventListener("input", function (ev) {
       var f = ev.target.closest("[data-rvsend]"); if (!f) return;
@@ -1749,7 +1873,7 @@
           });
         });
       }
-      if (f.id === "f-prof") { ss("nx-name", f.nama.value.trim()); var P2 = ld("nx-prof", {}); P2.discord = f.dc.value.trim(); P2.wa = f.wa.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: f.nama.value.trim(), discord_username: f.dc.value, whatsapp: f.wa.value }).then(function () { toast("Profile tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profile tersimpan"); return draw(); }
+      if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); ss("nx-name", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         if (needWa()) return waModal();
@@ -1772,6 +1896,8 @@
         sb.click(); f.paket.value = o.paket; bcat = "semua"; bpg = 0; pkDraw(JR(bsv)); bukaSync(); var sc = $('.pk[aria-pressed="true"]', f); if (sc && sc.scrollIntoView) sc.scrollIntoView({ block: "nearest" });
       } catch (x) {}
     }
+    var draw0 = draw; draw = function () { var r0 = draw0.apply(this, arguments); try { presSync(); } catch (x) {} return r0; };
+    prBoot();
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     var r0 = routeFrom(location.pathname), rt = ss("nx-ret");
     if (rt) { ss("nx-ret", ""); if (location.pathname.replace(/\/+$/, "") === BASE) r0 = routeFrom(rt); } /* balik dari tautkan akun Google/Discord */
