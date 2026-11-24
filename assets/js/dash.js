@@ -20,6 +20,14 @@
     return m || "coba lagi";
   }
   function liveFail(er) { toast("Gagal menyimpan: " + liveMsg(er)); if (window.nxDraw) window.nxDraw(); }
+  function dnOff() { return ld("nx-dn-off", false) === true; }
+  /* Pilihan notifikasi per jenis kabar: [kunci, label, panel bawaan, perangkat bawaan] */
+  var NP = [["reply", "Balasan baru di ticket", 1, 1], ["status", "Status ticket diperbarui", 1, 0], ["takeover", "Ticket diambil alih teknisi", 1, 0], ["closed", "Ticket ditutup", 1, 0],
+    ["inv_new", "Invoice baru", 1, 1], ["paid", "Pembayaran diterima", 1, 1], ["inv_cancel", "Invoice dibatalkan", 1, 0], ["expiring", "Layanan hampir berakhir", 1, 1]];
+  function npPrefs() { var s0 = ld("nx-nprefs", {}) || {}, o = {}; NP.forEach(function (r) { var v = s0[r[0]] || {}; o[r[0]] = { panel: v.panel === undefined ? !!r[2] : !!v.panel, dev: v.dev === undefined ? !!r[3] : !!v.dev }; }); return o; }
+  function npSave(ev, ch, on) { var s0 = Object.assign({}, ld("nx-nprefs", {}) || {}); s0[ev] = Object.assign({}, s0[ev] || {}); s0[ev][ch] = on; sv("nx-nprefs", s0); }
+  function nPanel(n) { if (!n.ev) return true; var p = npPrefs()[n.ev]; return !p || p.panel; }
+  function nDev(n) { if (!n.ev) return true; var p = npPrefs()[n.ev]; return !p || p.dev; }
   function ld(k, d) { if (window.NX && NX.live) { if (k === "nx-tk") return NX.tkGet(); if (k === "nx-or") return ordFromTk(); if (k === "nx-harga") return NX.catGet() || d; if (LIVESET[k]) { var lv = NX.setGet(LIVESET[k]); return lv == null ? d : lv; } } try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (x) { return k in mem ? mem[k] : d; } }
   function sv(k, v) { if (window.NX && NX.live) { if (k === "nx-tk") { NX.tkSet(v); return; } if (k === "nx-or") return;
       if (k === "nx-harga") { if (NX.cat === null) { toast("Katalog belum termuat dari database" + (NX.catErr ? " (" + NX.catErr + ")" : "") + ". Pastikan 009_katalog_dan_situs.sql sudah dijalankan, lalu muat ulang halaman."); if (window.nxDraw) window.nxDraw(); return; } NX.catSet(v).then(function () {}, liveFail); return; }
@@ -233,7 +241,7 @@
         function nOpen(o) { nmn.hidden = !o; nbtn.setAttribute("aria-expanded", String(o)); if (o) { uOpen(false); nfUp(); } }
         function ago(ts) { var m = Math.round((Date.now() - ts) / 60000); return m < 1 ? "Baru saja" : m < 60 ? m + " mnt lalu" : m < 1440 ? Math.floor(m / 60) + " jam lalu" : new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "short" }); }
         nfUp = function () {
-          var a = nfMine(), un = a.filter(function (n) { return !n.r; });
+          if (!adm) nExp(); var aA = nfMine(), a = aA.filter(nPanel), un = a.filter(function (n) { return !n.r; });
           nbg.hidden = !un.length; nbg.textContent = un.length > 9 ? "9+" : un.length;
           nbtn.setAttribute("aria-label", "Notifikasi" + (un.length ? ", " + un.length + " belum dibaca" : ""));
           var SV = { bill: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>', tk: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/>' };
@@ -242,8 +250,8 @@
           $(".nm-l", nw).innerHTML = (nu.length ? '<div class="nm-g">Baru <b>' + nu.length + "</b></div>" + nu.map(row).join("") : "") + (nr0.length ? '<div class="nm-g">Sebelumnya</div>' + nr0.map(row).join("") : "") || '<div class="nm-e"><span class="nm-eb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><b>Belum ada notifikasi</b><small>Balasan admin dan update invoice akan muncul di sini.</small></div>';
           var cn0 = $(".nm-cn", nw); cn0.hidden = !un.length; cn0.textContent = un.length + " baru";
           $(".nm-p", nw).hidden = !("Notification" in window) || Notification.permission !== "default"; $(".nm-all", nw).hidden = !un.length;
-          if (seen === null) { seen = {}; a.forEach(function (n) { seen[n.id] = 1; }); return; }
-          un.forEach(function (n) { if (seen[n.id]) return; seen[n.id] = 1; if ("Notification" in window && Notification.permission === "granted") { try { new Notification(n.t, { body: n.x, icon: "../assets/img/favicon.png" }); } catch (er) {} } });
+          if (seen === null) { seen = {}; aA.forEach(function (n) { seen[n.id] = 1; }); return; }
+          aA.filter(function (n) { return !n.r; }).forEach(function (n) { if (seen[n.id]) return; seen[n.id] = 1; if ("Notification" in window && Notification.permission === "granted" && !dnOff() && nDev(n)) { try { new Notification(n.t, { body: n.x, icon: "../assets/img/favicon.png" }); } catch (er) {} } });
         };
         nbtn.addEventListener("click", function (ev) { ev.stopPropagation(); nOpen(nmn.hidden); });
         $(".nm-all", nw).addEventListener("click", function () { var a = nfAll(); a.forEach(function (n) { if (n.u === "__me" || n.u === me()) n.r = true; }); sv("nx-notif", a); nfUp(); });
@@ -251,6 +259,7 @@
         $(".nm-l", nw).addEventListener("click", function (ev) {
           var it = ev.target.closest("[data-n]"); if (!it) return;
           var a = nfAll(), n = a.filter(function (x) { return x.id === it.dataset.n; })[0]; if (!n) return; n.r = true; sv("nx-notif", a); nOpen(false);
+          if (n.bl && !adm && BL().some(function (b) { return b.id === n.bl; })) { tab = "tagihan"; idet = n.bl; sel = ""; setOpen(false); draw(); return; }
           var tk = TK().filter(function (x) { return x.id === n.tk; })[0]; if (tk) { sel = tk.id; tv = "chat"; tab = "tiket"; setOpen(false); draw(); } else nfUp();
         });
         document.addEventListener("click", function (ev) { if (!nw.contains(ev.target)) nOpen(false); });
@@ -403,7 +412,7 @@
       var rec = c.tk.slice(0, 4).map(function (x) { return '<button type="button" class="li ln" data-g="' + x.id + '"><span><b>' + e(x.subj) + "</b><small>" + e(x.id) + " · " + e(x.tgl) + "</small></span>" + bd(x.st, 1) + (cl(x) ? '<span class="bd b6">Ditutup</span>' : "") + "</button>"; }).join("") || '<p class="muted">Belum ada ticket.</p>';
       modal('<div class="mbox cu-m"><div class="mh"><div class="cu-h">' + av(name) + '<div><b>' + e(name) + '</b><small>Akun customer</small></div></div><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb">' +
         '<div class="cu-st"><div><b>' + c.act.length + "</b><small>Ticket aktif</small></div><div><b>" + c.tk.length + "</b><small>Total ticket</small></div><div><b>" + c.unpaid.length + "</b><small>Tagihan aktif</small></div></div>" +
-        '<section class="bd-s"><h4><i class="bi bi-person-lines-fill"></i> Kontak customer</h4><div class="cu-list">' + row("person", "Nama akun", name, name) + row("envelope", "Email", c.email, c.email) + row("discord", "Username Discord", c.discord, c.discord) + row("whatsapp", "WhatsApp", wn ? "+" + wn : "", wn ? "+" + wn : "") + "</div>" + (c.wa || c.discord ? "" : '<p class="cu-note"><i class="bi bi-info-circle"></i> Customer belum melengkapi Discord / WhatsApp di halaman Profile. Hubungi lewat ticket atau email.</p>') + "</section>" +
+        '<section class="bd-s"><h4><i class="bi bi-person-lines-fill"></i> Kontak customer</h4><div class="cu-list">' + row("person", "Nama akun", name, name) + row("envelope", "Email", c.email, c.email) + row("discord", "Username Discord", c.discord, c.discord) + row("whatsapp", "WhatsApp", wn ? "+" + wn : "", wn ? "+" + wn : "") + "</div>" + (c.wa || c.discord ? "" : '<p class="cu-note"><i class="bi bi-info-circle"></i> Customer belum melengkapi Discord / WhatsApp di halaman Akun. Hubungi lewat ticket atau email.</p>') + "</section>" +
         '<section class="bd-s"><h4><i class="bi bi-calendar3"></i> Akun</h4><dl class="bd-dl"><div><dt>Bergabung</dt><dd>' + e(c.joined) + "</dd></div></dl></section>" +
         '<section class="bd-s"><h4><i class="bi bi-chat-dots"></i> Ticket terbaru</h4><div class="lis">' + rec + "</div></section></div>" +
         '<div class="mf cu-f"><button type="button" class="btn ghost sm" data-all><i class="bi bi-clipboard"></i> Salin semua kontak</button>' + (wn ? '<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/' + wn + '"><i class="bi bi-whatsapp"></i> Chat WhatsApp</a>' : '<button type="button" class="btn sm" disabled><i class="bi bi-whatsapp"></i> Chat WhatsApp</button>') + "</div></div>", function (m, close) {
@@ -425,9 +434,22 @@
     }
     function nfAll() { return ld("nx-notif", []); }
     function nfMine() { return nfAll().filter(function (n) { return n.u === "__me" || n.u === me(); }); }
-    function nt(x, kind, title, text) {
-      var P = ld("nx-prof", {}); if ((kind === "tk" && P.nTk === false) || (kind === "bill" && P.nBill === false)) return;
-      var a = nfAll(); a.unshift({ id: "N" + Date.now() + Math.random().toString(36).slice(2, 6), u: x.user, k: kind, t: title, x: text, tk: x.id, ts: Date.now(), r: false }); sv("nx-notif", a.slice(0, 60));
+    function nt(x, kind, title, text, ev, extra) {
+      ev = ev || (title.indexOf("Balasan baru") === 0 ? "reply" : title === "Status diperbarui" ? "status" : title === "Ticket diambil alih" ? "takeover" : title === "Ticket ditutup" ? "closed" : "");
+      var a = nfAll(), o = { id: "N" + Date.now() + Math.random().toString(36).slice(2, 6), u: x.user, k: kind, t: title, x: text, tk: x.id, ts: Date.now(), r: false, ev: ev };
+      if (extra) Object.keys(extra).forEach(function (k) { o[k] = extra[k]; });
+      a.unshift(o); sv("nx-notif", a.slice(0, 60));
+    }
+    /* Pengingat otomatis untuk customer: tagihan perpanjangan yang jatuh tempo dalam 3 hari */
+    function nExp() {
+      if (adm) return; var a = nfAll(), ch = false;
+      BL().forEach(function (b) {
+        if (!bmine(b) || b.st !== "Belum dibayar" || bj(b) !== "hosting") return;
+        var dl = dleft(b.jatuh); if (dl < 0 || dl > 3) return;
+        var key = "exp-" + b.id + "-" + b.jatuh; if (a.some(function (n) { return n.key === key; })) return;
+        a.unshift({ id: "N" + Date.now() + Math.random().toString(36).slice(2, 6), u: b.user, k: "bill", t: "Layanan hampir berakhir", x: "Perpanjangan " + b.id + " jatuh tempo " + (dl === 0 ? "hari ini" : dl + " hari lagi"), tk: b.tk, ts: Date.now(), r: false, ev: "expiring", bl: b.id, key: key }); ch = true;
+      });
+      if (ch) sv("nx-notif", a.slice(0, 60));
     }
     var nfUp, nfClose;
     function isF() { return adm && arole() === "Founder"; }
@@ -466,12 +488,13 @@
     function mk() { snap = {}; TK().forEach(function (x) { snap[x.id] = [x.m.length, x.st, cl(x), x.m.filter(function (m) { return m.rd; }).length, x.hd ? x.hd.n : "", hdMe(x)]; }); }
     function remote() {
       var cm = $(".cmp", root), val = cm ? cm.value : "", foc = cm && document.activeElement === cm, mw = adm ? "a" : "c";
+      var sn = "";
       TK().forEach(function (x) { var s = snap[x.id], l = last(x);
         if (!s) { if (adm) toast("Ticket baru: " + x.id); return; }
-        if (x.m.length > s[0] && l.w !== mw && l.w !== "s") toast("Pesan baru di " + x.id);
+        if (x.m.length > s[0] && l.w !== mw && l.w !== "s") { toast("Pesan baru di " + x.id); sn = (sel === x.id && tab === "tiket" && tv === "chat") ? "recv" : (sn === "recv" ? sn : "other"); }
         if (x.hd && s[4] && s[4] !== x.hd.n) { if (adm && s[5] && !hdMe(x)) toast("Ticket " + x.id + " diambil alih oleh " + x.hd.n); else if (!adm) toast("Ticket kamu diambil alih oleh " + x.hd.n); }
         if (!adm && !s[2] && cl(x)) toast("Ticket " + x.id + " ditutup oleh admin"); else if (!adm && s[1] !== x.st) toast("Status " + x.id + ": " + x.st); });
-      draw(); cm = $(".cmp", root); if (cm && val) { cm.value = val; fitCmp(cm); if (foc) cm.focus(); }
+      draw(); if (sn) sndEv(sn); cm = $(".cmp", root); if (cm && val) { cm.value = val; fitCmp(cm); if (foc) cm.focus(); }
     }
 
     /* ===== Ulasan / rating NEXORA ===== */
@@ -791,15 +814,19 @@
       return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-r" style="--p:' + pct + '" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><b>' + pct + '%</b></div><div class="pcb-m"><h3>Lengkapi akunmu</h3><ul class="pcb-l">' +
         c.it.map(function (x, i) { return '<li class="' + (x[2] ? "ok" : i === nx ? "next" : "") + '">' + (x[2] ? '<i class="bi bi-check-circle pcb-s"></i>' : '<span class="pcb-d" aria-hidden="true"></span>') + '<span class="pcb-n">' + e(TX[x[1]] || x[1]) + "</span>" + (i === nx ? '<button type="button" class="btn pcb-b" data-go="profile">' + (/^Akun /.test(x[1]) ? "Hubungkan" : "Isi profil") + "</button>" : "") + "</li>"; }).join("") + "</ul></div></section>";
     }
-    function lkCard(bare) {
-      var k = LK(), row = function (key, ic, nm, on, sub) {
-        var utama = k.via.toLowerCase() === key;
-        return '<div class="lk"><span class="lk-i ' + key + '"><i class="bi bi-' + ic + '"></i></span><div class="lk-t"><b>' + nm + "</b><small>" + sub + '</small></div>' + (on ? '<span class="bd b4"><i class="bi bi-check2"></i> Terhubung</span>' : "") +
-          '<button type="button" class="btn ' + (on ? "ghost" : "") + ' lk-b" data-lk="' + key + '"' + (utama ? " disabled" : "") + ">" + (on ? (utama ? "Login utama" : "Putuskan") : "Hubungkan") + "</button></div>";
-      };
-      return (bare ? '' : '<section class="dcard"><h3><i class="bi bi-link-45deg"></i> Akun terhubung</h3>') + '<p class="muted lk-n">Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya dengan akun yang sama.</p>' +
-        row("google", "google", "Google", k.g, k.g ? (k.via === "Google" ? "Kamu login lewat Google" : "Bisa dipakai untuk masuk") : "Belum terhubung") +
-        row("discord", "discord", "Discord", k.d, k.d ? (k.via === "Discord" ? "Kamu login lewat Discord" : (k.P.discord ? "@" + e(k.P.discord) : "Bisa dipakai untuk masuk")) : "Belum terhubung") + (bare ? "" : "</section>");
+    function lkCard() {
+      var k = LK(), ids = (window.NX && NX.identities) || [], cnt = (k.g ? 1 : 0) + (k.d ? 1 : 0),
+        idf = function (pv) { return ids.filter(function (i) { return i.provider === pv; })[0] || {}; },
+        fd = function (iso) { var d0 = iso ? new Date(iso) : null; return d0 && !isNaN(d0) ? d0.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : ""; },
+        GSV = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',
+        row = function (key, nm, on, ic) {
+          var idn = idf(key), via = k.via === nm, em = (idn.identity_data && idn.identity_data.email) || (window.NX && NX.user && NX.user.email) || ss("nx-email") || "",
+            last = fd(idn.last_sign_in_at || (via && window.NX && NX.user ? NX.user.last_sign_in_at : "")), right, sub;
+          if (on) { sub = (em && em !== "-" ? '<span class="lkr-e">' + e(em) + "</span>" : "") + (last ? '<span class="lkr-l">Terakhir dipakai ' + last + "</span>" : ""); right = via ? '<span class="lkr-bd">' + (cnt === 1 ? "Satu-satunya cara masuk" : "Login saat ini") + "</span>" : '<button type="button" class="btn ghost lkr-b" data-lk="' + key + '">Putuskan</button>'; }
+          else { sub = '<span class="lkr-e">Belum ditautkan</span>'; right = '<button type="button" class="btn ghost lkr-b" data-lk="' + key + '">Tautkan</button>'; }
+          return '<div class="lkr"><span class="lkr-i ' + key + '">' + ic + '</span><div class="lkr-t"><b>' + nm + "</b>" + sub + "</div>" + right + "</div>";
+        };
+      return '<div class="lkr-w">' + row("discord", "Discord", k.d, '<i class="bi bi-discord"></i>') + row("google", "Google", k.g, GSV) + "</div>";
     }
     /* indikator tab (latar yang bergeser ke tab terpilih): layanan di Mulai Order, filter di Ticket dan Invoice */
     function tabInd(tb, anim) {
@@ -1092,7 +1119,7 @@
       guard({ title: "Kirim tagihan ke customer?", ok: "Kirim tagihan", html: srows([["Customer", uname(c.t)], ["Jenis", bill ? "Bill order" : "Hosting berkala"], ["Paket", c.t.paket], ["Siklus", bill ? "Sekali bayar" : BF.siklus]].concat(bill ? [["Keterangan", BF.ket.trim()], ["Nominal", rp(c.dasar)], ["Kode unik", "+" + rp(c.kode)]] : []).concat([["Total", rp(c.total)], ["Jatuh tempo", fdt(due)]])) + '<p class="muted">Setelah terkirim, tagihan tidak bisa diedit. Hanya bisa dibatalkan dengan alasan.</p>' }, function () {
         var all = BL(), n = all.reduce(function (m, b) { return Math.max(m, Number(b.id.slice(4)) || 0); }, 3000) + 1;
         all.unshift({ id: "INV-" + n, jenis: BF.jenis, ket: bill ? BF.ket.trim() : "", tk: c.t.id, user: c.t.user, item: c.t.paket, siklus: bill ? "Sekali bayar" : BF.siklus, dasar: c.dasar, kode: bill ? c.kode : 0, adj: bill ? "none" : BF.adj, pct: c.pct, alasan: bill ? "" : (BF.alasan || "").trim(), total: c.total, jatuh: due, st: "Belum dibayar", dibuat: iso(t0()), by: whoR(), ts: Date.now(), ticket: "", log: [{ a: "Tagihan dibuat dan dikirim ke customer", by: whoR(), at: stamp() }] });
-        sv("nx-bill", all); bnew = false; tkStat(c.t.id, "Menunggu pembayaran", "Tagihan INV-" + n + " dikirim · status: Menunggu pembayaran"); toast("Tagihan INV-" + n + " terkirim ke " + uname(c.t)); draw();
+        sv("nx-bill", all); bnew = false; nt({ user: c.t.user, id: c.t.id }, "bill", "Invoice baru", "INV-" + n + " dikirim untuk " + c.t.paket, "inv_new", { bl: "INV-" + n }); tkStat(c.t.id, "Menunggu pembayaran", "Tagihan INV-" + n + " dikirim · status: Menunggu pembayaran"); toast("Tagihan INV-" + n + " terkirim ke " + uname(c.t)); draw();
       });
     }
     function bUpd(id, st, aksi, r) {
@@ -1102,6 +1129,8 @@
       });
       var bb = all.filter(function (x) { return x.id === id; })[0], oth = bb && all.some(function (o) { return o.id !== id && o.tk === bb.tk && o.st === "Belum dibayar"; });
       sv("nx-bill", all);
+      if (bb && st === "Lunas") nt({ user: bb.user, id: bb.tk }, "bill", "Pembayaran diterima", id + " sudah dikonfirmasi admin", "paid", { bl: id });
+      else if (bb && st === "Dibatalkan") nt({ user: bb.user, id: bb.tk }, "bill", "Invoice dibatalkan", id + " dibatalkan", "inv_cancel", { bl: id });
       if (bb && !oth) {
         if (st === "Lunas") tkStat(bb.tk, "Pembayaran Dikonfirmasi", "Pembayaran " + id + " dikonfirmasi admin");
         else if (st === "Dibatalkan") { var tt = TK().filter(function (x) { return x.id === bb.tk; })[0]; if (tt && tt.st === "Menunggu pembayaran") tkStat(bb.tk, "Terhubung dengan admin", "Tagihan " + id + " dibatalkan"); }
@@ -1446,7 +1475,7 @@
       if (op === "tgl") { a[i].aktif = a[i].aktif === false; sv(STO(k), a); toast((isK ? (a[i].label || "Kontak") : (a[i].nama || "Rekening")) + (a[i].aktif === false ? " disembunyikan dari customer" : " ditampilkan ke customer")); return draw(); }
       if (op === "del") return modal('<div class="mbox sm"><div class="mh"><b>Hapus ' + (k === "s" ? "sosmed" : isK ? "kontak" : "rekening") + '?</b></div><div class="mb"><p>' + e(isK ? a[i].label : a[i].nama) + ' akan dihapus dan tidak tampil lagi.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Batal</button><button type="button" class="btn dng" data-ok>Hapus</button></div></div>', function (m, close) { $("[data-ok]", m).addEventListener("click", function () { a.splice(i, 1); sv(STO(k), a); close(); toast("Dihapus"); draw(); }); });
     }
-    var TITLES = { c: { ringkasan: ["Dashboard", ""], tiket: ["Ticket", "Tanya dulu sebelum membeli, atau pantau pesanan yang sedang dikerjakan."], tagihan: ["Invoice", "Semua tagihan dari pesananmu."], buka: ["Mulai Order", "Order baru atau tanya sesuatu ke tim NEXORA."], profile: ["Profile", "Kelola data akunmu."] },
+    var TITLES = { c: { ringkasan: ["Dashboard", ""], tiket: ["Ticket", "Tanya dulu sebelum membeli, atau pantau pesanan yang sedang dikerjakan."], tagihan: ["Invoice", "Semua tagihan dari pesananmu."], buka: ["Mulai Order", "Order baru atau tanya sesuatu ke tim NEXORA."], profile: ["Akun", "Kelola data akunmu."] },
       a: { ulasan: ["Ulasan", "Penilaian customer untuk NEXORA. Pilih mana yang tampil di halaman Ulasan."], ringkasan: ["Dashboard", "Kondisi ticket dan pesanan saat ini."], tiket: ["Ticket", "Lihat, balas, dan ubah status ticket customer."], tagihan: ["Tagihan", "Buat dan pantau tagihan customer dengan pengaman."], kontak: ["Kontak & sosmed", "Atur kontak halaman Hubungi kami dan icon sosmed di footer."], bayar: ["Pembayaran", "Rekening dan e-wallet untuk pembayaran bill order."], jasa: ["Jasa setup", "Kelola jasa dan paketnya. Tambah jasa baru atau hapus yang tidak dipakai."], hosting: ["Hosting", "Kelola paket hosting."], tampilan: ["Nama situs", "Atur nama website."], ekspor: ["Ekspor data", "Unduh cadangan ticket dan pesanan."], customer: ["Customer", "Data akun customer untuk menghubungi jika ada kendala."], tim: ["Tim & role", "Atur siapa saja yang bisa masuk dashboard admin dan role-nya."] } };
     var RDESC = { Founder: "Semua fitur dan satu-satunya yang bisa memberi atau mengubah role.", "Co-Founder": "Semua fitur dashboard admin, kecuali mengatur role.", Teknisi: "Dashboard, Ticket, dan Tagihan. Bisa membalas ticket dan membuat tagihan." };
     var RICO = { Founder: "award", "Co-Founder": "stars", Teknisi: "tools" };
@@ -1570,10 +1599,8 @@
             '<label class="fld"><span>Nomor WhatsApp</span><input class="inp" name="wa" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="wa-err" placeholder="0812 3456 7890" value="' + e(waShow(P.wa)) + '"></label><small class="hint bad" id="wa-err" role="alert"></small>' +
             '<small class="hint">Dipakai teknisi kalau perlu menghubungimu. Wajib diisi untuk membuka ticket.</small><input type="hidden" name="dc" value="' + e(P.discord || "") + '"><button class="btn pf-save" type="submit">Simpan profil</button></form>') + sec("Privasi", "Atur apakah admin yang menangani ticketmu bisa melihat kamu sedang online.", '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-broadcast"></i></span><div><b>Tampilkan status online</b><small>Kalau dimatikan, admin tidak melihat status online atau offline-mu di chat ticket.</small></div><button type="button" class="swt" role="switch" aria-checked="' + showOn() + '" aria-label="Tampilkan status online" data-onl="1"></button></div>'),
           keamanan: '<section class="pf-sec tf-sec"><div class="pf-card tf-card"><div id="pf-2fa">' + mfaHtml() + "</div></div></section>",
-          notif: sec("Notifikasi", "Pilih kabar apa yang mau kamu terima dari tim NEXORA.",
-            tg("nTk", "chat-dots", "Balasan ticket", "Kabari saat admin membalas ticketmu.") + tg("nBill", "cash-stack", "Invoice", "Pengingat saat ada invoice dan jatuh tempo.")),
-          akun: sec("Akun terhubung", "Hubungkan Google dan Discord supaya bisa masuk lewat salah satunya.",
-            lkCard(true) + '<form class="pf-form pf-dc" id="f-dc"><label class="fld"><span>Username Discord</span><input class="inp" name="dc" placeholder="contoh: nexora_user" value="' + e(P.discord || "") + '"></label><small class="hint">Dipakai tim NEXORA untuk menghubungimu soal order.</small><button class="btn pf-save" type="submit">Simpan Discord</button></form>')
+          notif: sec("Suara", "Pilih suara untuk chat dan ticket. Suara diputar selama panel terbuka.", sndHtml()) + sec("Notifikasi perangkat", "Dapat kabar di HP atau komputer walau panel sedang ditutup.", '<div class="dn-row" id="dn-card">' + dnInner() + "</div>") + sec("Notifikasi", "Pilih kabar yang kamu terima lewat panel dan perangkat. Kabar keamanan akun selalu dikirim.", npHtml()),
+          akun: sec("Cara masuk", "Satu akun bisa dimasuki lewat beberapa cara. Setiap perubahan dikabarkan lewat email.", lkCard())
         };
         var pf0 = $("#p-profile .pfx");
         if (pfSw && pf0 && $(".tkx-tabs", pf0)) {
@@ -1655,7 +1682,7 @@
     }
     /* Alamat (URL) tiap menu. Customer: /dashboard, /dashboard/ticket, /dashboard/ticket/T-1043.
        Admin: /nexora-admin, /nexora-admin/ticket, dst. Cloudflare Pages menyajikan halaman yang sama lewat _redirects. */
-    var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = adm ? { tiket: "ticket" } : { tiket: "ticket", tagihan: "invoice" };
+    var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = adm ? { tiket: "ticket" } : { tiket: "ticket", tagihan: "invoice", profile: "akun" };
     function urlFor() {
       var u = BASE; if (tab && tab !== "ringkasan") u += "/" + (SLUG[tab] || tab);
       if (tab === "tiket" && tv === "chat" && sel) u += "/" + encodeURIComponent(sel);
@@ -1668,7 +1695,7 @@
       path = (path || "").replace(/\/+$/, "");
       if (path.indexOf(BASE) !== 0) return r;
       try { parts = path.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent); } catch (xr) { return r; }
-      var k = (parts[0] || "").toLowerCase(); if (k === "ticket") k = "tiket"; else if (k === "invoice" && !adm) k = "tagihan";
+      var k = (parts[0] || "").toLowerCase(); if (k === "ticket") k = "tiket"; else if (k === "invoice" && !adm) k = "tagihan"; else if (k === "akun" && !adm) k = "profile";
       if (!k || !TT[k] || !PAN[k] || k === "buka") return r;
       if (adm && !can(k)) return r;
       r.tab = k;
@@ -1683,6 +1710,91 @@
       hNav = nk; hRest = false;
     }
     /* ===== Verifikasi 2 langkah (opsional) di tab Keamanan ===== */
+    /* ===== Suara chat dan ticket (disintesis lewat Web Audio, tanpa file audio) ===== */
+    var SND = [["hembus", "Hembus", "Lembut"], ["gelembung", "Gelembung", "Lembut"], ["tetes", "Tetes", "Lembut"], ["pop", "Pop", "Lembut"], ["klik", "Klik", "Lembut"], ["embun", "Embun", "Lembut"],
+      ["marimba", "Marimba", "Nada"], ["denting", "Denting", "Nada"], ["kristal", "Kristal", "Nada"], ["lonceng", "Lonceng", "Nada"], ["dingdong", "Ding dong", "Nada"], ["harpa", "Harpa", "Nada"], ["xilofon", "Xilofon", "Nada"], ["kotak", "Kotak musik", "Nada"],
+      ["gamelan", "Gamelan", "Unik"], ["angklung", "Angklung", "Unik"], ["seruling", "Seruling", "Unik"], ["kicau", "Kicau", "Unik"], ["sonar", "Sonar", "Unik"], ["koin", "Koin", "Unik"], ["sinyal", "Sinyal", "Unik"], ["ketukan", "Ketukan", "Unik"],
+      ["senyap", "Tanpa suara", "Lainnya"]];
+    var SNDDEF = { sent: "hembus", recv: "gelembung", vol: 100, mute: false }, sndCtx = null;
+    function sndPrefs() { var s0 = ld("nx-prof", {}).snd || {}, o = {}; Object.keys(SNDDEF).forEach(function (k) { o[k] = s0[k] === undefined ? SNDDEF[k] : s0[k]; }); return o; }
+    function sndSave(k, v) { var P = ld("nx-prof", {}); P.snd = Object.assign({}, P.snd || {}); P.snd[k] = v; sv("nx-prof", P); }
+    function sndCx() { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; if (!sndCtx) { try { sndCtx = new AC(); } catch (er) { return null; } } if (sndCtx.state === "suspended") sndCtx.resume(); return sndCtx; }
+    function sndTone(cx, t0, f0, f1, dur, vol, type, att) {
+      var o = cx.createOscillator(), g = cx.createGain(); o.type = type || "sine"; o.frequency.setValueAtTime(f0, t0); if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(vol, 0.0002), t0 + Math.min(att || 0.012, dur * 0.6)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); o.connect(g); g.connect(cx.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+    function sndPlay(name, vol) {
+      var cx = sndCx(); if (!cx || !name || name === "senyap") return;
+      var v = Math.max(0, Math.min(1, (vol == null ? 100 : vol) / 100)) * 0.35, t = cx.currentTime + 0.01; if (v <= 0) return;
+      if (name === "hembus") {
+        var n = Math.floor(cx.sampleRate * 0.3), bf = cx.createBuffer(1, n, cx.sampleRate), d = bf.getChannelData(0), i, src = cx.createBufferSource(), fl = cx.createBiquadFilter(), g = cx.createGain();
+        for (i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; src.buffer = bf; fl.type = "bandpass"; fl.Q.value = 1.1; fl.frequency.setValueAtTime(500, t); fl.frequency.exponentialRampToValueAtTime(2000, t + 0.26);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * 1.1, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28); src.connect(fl); fl.connect(g); g.connect(cx.destination); src.start(t); src.stop(t + 0.3);
+      } else if (name === "gelembung") { sndTone(cx, t, 420, 900, 0.16, v); sndTone(cx, t + 0.09, 600, 1200, 0.13, v * 0.7); }
+      else if (name === "marimba") { sndTone(cx, t, 523, 523, 0.35, v, "triangle"); sndTone(cx, t + 0.12, 784, 784, 0.42, v, "triangle"); }
+      else if (name === "denting") { sndTone(cx, t, 880, 880, 0.5, v); sndTone(cx, t, 1760, 1760, 0.3, v * 0.25); }
+      else if (name === "kristal") { sndTone(cx, t, 1319, 1319, 0.25, v * 0.8); sndTone(cx, t + 0.08, 1760, 1760, 0.25, v * 0.8); sndTone(cx, t + 0.16, 2093, 2093, 0.4, v * 0.8); }
+      else if (name === "tetes") sndTone(cx, t, 1200, 500, 0.14, v);
+      else if (name === "lonceng") { sndTone(cx, t, 659, 659, 0.9, v); sndTone(cx, t, 988, 988, 0.7, v * 0.4); sndTone(cx, t, 1318, 1318, 0.5, v * 0.2); }
+      else if (name === "pop") sndTone(cx, t, 900, 180, 0.09, v * 1.2);
+      else if (name === "klik") { sndTone(cx, t, 2400, 1800, 0.03, v * 0.6, "square"); sndTone(cx, t + 0.07, 2000, 1500, 0.03, v * 0.5, "square"); }
+      else if (name === "embun") { sndTone(cx, t, 392, 392, 0.8, v * 0.8, "sine", 0.12); sndTone(cx, t + 0.18, 494, 494, 0.9, v * 0.7, "sine", 0.12); }
+      else if (name === "harpa") { [523, 659, 784, 1047].forEach(function (f, i) { sndTone(cx, t + i * 0.09, f, f, 0.55, v * 0.8, "triangle"); }); }
+      else if (name === "xilofon") { sndTone(cx, t, 1319, 1319, 0.18, v, "triangle"); sndTone(cx, t + 0.1, 1568, 1568, 0.22, v, "triangle"); }
+      else if (name === "dingdong") { sndTone(cx, t, 659, 659, 0.7, v); sndTone(cx, t, 1318, 1318, 0.3, v * 0.2); sndTone(cx, t + 0.32, 523, 523, 0.9, v); sndTone(cx, t + 0.32, 1046, 1046, 0.4, v * 0.2); }
+      else if (name === "kotak") { [1047, 1319, 1568, 2093, 1568].forEach(function (f, i) { sndTone(cx, t + i * 0.11, f, f, 0.4, v * 0.55); }); }
+      else if (name === "gamelan") { [1, 2.76, 5.4, 8.9].forEach(function (m, i) { sndTone(cx, t, 196 * m, 196 * m, 1.4 / (i + 1) + 0.3, v * [1, 0.5, 0.3, 0.15][i]); }); }
+      else if (name === "angklung") { [660, 880, 660, 990].forEach(function (f, i) { sndTone(cx, t + i * 0.075, f, f * 0.99, 0.16, v * 0.7, "triangle"); }); }
+      else if (name === "seruling") { sndTone(cx, t, 880, 880, 0.6, v * 0.8, "sine", 0.1); sndTone(cx, t + 0.22, 1175, 1175, 0.7, v * 0.8, "sine", 0.1); }
+      else if (name === "kicau") { sndTone(cx, t, 1800, 2800, 0.07, v * 0.7); sndTone(cx, t + 0.1, 2200, 3200, 0.07, v * 0.7); sndTone(cx, t + 0.2, 1900, 3000, 0.09, v * 0.7); }
+      else if (name === "sonar") { sndTone(cx, t, 1000, 1000, 1.1, v); sndTone(cx, t + 0.28, 1000, 1000, 0.8, v * 0.3); }
+      else if (name === "koin") { sndTone(cx, t, 988, 988, 0.08, v * 0.5, "square"); sndTone(cx, t + 0.07, 1319, 1319, 0.45, v * 0.5, "square"); }
+      else if (name === "sinyal") { sndTone(cx, t, 400, 1200, 0.18, v * 0.45, "sawtooth"); sndTone(cx, t + 0.2, 1200, 600, 0.14, v * 0.4, "sawtooth"); }
+      else if (name === "ketukan") { sndTone(cx, t, 180, 90, 0.09, v * 1.4, "triangle"); sndTone(cx, t + 0.12, 180, 90, 0.09, v * 1.4, "triangle"); }
+    }
+    function sndEv(ev) { if (adm || !ev) return; if (ev === "other") ev = "recv"; var s0 = sndPrefs(); if (s0.mute) return; sndPlay(s0[ev], s0.vol); }
+    function sndName(id) { var f = SND.filter(function (o) { return o[0] === id; })[0]; return f ? f[1] : ""; }
+    /* Dropdown suara selalu muat di layar: buka ke bawah kalau lega, kalau tidak buka ke atas, tinggi menyesuaikan ruang yang ada */
+    function sndFit(b, mn) {
+      var r = b.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight, gap = 6, below = vh - r.bottom - 12, above = r.top - 12,
+        want = Math.min(340, mn.scrollHeight + 12), up = below < Math.min(want, 240) && above > below, room = Math.max(120, (up ? above : below) - gap);
+      mn.style.maxHeight = Math.min(340, room) + "px";
+      if (up) { mn.style.top = "auto"; mn.style.bottom = "calc(100% + " + gap + "px)"; mn.style.transformOrigin = "bottom left"; }
+      else { mn.style.top = ""; mn.style.bottom = ""; mn.style.transformOrigin = ""; }
+    }
+    function sndRefit() { var mn = document.querySelector(".snd-dd .dd-menu:not([hidden])"); if (mn && mn.previousElementSibling) sndFit(mn.previousElementSibling, mn); }
+    window.addEventListener("resize", sndRefit); window.addEventListener("scroll", sndRefit, true);
+    function sndDd(k, label, cur) {
+      var last = "";
+      var menu = SND.map(function (o) {
+        var h = o[2] !== last ? '<div class="dd-grp">' + o[2] + "</div>" : ""; last = o[2];
+        return h + '<button class="dd-opt" type="button" role="option" data-v="' + o[0] + '" aria-selected="' + (o[0] === cur) + '"><span class="tx"><b>' + o[1] + '</b></span><i class="bi bi-check2 ck"></i></button>';
+      }).join("");
+      return '<div class="dd full snd-dd" data-sdd="' + k + '"><button class="dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="' + label + '"><span class="dd-val">' + sndName(cur) + '</span><i class="bi bi-chevron-down chev"></i></button><div class="dd-menu" role="listbox" hidden>' + menu + "</div></div>";
+    }
+    function sndHtml() {
+      var s0 = sndPrefs(), rows = [["sent", "Chat terkirim", "Saat pesanmu terkirim"], ["recv", "Chat diterima", "Saat ada pesan baru dari tim NEXORA di ticketmu"]];
+      return rows.map(function (r) {
+        return '<div class="snd-r"><div class="snd-t"><b>' + r[1] + "</b><small>" + r[2] + '</small></div><div class="snd-c">' + sndDd(r[0], r[1], s0[r[0]]) + '<button type="button" class="snd-p" data-sndp="' + r[0] + '" aria-label="Putar contoh suara ' + r[1] + '"><i class="bi bi-play"></i></button></div></div>';
+      }).join("") +
+        '<div class="snd-v"><div class="snd-vh"><label for="snd-vol">Volume</label><b id="snd-vv">' + Math.round(s0.vol / 5) * 5 + '%</b></div><div class="snd-vr"><i class="bi bi-volume-down"></i><input type="range" id="snd-vol" class="snd-rng" min="0" max="100" step="5" value="' + Math.round(s0.vol / 5) * 5 + '" style="--p:' + Math.round(s0.vol / 5) * 5 + '%" data-sndv aria-label="Volume suara"><i class="bi bi-volume-up"></i></div></div>' +
+        '<div class="snd-m"><button type="button" class="swt" role="switch" aria-checked="' + s0.mute + '" aria-label="Matikan semua suara" data-sndm></button><div><b>Matikan semua suara</b><small>Notifikasi tetap masuk, hanya tanpa suara.</small></div></div>';
+    }
+    /* Notifikasi perangkat: status izin notifikasi browser di perangkat ini */
+    function dnInner() {
+      var sup = "Notification" in window, pm = sup ? Notification.permission : "none", ic = "bell-slash", t, sub, btn = "", on = "";
+      if (!sup) { t = "Tidak didukung di perangkat ini"; sub = "Browser ini belum mendukung notifikasi. Coba Chrome, Edge, atau Safari versi terbaru."; }
+      else if (pm === "granted" && !dnOff()) { ic = "bell"; on = " on"; t = "Aktif di perangkat ini"; sub = "Kamu akan dapat kabar saat ada balasan baru dari tim NEXORA."; btn = '<span class="dn-bs"><button type="button" class="btn ghost dn-b" data-dnotif="test">Kirim tes</button><button type="button" class="btn ghost dn-b" data-dnotif="off">Matikan</button></span>'; }
+      else if (pm === "granted") { t = "Dimatikan di perangkat ini"; sub = "Kamu tidak akan dapat notifikasi di perangkat ini sampai dinyalakan lagi."; btn = '<button type="button" class="btn dn-b" data-dnotif="on">Nyalakan</button>'; }
+      else if (pm === "denied") { ic = "bell-slash-fill"; t = "Diblokir di browser"; sub = "Izinkan notifikasi untuk situs ini lewat pengaturan browser, lalu muat ulang halaman."; }
+      else { t = "Belum aktif di perangkat ini"; sub = "Nyalakan supaya balasan tidak terlewat saat panel ditutup."; btn = '<button type="button" class="btn dn-b" data-dnotif="on">Nyalakan</button>'; }
+      return '<span class="dn-ic' + on + '"><i class="bi bi-' + ic + '"></i></span><div class="dn-tx"><b>' + t + "</b><small>" + sub + "</small></div>" + btn;
+    }
+    function npHtml() {
+      var p = npPrefs(), sw = function (ev, ch, on, lock, lb) { return '<button type="button" class="swt" role="switch" aria-checked="' + on + '" aria-label="' + lb + " · " + (ch === "panel" ? "Panel" : "Perangkat") + '" data-nprf="' + ev + ":" + ch + '"' + (lock ? " disabled" : "") + "></button>"; };
+      return '<div class="np-t"><div class="np-h"><span></span><span>Panel</span><span>Perangkat</span></div>' + NP.map(function (r) { return '<div class="np-r"><span>' + r[1] + "</span>" + sw(r[0], "panel", p[r[0]].panel, false, r[1]) + sw(r[0], "dev", p[r[0]].dev, false, r[1]) + "</div>"; }).join("") +
+        '<div class="np-r"><span>Kabar keamanan akun</span>' + sw("sec", "panel", true, true, "Kabar keamanan akun") + sw("sec", "dev", true, true, "Kabar keamanan akun") + '</div></div><small class="hint np-n">Kolom Perangkat berlaku kalau Notifikasi perangkat di atas sudah dinyalakan.</small>';
+    }
     function mfaDemo() { return !(window.NX && NX.live); }
     function mfaFakeQr() {
       var n = 25, c = "", r = 7, i, j, on;
@@ -1707,7 +1819,7 @@
         var sc = String(mfaEn.secret || ""), qrOk = /^data:image\/svg\+xml/i.test(mfaEn.qr || "");
         return tfHead('<button type="button" class="btn ghost pf-out" id="mfa-cancel">Batal</button>') + '<form class="tf-f" id="f-mfa" novalidate>' +
           tfStep(1, "Install authenticator app", "Pilih salah satu aplikasi di HP kamu.", tfApps()) +
-          tfStep(2, "Scan QR atau masukkan kode manual", "", '<div class="tf-qr">' + (qrOk ? '<div class="tf-qw"><img class="mfa-qr" src="' + e(mfaEn.qr) + '" alt="QR code untuk aplikasi authenticator" width="160" height="160"></div>' : "") + '<div class="tf-kw"><p>Tidak bisa scan? Masukkan kode ini secara manual:</p><div class="tf-kr"><code class="tf-key">' + e(sc) + '</code><button type="button" class="tf-cp" id="mfa-copy" aria-label="Salin kode"><i class="bi bi-copy"></i></button></div><p class="tf-sv"><i class="bi bi-exclamation-triangle"></i><span>Simpan kode ini di tempat aman, untuk mendaftarkan ulang kalau HP hilang atau ganti.</span></p></div></div>') +
+          tfStep(2, "Scan QR atau masukkan kode manual", "", '<div class="tf-qr">' + (qrOk ? '<div class="tf-qw"><img class="mfa-qr" src="' + e(mfaEn.qr) + '" alt="QR code untuk aplikasi authenticator" width="160" height="160"></div>' : "") + '<div class="tf-kw"><p>Tidak bisa scan? Masukkan kode ini secara manual:</p><div class="tf-kr"><code class="tf-key">' + e(sc) + '</code><button type="button" class="tf-cp" id="mfa-copy" aria-label="Salin kode"><i class="bi bi-copy"></i></button></div><p class="tf-sv"><i class="bi bi-exclamation-triangle"></i><span>Simpan kode ini di tempat aman, misalnya password manager, untuk mendaftarkan ulang kalau HP hilang atau ganti.</span></p></div></div>') +
           tfStep(3, "Masukkan kode 6-digit", "Buka aplikasi authenticator, ambil kode untuk akun ini.", '<div class="tf-cr"><input class="tf-in" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Kode 6 digit"><button class="tf-go" type="submit"><i class="bi bi-check2"></i> Verifikasi</button></div><small class="hint bad mfa-err" role="alert"></small>') + "</form>";
       }
       if (mfaSt.id) {
@@ -1792,7 +1904,7 @@
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-sndp],[data-dnotif],[data-nprf],[data-sndm],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
       if (d.takeover) return takeModal(d.takeover);
@@ -1805,9 +1917,10 @@
       if (d.kr) { sel = d.kr; tv = "chat"; return draw(); }
       if (d.kf !== undefined) { if (adm) af = d.kf; else kf = d.kf; kpg = 1; $$("[data-kf]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); if (!adm) tabInd(t.closest(".tkx-tabs"), true); $(".tkx-res", root).innerHTML = kBody(); return; }
       if (d.kpg) { kpg += d.kpg === "next" ? 1 : -1; $(".tkx-res", root).innerHTML = kBody(); return; }
-      if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
+      if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { if (t.closest(".snd-dd")) sndFit(t, mn); var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose();
         if (dd.hasAttribute("data-kkd")) { kk = d.v; kpg = 1; $(".dd-val", dd).textContent = kk; $$(".dd-opt", dd).forEach(function (o) { o.setAttribute("aria-selected", o.dataset.v === kk); }); $(".tkx-res", root).innerHTML = kBody(); return; }
+        if (dd.hasAttribute("data-sdd")) { sndSave(dd.dataset.sdd, d.v); $(".dd-val", dd).textContent = sndName(d.v); $$(".dd-opt", dd).forEach(function (o) { o.setAttribute("aria-selected", o.dataset.v === d.v); }); var sp2 = sndPrefs(); if (!sp2.mute) sndPlay(d.v, sp2.vol); return; }
         if (dd.hasAttribute("data-rdd")) return trole({ dataset: { trole: dd.dataset.rdd }, value: d.v });
         if (dd.hasAttribute("data-afdd")) { af = d.v; return draw(); }
         if (dd.hasAttribute("data-stdd")) { if (d.v === "__close") { var hbc = $("[data-close],[data-close-lock]", dd); if (hbc) hbc.click(); return; } return chSt(d.v); }
@@ -1850,6 +1963,19 @@
         pf.paket.value = pl.join(PSEP); return bukaSync();
       }
       if (d.pkc !== undefined) { bcat = d.pkc; bpg = 0; pkDraw(JR(bsv)); return bukaSync(); }
+      if (d.nprf !== undefined) { var npa = d.nprf.split(":"), npn = t.getAttribute("aria-checked") !== "true"; npSave(npa[0], npa[1], npn); t.setAttribute("aria-checked", npn); if (nfUp) nfUp(); return; }
+      if (d.dnotif !== undefined) {
+        if (!("Notification" in window)) return toast("Browser ini tidak mendukung notifikasi");
+        var dnRe = function () { var dc = $("#dn-card", root); if (dc) dc.innerHTML = dnInner(); };
+        if (d.dnotif === "test") { try { new Notification("NEXORA", { body: "Notifikasi aktif di perangkat ini.", icon: "/assets/img/logo.png" }); } catch (er) { toast("Notifikasi tes gagal ditampilkan"); } return; }
+        if (d.dnotif === "off") { sv("nx-dn-off", true); dnRe(); return toast("Notifikasi perangkat dimatikan"); }
+        if (Notification.permission === "granted") { sv("nx-dn-off", false); dnRe(); return toast("Notifikasi perangkat dinyalakan"); }
+        var dnDone = function (pm) { if (pm === "granted") sv("nx-dn-off", false); dnRe(); toast(pm === "granted" ? "Notifikasi perangkat dinyalakan" : pm === "denied" ? "Notifikasi diblokir di browser" : "Notifikasi belum dinyalakan"); };
+        try { var rq = Notification.requestPermission(dnDone); if (rq && rq.then) rq.then(dnDone); } catch (er2) { dnDone(Notification.permission); }
+        return;
+      }
+      if (d.sndp !== undefined) { var sp = sndPrefs(); if (sp.mute) return toast("Semua suara sedang dimatikan"); return sndPlay(sp[d.sndp], sp.vol); }
+      if (d.sndm !== undefined) { var nm0 = !sndPrefs().mute; sndSave("mute", nm0); t.setAttribute("aria-checked", nm0); return toast(nm0 ? "Semua suara dimatikan" : "Suara diaktifkan"); }
       if (d.pkpg !== undefined) { bpg += d.pkpg === "next" ? 1 : -1; pkDraw(JR(bsv)); var pb = $("#pk-box"); if (pb && pb.scrollIntoView) pb.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
       if (d.tg) { tg = d.tg; sel = null; return draw(); }
       if (t.classList.contains("tk-item") || t.classList.contains("tk-pill")) { sel = d.id; tv = "chat"; return draw(); }
@@ -1923,6 +2049,8 @@
       if (ev.target.name === "bintang") { var l = $("[data-rvl]", f); l.textContent = RVL[Number(ev.target.value)] + " · " + ev.target.value + " dari 5"; l.classList.add("on"); $("[data-rve]", f).hidden = true; }
       if (ev.target.name === "teks") $("[data-rvc]", f).textContent = ev.target.value.length;
     });
+    root.addEventListener("input", function (ev) { var r = ev.target; if (!r.matches || !r.matches("[data-sndv]")) return; var v = Math.max(0, Math.min(100, Math.round((Number(r.value) || 0) / 5) * 5)); if (String(v) !== r.value) r.value = v; r.style.setProperty("--p", v + "%"); var vv = $("#snd-vv", root); if (vv) vv.textContent = v + "%"; sndSave("vol", v); });
+    root.addEventListener("change", function (ev) { var r = ev.target; if (!r.matches) return; if (r.matches(".snd-sel")) { sndSave(r.dataset.sndk, r.value); var sp = sndPrefs(); if (!sp.mute) sndPlay(r.value, sp.vol); } else if (r.matches("[data-sndv]")) { var sq = sndPrefs(); if (!sq.mute) sndPlay(sq.sent, sq.vol); } });
     root.addEventListener("submit", function (ev) {
       ev.preventDefault(); var f = ev.target;
       if (f.matches("[data-rep]")) {
@@ -1930,7 +2058,7 @@
         if (!cur || cl(cur)) { toast("Ticket sudah ditutup, chat tidak bisa dikirim"); return draw(); }
         if (locked(cur)) { toast("Ticket ini ditangani " + cur.hd.n + ". Ambil alih dulu untuk membalas."); return draw(); }
         if (adm && !cur.hd && !(window.NX && NX.live)) cur.hd = { n: me(), r: arole(), a: "", me: true };
-        var nmsg0 = nm(adm ? { w: "a", n: me(), r: arole(), t: txt, d: "Baru saja", h: hm() } : { w: "c", t: txt, d: "Baru saja", h: hm() }); if (rpl && rpl.tk === cur.id) nmsg0.rp = { mid: rpl.mid, w: rpl.w, n: rpl.n, t: rpl.t.slice(0, 200) }; rpl = null; cur.m.push(nmsg0); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, whoR() + ": " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw();
+        var nmsg0 = nm(adm ? { w: "a", n: me(), r: arole(), t: txt, d: "Baru saja", h: hm() } : { w: "c", t: txt, d: "Baru saja", h: hm() }); if (rpl && rpl.tk === cur.id) nmsg0.rp = { mid: rpl.mid, w: rpl.w, n: rpl.n, t: rpl.t.slice(0, 200) }; rpl = null; cur.m.push(nmsg0); if (adm) nt(cur, "tk", "Balasan baru · " + cur.id, whoR() + ": " + (txt.length > 80 ? txt.slice(0, 80) + "…" : txt)); if (adm && cur.st === "Menunggu admin balas") cur.st = "Terhubung dengan admin"; sv("nx-tk", a); draw(); sndEv("sent");
         if (!adm && !(window.NX && NX.live)) { var tid = sel; setTimeout(function () { var b = TK(); b.forEach(function (x) { if (x.id === tid && !cl(x) && last(x).w === "c") x.m.push(nm({ w: "a", t: "Terima kasih, pesanmu sudah kami terima. Tim NEXORA akan segera membalas. (balasan otomatis demo)", d: "Baru saja", h: hm() })); if (x.id === tid && !cl(x) && last(x).w === "a") nt(x, "tk", "Balasan baru · " + x.id, "Admin: Terima kasih, pesanmu sudah kami terima."); }); sv("nx-tk", b); remote(); }, 3500); }
         return;
       }
