@@ -125,6 +125,93 @@
     });
   }
 
+  /* ===== Verifikasi 2 langkah (TOTP) - OPSIONAL =====
+     Hanya akun yang mengaktifkannya sendiri yang diminta kode 6 digit setelah login; akun lain tidak terpengaruh.
+     Layar ini cuma pintu masuknya. Penegakan sebenarnya ada di database (supabase/016): tanpa kode, data akun itu
+     tidak bisa dibaca atau diubah walau token dipakai langsung ke API. */
+  function mfaMsg(er) {
+    var m = String((er && er.message) || "");
+    if (/rate|too many|limit/i.test(m)) return "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.";
+    if (/invalid|incorrect|expired|verif/i.test(m)) return "Kode salah atau sudah kedaluwarsa. Coba kode terbaru dan pastikan jam HP diatur otomatis.";
+    return m || "Verifikasi gagal. Coba lagi.";
+  }
+  function mfaPrompt(factorId, mode) {
+    return new Promise(function (resolve) {
+      var old = document.getElementById("nx-mfa"); if (old) old.remove();
+      var ov = document.createElement("div"); ov.id = "nx-mfa"; ov.className = "mfa-ov";
+      ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "nx-mfa-t");
+      ov.innerHTML = '<form class="mfa-box" novalidate><span class="mfa-ic"><i class="bi bi-shield-lock"></i></span><h2 id="nx-mfa-t">Verifikasi 2 langkah</h2><p>Masukkan kode 6 digit dari aplikasi authenticator-mu (Google Authenticator, Authy, atau 1Password).</p><input class="inp mfa-in" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Kode 6 digit"><small class="hint bad mfa-err" role="alert"></small><button class="btn mfa-go" type="submit">Verifikasi</button><button class="mfa-out" type="button">Keluar dari akun</button></form>';
+      document.body.appendChild(ov);
+      var f = ov.querySelector("form"), inp = f.code, er = ov.querySelector(".mfa-err"), go = ov.querySelector(".mfa-go"), out = ov.querySelector(".mfa-out"), busy = false;
+      function say(m) { er.textContent = m || ""; inp.classList.toggle("bad", !!m); }
+      function submit(ev) {
+        if (ev) ev.preventDefault();
+        if (busy) return;
+        var code = inp.value.replace(/\D/g, "");
+        if (code.length !== 6) return say("Masukkan 6 digit kode.");
+        busy = true; go.disabled = true; say("");
+        sb.auth.mfa.challengeAndVerify({ factorId: factorId, code: code }).then(function (r) {
+          busy = false; go.disabled = false;
+          if (r.error) { say(mfaMsg(r.error)); inp.value = ""; inp.focus(); return; }
+          ov.remove(); resolve(true);
+        }, function () { busy = false; go.disabled = false; say("Koneksi bermasalah. Coba lagi."); });
+      }
+      f.addEventListener("submit", submit);
+      inp.addEventListener("input", function () { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); if (inp.value.length === 6) submit(); });
+      out.addEventListener("click", function () {
+        var to = mode === "admin" ? "/nexora-admin-access" : "/masuk";
+        sb.auth.signOut().then(clearSession, clearSession).then(function () { location.replace(location.origin + to); resolve(false); });
+      });
+      setTimeout(function () { try { inp.focus(); } catch (x) {} }, 50);
+    });
+  }
+  /* true = boleh lanjut. Hanya menahan kalau akun punya faktor TOTP terverifikasi dan sesi ini belum lolos kode (aal1). */
+  function mfaGate(mode) {
+    return sb.auth.mfa.getAuthenticatorAssuranceLevel().then(function (r) {
+      var d = r && r.data;
+      if (r.error || !d || !(d.currentLevel === "aal1" && d.nextLevel === "aal2")) return true;
+      return sb.auth.mfa.listFactors().then(function (f) {
+        var fa = f && f.data && f.data.totp && f.data.totp[0];
+        return fa ? mfaPrompt(fa.id, mode) : true;
+      });
+    }).then(function (ok) { return ok; }, function () { return true; }); /* gagal cek: lanjut saja, database yang menegakkan */
+  }
+  NX.mfa = {
+    msg: mfaMsg,
+    /* verified: faktor TOTP yang sudah aktif; all: semua termasuk yang belum selesai didaftarkan */
+    factors: function () {
+      return sb.auth.mfa.listFactors().then(function (r) {
+        if (r.error) fail(r.error);
+        return { verified: (r.data && r.data.totp) || [], all: (r.data && r.data.all) || [] };
+      });
+    },
+    /* mulai pendaftaran: hapus sisa pendaftaran yang belum selesai, lalu minta QR + kunci setup baru */
+    enroll: function () {
+      return NX.mfa.factors().then(function (f) {
+        var stale = f.all.filter(function (x) { return x.factor_type === "totp" && x.status === "unverified"; });
+        return Promise.all(stale.map(function (x) { return sb.auth.mfa.unenroll({ factorId: x.id }); }));
+      }).then(function () {
+        return sb.auth.mfa.enroll({ factorType: "totp", issuer: "NEXORA", friendlyName: "NEXORA " + Date.now().toString(36) });
+      }).then(function (r) {
+        if (r.error) fail(r.error);
+        return { id: r.data.id, qr: (r.data.totp && r.data.totp.qr_code) || "", secret: (r.data.totp && r.data.totp.secret) || "" };
+      });
+    },
+    verify: function (factorId, code) {
+      return sb.auth.mfa.challengeAndVerify({ factorId: factorId, code: String(code || "").replace(/\D/g, "") }).then(function (r) {
+        if (r.error) fail(r.error); return true;
+      });
+    },
+    /* mematikan 2FA: kode wajib benar dulu */
+    disable: function (factorId, code) {
+      return NX.mfa.verify(factorId, code).then(function () { return sb.auth.mfa.unenroll({ factorId: factorId }); }).then(function (r) {
+        if (r.error) fail(r.error); return true;
+      });
+    },
+    /* batal di tengah pendaftaran */
+    cancel: function (factorId) { return sb.auth.mfa.unenroll({ factorId: factorId }).then(function () {}, function () {}); }
+  };
+
   /* mode: "cust" atau "admin". Menunggu pertukaran kode OAuth selesai, lalu memuat profil dan role. */
   NX.ready = function (mode, force) {
     if (NX._p && !force) return NX._p;
@@ -135,6 +222,8 @@
         return sb.auth.signOut({ scope: "local" }).then(clearSession, clearSession).then(function () { return null; });
       }
       if (!s) { clearSession(); if (BACKCODE && !sessionStorage.getItem("nx-autherr")) setErr("Sesi login tidak terbentuk setelah kembali dari Google/Discord."); return null; }
+      return mfaGate(mode).then(function (ok) {
+      if (!ok) return null;
       var pu = sb.auth.getUser().then(function (u) { return u; }, function (e) { return { error: e }; });
       var pl = load(s.user, mode).then(function () { return null; }, function (e) { return e; });
       return Promise.all([pu, pl]).then(function (x) {
@@ -146,6 +235,7 @@
         if (x[1]) throw x[1];
         setErr("");
         return null;
+      });
       });
     });
     NX._mode = mode;
