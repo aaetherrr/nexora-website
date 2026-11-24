@@ -3751,3 +3751,124 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .tf-st{flex-wrap:wrap}
   .tf-sr{width:100%;justify-content:flex-end}
 }
+
+/* ===== v-snd: pengaturan Suara di Akun > Notifikasi ===== */
+.snd-r{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.snd-r:first-child{padding-top:0}
+.snd-t{min-width:0;display:grid;gap:3px}
+.snd-t b{font-size:.96rem;font-weight:600}
+.snd-t small{color:var(--muted);font-size:.84rem;line-height:1.45}
+.snd-c{display:flex;align-items:center;gap:10px;flex:none}
+.snd-sw{position:relative;display:block}
+.snd-sel{-webkit-appearance:none;appearance:none;width:180px;height:44px;padding:0 40px 0 16px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--text) 5%,transparent);color:var(--text);font:inherit;font-size:.95rem;cursor:pointer;outline:0;transition:border-color .2s,box-shadow .2s}
+.snd-sel:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.snd-sel:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.snd-sel option{color:#111;background:#fff}
+.snd-sw>i{position:absolute;top:50%;right:14px;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.snd-p{display:grid;place-items:center;flex:none;width:42px;height:42px;border:0;border-radius:12px;background:transparent;color:var(--text);font-size:1.5rem;cursor:pointer;transition:background .2s}
+.snd-p:hover{background:var(--accent-soft)}
+.snd-p:active{transform:scale(.94)}
+.snd-v{padding:16px 0;border-bottom:1px solid var(--line)}
+.snd-vh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.snd-vh label{font-size:.96rem;font-weight:500}
+.snd-vh b{font-variant-numeric:tabular-nums;font-weight:600}
+.snd-rng{-webkit-appearance:none;appearance:none;display:block;width:100%;height:26px;margin:0;border:0;border-radius:99px;background:linear-gradient(90deg,var(--accent) var(--p,100%),color-mix(in srgb,var(--text) 10%,transparent) var(--p,100%));outline:0;cursor:pointer}
+.snd-rng::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;border:3px solid var(--accent);background:var(--surface);cursor:pointer}
+.snd-rng::-moz-range-thumb{width:20px;height:20px;border-radius:50%;border:3px solid var(--accent);background:var(--surface);cursor:pointer}
+.snd-rng::-moz-range-track{background:transparent}
+.snd-rng:focus-visible{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.snd-m{display:flex;align-items:flex-start;gap:14px;padding-top:16px}
+.snd-m .swt{margin-top:2px}
+.snd-m>div{display:grid;gap:3px}
+.snd-m b{font-size:.96rem;font-weight:600}
+.snd-m small{color:var(--muted);font-size:.84rem}
+@media (max-width:560px){
+  .snd-r{flex-wrap:wrap;align-items:flex-start}
+  .snd-t{flex:1 1 100%}
+  .snd-c{flex:1 1 100%}
+  .snd-sw{flex:1;min-width:0}
+  .snd-sel{width:100%}
+}
+
+/* ===== Pengaturan suara: dropdown buatan sendiri ===== */
+.dd.snd-dd{width:220px}
+.snd-dd .dd-btn{height:44px;padding:0 14px;border-radius:14px;background:color-mix(in srgb,var(--text) 5%,transparent);font-size:.95rem}
+.snd-dd .dd-menu{padding:6px;border-radius:16px;max-height:min(340px,55vh);overflow-y:auto;z-index:30;scrollbar-width:thin;box-shadow:0 8px 20px -10px rgba(0,0,0,.25)}
+.snd-dd .dd-opt{gap:10px;padding:9px 10px}
+.snd-dd .dd-btn[aria-expanded="true"],.snd-dd .dd-btn:focus{box-shadow:none}
+@media (max-width:560px){.snd-c .dd.snd-dd{flex:1;width:auto;min-width:0}}
+.snd-dd .dd-opt b{font-weight:500}
+
+/* ===== v-snd2: centang di suara terpilih ===== */
+.snd-dd .dd-opt .ck{margin-left:auto;width:auto;height:auto;font-size:1.05rem;line-height:1}
+.snd-dd .dd-opt .tx{flex:1;min-width:0}
+
+/* ===== v-snd3: slider volume ===== */
+.snd-vh{margin-bottom:14px}
+.snd-vh b{padding:3px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:.82rem;font-weight:600;line-height:1.4}
+.snd-vr{display:flex;align-items:center;gap:12px}
+.snd-vr>i{flex:none;color:var(--muted);font-size:1.15rem;line-height:1}
+.snd-rng{flex:1;min-width:0;height:24px;background:transparent;border-radius:0;--tr:color-mix(in srgb,var(--text) 12%,transparent)}
+.snd-rng::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(var(--accent),var(--accent)) 0 0/var(--p,100%) 100% no-repeat,var(--tr)}
+.snd-rng::-webkit-slider-thumb{width:20px;height:20px;margin-top:-7px;border:2px solid var(--accent);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s}
+.snd-rng::-moz-range-track{height:6px;border-radius:99px;background:var(--tr)}
+.snd-rng::-moz-range-progress{height:6px;border-radius:99px;background:var(--accent)}
+.snd-rng::-moz-range-thumb{width:16px;height:16px;border:2px solid var(--accent);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.snd-rng:hover::-webkit-slider-thumb{transform:scale(1.08)}
+.snd-rng:active::-webkit-slider-thumb{transform:scale(1.15);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 20%,transparent),0 2px 6px rgba(0,0,0,.3)}
+.snd-rng:focus-visible{box-shadow:none}
+.snd-rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 30%,transparent)}
+
+/* ===== v-dn1: notifikasi perangkat ===== */
+.dn-row{display:flex;align-items:center;gap:16px}
+.dn-ic{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:14px;background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text);font-size:1.3rem}
+.dn-ic.on{background:var(--accent-soft);color:var(--accent)}
+.dn-tx{flex:1;min-width:0;display:grid;gap:3px}
+.dn-tx b{font-size:.96rem;font-weight:600}
+.dn-tx small{color:var(--muted);font-size:.84rem;line-height:1.5}
+.dn-b{flex:none;white-space:nowrap}
+@media (max-width:560px){
+  .dn-row{flex-wrap:wrap;gap:12px}
+  .dn-tx{flex:1 1 calc(100% - 64px)}
+  .dn-b{flex:none;width:auto;margin-right:auto;padding:8px 16px;font-size:.88rem;border-radius:11px}
+}
+
+/* ===== v-dn2: tombol kirim tes + matikan ===== */
+.dn-bs{display:flex;flex:none;gap:8px}
+@media (max-width:560px){
+  .dn-bs{flex:none;margin-right:auto;gap:8px}
+  .dn-bs .dn-b{margin-right:0}
+}
+
+/* ===== v-np1: tabel pilihan notifikasi ===== */
+.np-t{display:grid}
+.np-h,.np-r{display:grid;grid-template-columns:minmax(0,1fr) 84px 84px;align-items:center;column-gap:8px}
+.np-h{padding:0 0 10px;color:var(--muted);font-size:.8rem;text-align:center}
+.np-r{padding:13px 0;border-top:1px solid var(--line);font-size:.94rem;font-weight:500}
+.np-r>span:first-child{min-width:0;overflow-wrap:anywhere}
+.np-r .swt{justify-self:center}
+.np-r .swt[disabled]{opacity:.5;cursor:not-allowed}
+.np-n{display:block;margin-top:14px}
+@media (max-width:560px){.np-h,.np-r{grid-template-columns:minmax(0,1fr) 64px 72px}.np-r{font-size:.9rem}}
+
+/* ===== v-lk1: cara masuk ===== */
+.lkr-w{display:grid}
+.lkr{display:flex;align-items:center;gap:16px;padding:18px 0;border-top:1px solid var(--line)}
+.lkr:first-child{border-top:0;padding-top:0}
+.lkr:last-child{padding-bottom:0}
+.lkr-i{display:grid;place-items:center;flex:none;width:50px;height:50px;border-radius:14px;color:#fff;font-size:1.65rem}
+.lkr-i.discord{background:#5865f2}
+.lkr-i.google{background:#fff}
+.lkr-i svg{width:24px;height:24px;display:block}
+.lkr-t{flex:1;min-width:0;display:grid;gap:2px}
+.lkr-t b{font-size:1.02rem;font-weight:600}
+.lkr-e{color:var(--muted);font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lkr-l{color:var(--muted);font-size:.8rem}
+.lkr-bd{flex:none;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--text) 8%,transparent);font-size:.78rem;font-weight:600;white-space:nowrap}
+.lkr-b{flex:none;padding:10px 18px;border-radius:14px;font-size:.92rem;font-weight:600}
+@media (max-width:560px){
+  .lkr{flex-wrap:wrap;gap:12px 14px}
+  .lkr-t{flex:1 1 calc(100% - 70px)}
+  .lkr-bd,.lkr-b{margin-left:64px}
+  .lkr-b{padding:8px 16px;font-size:.88rem}
+}
