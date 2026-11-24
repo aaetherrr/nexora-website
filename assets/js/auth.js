@@ -230,7 +230,7 @@
     });
     var by = {}; ms.forEach(function (o) { by[o.mid] = o; });
     ms.forEach(function (o) { if (o.rpid && by[o.rpid]) { var q = by[o.rpid]; o.rp = { mid: q.mid, w: q.w, n: q.n || "", t: q.t }; } delete o.rpid; });
-    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", hd: r.handler_nama ? { id: r.handler_id || "", n: r.handler_nama, r: r.handler_role || "Admin", a: r.handler_av || "", me: !!(NX.user && r.handler_id && r.handler_id === NX.user.id) } : null, m: ms };
+    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", cid: r.customer_id || "", hd: r.handler_nama ? { id: r.handler_id || "", n: r.handler_nama, r: r.handler_role || "Admin", a: r.handler_av || "", me: !!(NX.user && r.handler_id && r.handler_id === NX.user.id) } : null, m: ms };
   }
   NX.tkReload = function () {
     return sb.from("tickets").select("*, ticket_messages(*)").order("dibuat", { ascending: false }).then(function (r) {
@@ -414,6 +414,46 @@
     }).catch(function (er) { return NX.setLoad().then(function () { throw er; }, function () { throw er; }); });
   };
 
+  /* ===== Status online (Supabase Realtime Presence) =====
+     Tiap akun mengumumkan keberadaannya di channel privat "nx-u:<id akun>" selama tabnya aktif.
+     Tidak ada yang ditulis ke database kecuali pilihan show_online di profil. */
+  var PR = { own: null, ok: false, active: true, hid: 0, tm: 0 };
+  function prWant() { return !!(NX.user && PR.active && !(NX.profile && NX.profile.show_online === false)); }
+  function prApply() {
+    if (!PR.own || !PR.ok) return;
+    try { if (prWant()) PR.own.track({ t: Date.now() }); else PR.own.untrack(); } catch (x) {}
+  }
+  NX.presTrackOn = function () {
+    if (!NX.user || PR.own) { prApply(); return; }
+    try {
+      PR.own = sb.channel("nx-u:" + NX.user.id, { config: { private: true, presence: { key: NX.user.id } } });
+      PR.own.subscribe(function (st) { PR.ok = st === "SUBSCRIBED"; if (PR.ok) prApply(); });
+      document.addEventListener("visibilitychange", function () {
+        clearTimeout(PR.tm);
+        if (document.hidden) PR.tm = setTimeout(function () { PR.active = false; prApply(); }, 120000);
+        else { PR.active = true; prApply(); }
+      });
+      window.addEventListener("pagehide", function () { try { if (PR.own) PR.own.untrack(); } catch (x) {} });
+    } catch (x) {}
+  };
+  NX.setShowOnline = function (v) {
+    return sb.from("profiles").update({ show_online: !!v }).eq("id", NX.user.id).select().then(function (r) {
+      if (r.error) fail(r.error);
+      if (!r.data || !r.data.length) throw new Error("Profil tidak ditemukan atau tidak diizinkan.");
+      NX.profile = r.data[0]; prApply(); return NX.profile;
+    });
+  };
+  NX.presPref = function (uid) { return sb.rpc("online_pref", { p_user: uid }).then(function (r) { return r.error ? null : r.data; }, function () { return null; }); };
+  NX.presWatch = function (uid, cb) {
+    var ch = null;
+    try {
+      ch = sb.channel("nx-u:" + uid, { config: { private: true } });
+      ch.on("presence", { event: "sync" }, function () { cb(Object.keys(ch.presenceState()).length > 0); })
+        .subscribe(function (st) { if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") cb(null); });
+    } catch (x) { cb(null); }
+    return function () { try { if (ch) sb.removeChannel(ch); } catch (x) {} };
+  };
+
   function startLive() {
     if (NX._live) return; NX._live = true;
     function toLogin() {
@@ -426,6 +466,7 @@
     }
     var t, deb = function () { clearTimeout(t); t = setTimeout(function () { NX.tkReload().then(function (ch) { if (ch && window.nxRemote) window.nxRemote(); }, function () {}); }, 250); };
     try { sb.channel("nx-tiket").on("postgres_changes", { event: "*", schema: "public", table: "tickets" }, deb).on("postgres_changes", { event: "*", schema: "public", table: "ticket_messages" }, deb).subscribe(); } catch (x) {}
+    NX.presTrackOn();
     setInterval(function () { if (checkExpire()) return; if (!document.hidden && NX.user) deb(); }, 20000);
     document.addEventListener("visibilitychange", function () {
       if (document.hidden || !NX.user) return;

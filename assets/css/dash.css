@@ -954,34 +954,47 @@ button.dstat.sx:hover{translate:0 -2px;border-color:var(--c);box-shadow:0 18px 3
 @media (max-width:820px){.tk.adm.cs{height:auto;min-height:0}.cth{padding:12px 14px}.cth .btn{width:100%;display:inline-flex;justify-content:center;gap:8px}}
 
 /* profile */
-.pfx{display:grid;gap:16px}
-.pf-hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:18px;padding:24px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;background:linear-gradient(130deg,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 75%)}
-.pf-hero::after{content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 28%,transparent),transparent 70%);pointer-events:none}
-.pf-av{position:relative;z-index:1;display:grid;place-items:center;flex:none;width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#ff7ac6));color:var(--on-accent);font-family:"Plus Jakarta Sans",sans-serif;font-size:2rem;font-weight:700;box-shadow:0 14px 26px -14px var(--accent)}
-.pf-id{position:relative;z-index:1;min-width:0}
-.pf-id b{display:block;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.4rem;overflow-wrap:anywhere}
-.pf-id small{display:block;color:var(--muted);overflow-wrap:anywhere}
-.pf-b{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.pf-sts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.pf-s{display:grid;gap:2px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
-.pf-s i{color:var(--accent);font-size:1.2rem}
-.pf-s b{font-family:"Plus Jakarta Sans",sans-serif;font-size:1.6rem;line-height:1.1}
-.pf-s small{color:var(--muted)}
-.pf-g{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
-.pf-col{display:grid;gap:16px;min-width:0}
-.pfx h3{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.05rem}
-.pfx h3 i{color:var(--accent)}
-.pf-f .hint{display:block;margin:-4px 0 16px}
-.pf-f .btn{display:inline-flex;align-items:center;gap:8px}
-.pf-tg{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.pfx{display:grid;gap:28px}
+.pf-tabs{display:flex;gap:2px;width:fit-content;max-width:100%;padding:4px;border:1px solid var(--line);border-radius:99px;background:var(--surface)}
+.pf-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;padding:7px 14px;border:0;border-radius:99px;background:transparent;color:var(--muted);font:inherit;font-size:.86rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s}
+.pf-tabs button:hover{color:var(--text)}
+.pf-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pf-tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--text);font-weight:600}
+.pf-tabs i{flex:none;color:var(--accent)}
+.pf-sec{padding:0;border-top:0;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.9fr);gap:36px;align-items:start}
+.pf-sh h3{margin:0 0 8px;font-family:"Plus Jakarta Sans",sans-serif;font-size:1.15rem}
+.pf-sh p{margin:0;color:var(--muted);line-height:1.6}
+.pf-card{min-width:0;padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.pf-lb{display:block;margin:0 0 10px;font-weight:600}
+.pf-photo{display:flex;align-items:flex-start;gap:20px;margin-bottom:26px}
+.pf-ava{position:relative;display:grid;place-items:center;flex:none;width:100px;height:100px;overflow:hidden;border-radius:50%;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#ff7ac6));color:var(--on-accent);font-family:"Plus Jakarta Sans",sans-serif;font-size:2.4rem;font-weight:700;cursor:pointer;transition:outline-color .2s}
+.pf-ava img{width:100%;height:100%;object-fit:cover}
+.pf-ava.drag{outline:3px dashed var(--accent);outline-offset:3px}
+.pf-pu{display:grid;gap:10px;justify-items:start;min-width:0}
+.pf-pb{display:flex;flex-wrap:wrap;gap:8px}
+.pf-up{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-size:.92rem;font-weight:600;cursor:pointer}
+.pf-ht{margin:0;color:var(--muted);font-size:.86rem;line-height:1.6}
+.pf-em{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:var(--muted);font-size:1.05rem;overflow-wrap:anywhere}
+.pf-ev{font-weight:400}
+.pf-ok{font-weight:600}
+.pf-form .fld{margin-bottom:6px}
+.pf-form .fld>span{color:var(--text);font-weight:600;font-size:.95rem}
+.pf-form .inp{padding:13px 15px;border-radius:14px}
+.pf-form .hint{display:block;margin:0 0 20px;font-size:.86rem}
+.pf-form .row2{gap:24px}
+.pf-save{padding:14px 40px;border-radius:14px;font-size:1.05rem;font-weight:600}
+.pf-card .lk-n{display:none}
+.pf-dc{margin-top:8px;padding-top:20px;border-top:1px solid var(--line)}
+.pf-dc .btn{padding:11px 22px;font-size:.95rem}
+.pf-tg{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
 .pf-tg:first-of-type{border-top:0;padding-top:0}
-.pf-tg>div{flex:1;min-width:0}.pf-tg small{display:block;color:var(--muted);font-size:.8rem}
+.pf-tg:last-of-type{padding-bottom:0}
+.pf-tg>div{flex:1;min-width:0}.pf-tg small{display:block;color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
 .pf-ti{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
-.pf-ln{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.pf-ln .qk{flex-direction:column;justify-content:center;gap:6px;padding:14px 6px;font-size:.84rem;text-align:center}
-.pf-ln .qk:last-child i{color:#e5484d}
-@media (max-width:900px){.pf-g{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:560px){.pf-hero{padding:18px;gap:14px}.pf-av{width:62px;height:62px;font-size:1.6rem;border-radius:20px}.pf-s{padding:12px}.pf-s b{font-size:1.3rem}}
+.pf-out{flex:none;padding:8px 18px;font-size:.9rem}
+@media (max-width:900px){.pf-sec{grid-template-columns:minmax(0,1fr);gap:14px}}
+@media (max-width:700px){.pf-tabs{overflow-x:auto;scrollbar-width:none}.pf-tabs::-webkit-scrollbar{display:none}}
+@media (max-width:560px){.pf-card{padding:18px}.pf-photo{flex-direction:column;align-items:center;text-align:center}.pf-pu{justify-items:center}.pf-pb{justify-content:center}.pf-form .row2{gap:0}.pf-save{width:100%}}
 @media (max-width:820px){.dash.chatv .cth{display:none}}
 
 
@@ -3567,3 +3580,75 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 /* Pilih paket: boleh lebih dari satu (kecuali hosting) */
 #p-buka .pk-grid.multi .pk-ck{border-radius:7px}
 #p-buka .bsum-pk.multi b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;line-height:1.3}
+
+/* ===== v-pf-foto: avatar inisial 1 warna, jarak label "Foto profil" ke foto ===== */
+.pf-ava{background:var(--accent)}
+.pf-lb+.pf-photo{margin-top:18px}
+.pf-lb+.pf-em{margin-top:-6px}
+
+/* ===== v-pf-kecil: isi halaman Profile diperkecil (kartu, teks, kolom isian, tombol) ===== */
+.pfx{gap:20px}
+.pf-sec{gap:28px}
+.pf-sh h3{margin-bottom:6px;font-size:1rem}
+.pf-sh p{font-size:.86rem;line-height:1.55}
+.pf-card{padding:18px;border-radius:16px}
+.pf-lb{margin-bottom:8px;font-size:.88rem}
+.pf-lb+.pf-photo{margin-top:14px}
+.pf-photo{gap:16px;margin-bottom:20px}
+.pf-ava{width:80px;height:80px;font-size:1.9rem}
+.pf-pu{gap:8px}
+.pf-up{gap:6px;padding:8px 14px;border-radius:10px;font-size:.84rem}
+.pf-ht{font-size:.8rem;line-height:1.55}
+.pf-em{gap:8px;margin-bottom:16px;font-size:.92rem}
+.pf-lb+.pf-em{margin-top:-4px}
+.pf-form .fld>span{font-size:.86rem}
+.pf-form .inp{padding:9px 12px;border-radius:11px;font-size:.92rem}
+.pf-form .hint{margin-bottom:14px;font-size:.8rem}
+.pf-form .row2{gap:14px}
+.pf-save{padding:10px 26px;border-radius:12px;font-size:.94rem}
+.pf-dc{margin-top:4px;padding-top:16px}
+.pf-dc .btn{padding:9px 18px;font-size:.88rem}
+.pf-tg{gap:10px;padding:11px 0}
+.pf-tg b{font-size:.92rem}
+.pf-tg small{font-size:.76rem}
+.pf-ti{width:34px;height:34px;border-radius:10px;font-size:.95rem}
+.pf-out{padding:6px 14px;font-size:.84rem}
+.pf-card .lk{padding:10px 0;gap:10px}
+.pf-card .lk-i{width:36px;height:36px;border-radius:11px;font-size:1.05rem}
+.pf-card .lk-t b{font-size:.92rem}
+.pf-card .lk-t small{font-size:.76rem}
+.pf-card .lk-b{padding:6px 12px;font-size:.8rem}
+@media (max-width:560px){.pf-card{padding:14px}.pf-ava{width:76px;height:76px}.pf-save{padding:10px 20px}}
+@media (max-width:560px){.pf-photo{align-items:flex-start;text-align:left}.pf-pu{justify-items:start}.pf-pb{justify-content:flex-start}}
+/* Profil: validasi nomor WhatsApp */
+.inp.bad{border-color:#e5484d}
+.inp.bad:focus{border-color:#e5484d;box-shadow:0 0 0 3px color-mix(in srgb,#e5484d 18%,transparent)}
+.pf-form .hint.bad{margin:6px 0 14px;color:#e5484d}
+.pf-form .hint.bad:empty{display:none}
+/* Foto profil: saat di-hover foto menggelap dan muncul icon kamera (klik = unggah foto) */
+.pf-ava::after{content:"";position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none;transition:opacity .2s ease;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z'/%3E%3Cpath d='M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0'/%3E%3C/svg%3E") center/32% no-repeat,rgba(0,0,0,.45)}
+.pf-ava:hover::after,.pf-ava:focus-within::after,.pf-ava.drag::after{opacity:1}
+.pf-ava{transition:outline-color .2s,color .2s}
+.pf-ava:hover,.pf-ava:focus-within,.pf-ava.drag{color:transparent}
+/* Status online / offline di header chat ticket */
+.th-aw{position:relative;display:inline-flex;flex:none}
+.pdot{position:absolute;right:-1px;bottom:-1px;width:13px;height:13px;border-radius:50%;background:#98a2b3;border:2.5px solid var(--surface);box-sizing:border-box}
+.pdot.on{background:#22c55e}
+.pdot[hidden],.pst[hidden]{display:none}
+.pst{font-weight:600;color:var(--muted)}
+.pst.on{color:#16a34a}
+/* Toggle "Tampilkan status online" di menu avatar admin */
+.ux-tg{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--text);font:inherit;font-size:1rem;font-weight:500;text-align:left;cursor:pointer;transition:background .2s}
+.ux-tg i{display:grid;place-items:center;flex:none;width:24px;font-size:1.25rem;color:var(--muted)}
+.ux-tg>span:nth-child(2){flex:1;min-width:0}
+.ux-tg:hover,.ux-tg:focus-visible{background:var(--accent-soft);outline:0}
+.ux-tg .swt{display:block;flex:none;margin:0}
+.ux-tg[aria-checked="true"] .swt{background:var(--accent)}
+.ux-tg[aria-checked="true"] .swt::after{transform:translateX(17px)}
+
+/* ===== v-pf-jarak: hirarki jarak halaman Profile (tab > blok > judul ke kartu) ===== */
+.pfx{gap:32px}
+.pfx>.tkx-tw{margin-bottom:-8px}
+.pf-sec{gap:32px}
+@media (max-width:900px){.pfx{gap:28px}.pf-sec{gap:12px}.pf-sh p{max-width:none}}
+@media (max-width:560px){.pfx>.tkx-tw{margin-bottom:-4px}}
