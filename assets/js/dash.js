@@ -232,7 +232,7 @@
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-", AVU = safeAv(ss("nx-avatar"));
       var uw = document.createElement("div"); uw.className = "uwrap";
       uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></div>' + (adm ? '<div class="um-sep"></div><button type="button" class="ux-tg" role="switch" aria-checked="' + showOn() + '"><i class="bi bi-broadcast" aria-hidden="true"></i><span>Status online</span><span class="swt" aria-hidden="true"></span></button>' : "") + '<div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
-      nr.appendChild(uw);
+      nr.appendChild(uw); uSync();
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
         nw.innerHTML = '<button type="button" class="nbell" aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false"><svg class="nbi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b class="nb" hidden>0</b></button><div class="nmenu" hidden><div class="nm-h"><div class="nm-ti"><b>Notifikasi</b><span class="nm-cn" hidden></span></div><button type="button" class="nm-all"><i class="bi bi-check2-all"></i> Tandai dibaca</button></div><div class="nm-l"></div><div class="nm-f"><button type="button" class="nm-p" hidden><i class="bi bi-bell"></i> Aktifkan notifikasi browser</button></div></div>';
@@ -1875,7 +1875,15 @@
         }
         var P = ld("nx-prof", {}); P.foto = d; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil diganti"); pfSync(); });
     }
-    function pfSync() { var a = $(".pf-ava"), pb = $(".pf-pb"); if (!a) return; var f = myFoto() || safeAv(ss("nx-avatar")); a.innerHTML = f ? avImg(f) : e(me().charAt(0).toUpperCase()); var rm = $("#pf-rm"); if (myFoto() && !rm && pb) pb.insertAdjacentHTML("beforeend", '<button type="button" class="btn ghost pf-up" id="pf-rm"><i class="bi bi-trash3"></i> Hapus</button>'); else if (!myFoto() && rm) rm.remove(); }
+    /* sinkronkan foto dan nama di navbar (chip + menu akun) dengan data akun terbaru */
+    function uSync() {
+      var ch = $(".uchip"); if (!ch) return;
+      var nm = ss("nx-name") || (adm ? "Admin" : "Customer"), u = (adm ? "" : myFoto()) || safeAv(ss("nx-avatar")), a = $(".av", ch), un = $(".un", ch), mb = $(".umenu .ux-tx > b");
+      if (a) a.innerHTML = u ? avImg(u) : '<i class="bi bi-person-fill"></i>';
+      if (un) un.textContent = nm.split(" ")[0];
+      if (mb) mb.textContent = nm;
+    }
+    function pfSync() { uSync(); var a = $(".pf-ava"), pb = $(".pf-pb"); if (!a) return; var f = myFoto() || safeAv(ss("nx-avatar")); a.innerHTML = f ? avImg(f) : e(me().charAt(0).toUpperCase()); var rm = $("#pf-rm"); if (myFoto() && !rm && pb) pb.insertAdjacentHTML("beforeend", '<button type="button" class="btn ghost pf-up" id="pf-rm"><i class="bi bi-trash3"></i> Hapus</button>'); else if (!myFoto() && rm) rm.remove(); }
     function pfHapus() {
       if (window.NX && NX.live) { NX.delFoto().then(function () { var wv1 = $("#wav"); if (wv1) setAv(wv1, me()); toast("Foto profil dihapus"); pfSync(); }, function (er) { toast(liveMsg(er)); }); return; }
       var P = ld("nx-prof", {}); P.foto = ""; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil dihapus"); pfSync(); }
@@ -2083,7 +2091,7 @@
         });
       }
       if (f.id === "f-mfa" || f.id === "f-mfaoff") return mfaSubmit(f);
-      if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); ss("nx-name", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
+      if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); ss("nx-name", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || {}; nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); var wv9 = $("#wav"); if (wv9) setAv(wv9, me()); uSync(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         if (needWa()) return waModal();
