@@ -540,7 +540,7 @@
   /* ===== Status online (Supabase Realtime Presence) =====
      Tiap akun mengumumkan keberadaannya di channel privat "nx-u:<id akun>" selama tabnya aktif.
      Tidak ada yang ditulis ke database kecuali pilihan show_online di profil. */
-  var PR = { on: false, sent: false, active: true, tm: 0, hid: 0, tk: "", warned: false };
+  var PR = { on: false, sent: false, active: true, tm: 0, hid: 0, tk: "", warned: false, last: 0 };
   function prWant() { return !!(NX.user && PR.active && !(NX.profile && NX.profile.show_online === false)); }
   function prWarn(m) {
     try { console.warn("[NEXORA] status online: " + m + " | Pastikan 018_status_online_heartbeat.sql sudah dijalankan."); } catch (x) {}
@@ -548,13 +548,16 @@
   }
   function prSession() { return sb.auth.getSession().then(function (r) { PR.tk = (r && r.data && r.data.session && r.data.session.access_token) || ""; }, function () {}); }
   /* kirim detak kalau tab aktif dan status ditampilkan; langsung offline kalau baru saja dimatikan / tab tidak aktif */
-  function prApply() {
+  function prApply(force) {
     if (!NX.user) return;
     if (prWant()) {
-      PR.sent = true; prSession();
+      /* maksimal 1 detak per ~14 detik (database juga membatasi 15 detik); force = baru kembali aktif / status baru dinyalakan */
+      var n = Date.now();
+      if (!force && PR.sent && n - PR.last < 14000) return;
+      PR.last = n; PR.sent = true; prSession();
       sb.rpc("ping_online").then(function (r) { if (r && r.error) prWarn(r.error.message); }, function () {});
     } else if (PR.sent) {
-      PR.sent = false;
+      PR.sent = false; PR.last = 0;
       sb.rpc("go_offline").then(function () {}, function () {});
     }
   }
@@ -562,11 +565,11 @@
     if (!NX.user) return;
     if (PR.on) { prApply(); return; }
     PR.on = true; prApply();
-    PR.tm = setInterval(prApply, 20000);
+    PR.tm = setInterval(prApply, 10000);
     document.addEventListener("visibilitychange", function () {
       clearTimeout(PR.hid);
       if (document.hidden) PR.hid = setTimeout(function () { PR.active = false; prApply(); }, 120000);
-      else { PR.active = true; prApply(); }
+      else { PR.active = true; prApply(true); }
     });
     /* tab ditutup: langsung offline (keepalive supaya request tetap terkirim) */
     window.addEventListener("pagehide", function () {
@@ -581,21 +584,24 @@
         fail(r.error);
       }
       if (!r.data || !r.data.length) throw new Error("Profil tidak ditemukan atau tidak diizinkan.");
-      NX.profile = r.data[0]; prApply(); return NX.profile;
+      NX.profile = r.data[0]; prApply(true); return NX.profile;
     });
   };
   /* cb(true) online, cb(false) offline, cb(null) disembunyikan / tidak berhak / gagal. Mengembalikan fungsi untuk berhenti. */
   NX.presWatch = function (uid, cb) {
     var dead = false, tm = 0;
     function ask() {
+      if (document.hidden) return;
       sb.rpc("online_status", { p_user: uid }).then(function (r) {
         if (dead) return;
         if (r && r.error) { prWarn(r.error.message); cb(null); return; }
         cb(r.data === null || r.data === undefined ? null : !!r.data);
       }, function () { if (!dead) cb(null); });
     }
-    ask(); tm = setInterval(ask, 15000);
-    return function () { dead = true; clearInterval(tm); };
+    function vis() { if (!document.hidden) ask(); }
+    ask(); tm = setInterval(ask, 8000);
+    document.addEventListener("visibilitychange", vis);
+    return function () { dead = true; clearInterval(tm); document.removeEventListener("visibilitychange", vis); };
   };
 
   function startLive() {
