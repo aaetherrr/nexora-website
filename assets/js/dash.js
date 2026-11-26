@@ -658,19 +658,19 @@
       var p = String(x.paket || ""), host = JR("hosting").some(function (h) { return h.nama === p; }) || /hosting/i.test(p);
       return host ? "Hosting" : "Jasa Setup";
     }
-    function kSrc() { return adm ? TK() : mine().filter(function (x) { return !cl(x); }); }
+    function kSrc() { return adm ? TK() : mine(); }
     function kRows() {
       var q = kq.toLowerCase();
       return kSrc().filter(function (x) {
-        return (adm ? inAf(x, af) : (kf === "Semua" || x.st === kf)) && (kk === "Semua" || kJenis(x) === kk) &&
+        return (adm ? inAf(x, af) : (kf === "Riwayat" ? cl(x) : (!cl(x) && (kf === "Semua" || x.st === kf)))) && (kk === "Semua" || kJenis(x) === kk) &&
           (!q || (x.subj + " " + x.id + " " + x.kat + " " + x.paket + " " + (adm ? uname(x) + " " : "") + x.m.map(function (m) { return m.t; }).join(" ")).toLowerCase().indexOf(q) >= 0);
       });
     }
     function kTabs() {
       var all = kSrc(), its = [[adm ? "Aktif" : "Semua", "Semua"]].concat(ST.map(function (s2) { return [s2, SHORT[s2]]; }));
-      if (adm) its.push(["Riwayat", "Riwayat"]);
+      its.push(["Riwayat", "Riwayat"]); var act = adm ? all : all.filter(function (x) { return !cl(x); });
       return '<div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
-        var n = adm ? all.filter(function (x) { return inAf(x, it[0]); }).length : (it[0] === "Semua" ? all.length : all.filter(function (x) { return x.st === it[0]; }).length);
+        var n = adm ? all.filter(function (x) { return inAf(x, it[0]); }).length : (it[0] === "Riwayat" ? all.filter(cl).length : it[0] === "Semua" ? act.length : act.filter(function (x) { return x.st === it[0]; }).length);
         return '<button type="button" role="tab" data-kf="' + e(it[0]) + '" aria-selected="' + ((adm ? af : kf) === it[0]) + '">' + e(it[1]) + (n ? "<em>" + n + "</em>" : "") + "</button>";
       }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div>';
     }
@@ -693,8 +693,8 @@
           (adm ? '<span class="tkx-u">' + av(uname(x), x.cav) + "<span>" + e(uname(x)) + "</span></span>" : "") +
           '<span class="tkx-s">' + bd(x.st, 1) + "</span>" + (adm ? "" : '<span class="tkx-p">' + (x.paket && x.paket !== "-" ? e(x.paket) : "-") + "</span>") + '<span class="tkx-d">' + e(x.tgl) + "</span></button>";
       }).join("");
-      var any = kSrc().some(function (x) { return adm ? inAf(x, af) : true; });
-      if (!tot) list = '<div class="tkx-empty"><i class="bi bi-chat-dots"></i><b>' + (any ? "Tidak ada ticket yang cocok" : (adm && af === "Riwayat" ? "Belum ada riwayat ticket" : "Belum ada ticket aktif")) + "</b><p>" + (any ? "Coba ubah kata kunci atau filter." : (adm ? "Ticket dari customer akan muncul di sini." : "Buka ticket baru untuk order atau bertanya ke tim NEXORA.")) + "</p></div>";
+      var any = kSrc().some(function (x) { return adm ? inAf(x, af) : (kf === "Riwayat" ? cl(x) : !cl(x)); }), hist = adm ? af === "Riwayat" : kf === "Riwayat";
+      if (!tot) list = '<div class="tkx-empty"><i class="bi bi-chat-dots"></i><b>' + (any ? "Tidak ada ticket yang cocok" : (hist ? "Belum ada riwayat ticket" : "Belum ada ticket aktif")) + "</b><p>" + (any ? "Coba ubah kata kunci atau filter." : (hist && !adm ? "Ticket yang sudah ditutup akan muncul di sini, lengkap dengan riwayat chatnya." : adm ? "Ticket dari customer akan muncul di sini." : "Buka ticket baru untuk order atau bertanya ke tim NEXORA.")) + "</p></div>";
       var del = adm && isF() && af === "Riwayat" && tot ? '<button class="btn dng sm tkx-del" type="button" data-tdelall><i class="bi bi-trash3"></i> Hapus semua riwayat (' + tot + ")</button>" : "";
       return '<div class="tkx-h' + (adm ? " adm" : "") + '"><span>Ticket</span>' + (adm ? "<span>Customer</span>" : "") + "<span>Status</span>" + (adm ? "" : "<span>Paket</span>") + "<span>Dibuat</span></div>" + '<div class="tkx-list">' + list + "</div>" +
         (np > 1 || del ? '<div class="tkx-foot">' + del + (np > 1 ? '<span class="tkx-rg">' + (a + 1) + "–" + (a + pg.length) + " dari " + tot + '</span><button type="button" class="tkx-pb" data-kpg="prev" aria-label="Halaman sebelumnya"' + (kpg <= 1 ? " disabled" : "") + '><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-pb" data-kpg="next" aria-label="Halaman berikutnya"' + (kpg >= np ? " disabled" : "") + '><i class="bi bi-chevron-right"></i></button>' : "") + "</div>" : "");
