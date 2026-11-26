@@ -3875,3 +3875,8 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .lkr-b{margin-left:0;padding:8px 14px;font-size:.86rem;border-radius:12px}
 }
 .pf-ava.busy{opacity:.55;pointer-events:none;cursor:progress}
+
+/* ===== v-bub-min: bubble chat tidak terlalu sempit kalau nama dan pesannya pendek ===== */
+.row.ot .bub{min-width:150px}
+.row.me .bub{min-width:100px}
+@media (max-width:560px){.row.ot .bub{min-width:128px}.row.me .bub{min-width:88px}}
