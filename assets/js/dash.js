@@ -338,9 +338,7 @@
     function prStop() { if (PRS.off) { try { PRS.off(); } catch (x) {} } PRS.off = null; clearInterval(PRS.tm); PRS.tm = null; }
     function prStart(key) {
       if (isLive()) {
-        var ask = function () { NX.presPref(key).then(function (v) { if (PRS.key === key) { PRS.pref = v; prPaint(); } }); };
-        ask(); PRS.tm = setInterval(ask, 60000);
-        PRS.off = NX.presWatch(key, function (on) { if (PRS.key === key) { PRS.st = on; prPaint(); } });
+        PRS.off = NX.presWatch(key, function (on) { if (PRS.key === key) { PRS.pref = on !== null; PRS.st = on; prPaint(); } });
       } else {
         var rd = function () {
           try { PRS.pref = localStorage.getItem("nx-prv:" + key) !== "0"; PRS.st = Date.now() - (Number(localStorage.getItem("nx-pr:" + key)) || 0) < 20000; } catch (x) {}
