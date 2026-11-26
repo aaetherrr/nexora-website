@@ -662,16 +662,27 @@
     function kRows() {
       var q = kq.toLowerCase();
       return kSrc().filter(function (x) {
-        return (adm ? inAf(x, af) : (kf === "Riwayat" ? cl(x) : (!cl(x) && (kf === "Semua" || x.st === kf)))) && (kk === "Semua" || kJenis(x) === kk) &&
+        return (adm ? inAf(x, af) : kIn(x, kf)) && (kk === "Semua" || kJenis(x) === kk) &&
           (!q || (x.subj + " " + x.id + " " + x.kat + " " + x.paket + " " + (adm ? uname(x) + " " : "") + x.m.map(function (m) { return m.t; }).join(" ")).toLowerCase().indexOf(q) >= 0);
       });
     }
+    /* Tab ticket customer: dikelompokkan menurut kebutuhan customer (bukan tahapan internal) */
+    var KTB = [["Semua", "Semua"], ["Perlu", "Perlu tindakanmu"], ["Menunggu", "Menunggu balasan"], ["Diproses", "Diproses"], ["Selesai", "Selesai"]];
+    function kIn(x, f) {
+      if (f === "Selesai") return cl(x) || x.st === "Orderan Selesai" || x.st === "Selesai";
+      if (cl(x)) return false;
+      if (f === "Semua") return true;
+      if (f === "Perlu") return x.st === "Menunggu pembayaran";
+      if (f === "Menunggu") return x.st === "Menunggu admin balas" || x.st === "Terbuka";
+      if (f === "Diproses") return x.st === "Terhubung dengan admin" || x.st === "Pembayaran Dikonfirmasi" || x.st === "Pesanan Diproses" || x.st === "Diproses";
+      return false;
+    }
+    var KE = { Semua: ["Belum ada ticket aktif", "Buka ticket baru untuk order atau bertanya ke tim NEXORA."], Perlu: ["Tidak ada ticket yang perlu tindakanmu", "Ticket yang menunggu pembayaran akan muncul di sini."], Menunggu: ["Tidak ada ticket yang menunggu balasan", "Ticket yang baru dibuka dan belum dibalas tim NEXORA akan muncul di sini."], Diproses: ["Belum ada ticket yang sedang diproses", "Ticket yang sedang dikerjakan tim NEXORA akan muncul di sini."], Selesai: ["Belum ada ticket selesai", "Ticket yang sudah selesai atau ditutup akan muncul di sini."] };
     function kTabs() {
-      var all = kSrc(), its = [[adm ? "Aktif" : "Semua", "Semua"]].concat(ST.map(function (s2) { return [s2, SHORT[s2]]; }));
-      its.push(["Riwayat", "Riwayat"]); var act = adm ? all : all.filter(function (x) { return !cl(x); });
-      return '<div class="tkx-tw"><div class="tkx-tabs" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
-        var n = adm ? all.filter(function (x) { return inAf(x, it[0]); }).length : (it[0] === "Riwayat" ? all.filter(cl).length : it[0] === "Semua" ? act.length : act.filter(function (x) { return x.st === it[0]; }).length);
-        return '<button type="button" role="tab" data-kf="' + e(it[0]) + '" aria-selected="' + ((adm ? af : kf) === it[0]) + '">' + e(it[1]) + (n ? "<em>" + n + "</em>" : "") + "</button>";
+      var all = kSrc(), its = adm ? [["Aktif", "Semua"]].concat(ST.map(function (s2) { return [s2, SHORT[s2]]; })).concat([["Riwayat", "Riwayat"]]) : KTB;
+      return '<div class="tkx-tw"><div class="tkx-tabs' + (adm ? "" : " ktb") + '" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
+        var n = adm ? all.filter(function (x) { return inAf(x, it[0]); }).length : all.filter(function (x) { return kIn(x, it[0]); }).length;
+        return '<button type="button" role="tab" data-kf="' + e(it[0]) + '" aria-selected="' + ((adm ? af : kf) === it[0]) + '"' + (!adm && n && (it[0] === "Perlu" || it[0] === "Menunggu") ? ' class="att"' : "") + ">" + e(it[1]) + (n ? "<em>" + n + "</em>" : "") + "</button>";
       }).join("") + '</div><button type="button" class="tkx-ar l" aria-label="Geser ke kiri"><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-ar r" aria-label="Geser ke kanan"><i class="bi bi-chevron-right"></i></button></div>';
     }
     function kShell() {
@@ -693,8 +704,8 @@
           (adm ? '<span class="tkx-u">' + av(uname(x), x.cav) + "<span>" + e(uname(x)) + "</span></span>" : "") +
           '<span class="tkx-s">' + bd(x.st, 1) + "</span>" + (adm ? "" : '<span class="tkx-p">' + (x.paket && x.paket !== "-" ? e(x.paket) : "-") + "</span>") + '<span class="tkx-d">' + e(x.tgl) + "</span></button>";
       }).join("");
-      var any = kSrc().some(function (x) { return adm ? inAf(x, af) : (kf === "Riwayat" ? cl(x) : !cl(x)); }), hist = adm ? af === "Riwayat" : kf === "Riwayat";
-      if (!tot) list = '<div class="tkx-empty"><i class="bi bi-chat-dots"></i><b>' + (any ? "Tidak ada ticket yang cocok" : (hist ? "Belum ada riwayat ticket" : "Belum ada ticket aktif")) + "</b><p>" + (any ? "Coba ubah kata kunci atau filter." : (hist && !adm ? "Ticket yang sudah ditutup akan muncul di sini, lengkap dengan riwayat chatnya." : adm ? "Ticket dari customer akan muncul di sini." : "Buka ticket baru untuk order atau bertanya ke tim NEXORA.")) + "</p></div>";
+      var any = kSrc().some(function (x) { return adm ? inAf(x, af) : kIn(x, kf); }), hist = adm && af === "Riwayat", ke = KE[kf] || KE.Semua;
+      if (!tot) list = '<div class="tkx-empty"><i class="bi bi-chat-dots"></i><b>' + (any ? "Tidak ada ticket yang cocok" : adm ? (hist ? "Belum ada riwayat ticket" : "Belum ada ticket aktif") : ke[0]) + "</b><p>" + (any ? "Coba ubah kata kunci atau filter." : adm ? "Ticket dari customer akan muncul di sini." : ke[1]) + "</p></div>";
       var del = adm && isF() && af === "Riwayat" && tot ? '<button class="btn dng sm tkx-del" type="button" data-tdelall><i class="bi bi-trash3"></i> Hapus semua riwayat (' + tot + ")</button>" : "";
       return '<div class="tkx-h' + (adm ? " adm" : "") + '"><span>Ticket</span>' + (adm ? "<span>Customer</span>" : "") + "<span>Status</span>" + (adm ? "" : "<span>Paket</span>") + "<span>Dibuat</span></div>" + '<div class="tkx-list">' + list + "</div>" +
         (np > 1 || del ? '<div class="tkx-foot">' + del + (np > 1 ? '<span class="tkx-rg">' + (a + 1) + "–" + (a + pg.length) + " dari " + tot + '</span><button type="button" class="tkx-pb" data-kpg="prev" aria-label="Halaman sebelumnya"' + (kpg <= 1 ? " disabled" : "") + '><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-pb" data-kpg="next" aria-label="Halaman berikutnya"' + (kpg >= np ? " disabled" : "") + '><i class="bi bi-chevron-right"></i></button>' : "") + "</div>" : "");
