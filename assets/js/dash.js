@@ -153,7 +153,7 @@
       aerr("Login belum berhasil" + (AE ? ": " + AE : ".") + (hint ? " " + hint : ""));
     }
     if ((window.NX && NX.sessEnd) || /[?&]err=expired/.test(location.search)) aerr("Sesi login sudah berakhir (masa login maksimal " + ((window.NX && NX.sessionDays) || 7) + " hari). Silakan masuk lagi. Akunmu tetap aman dan tidak dihapus.");
-    if (/[?&]err=staff/.test(location.search)) aerr("Akun ini terdaftar sebagai tim NEXORA, jadi tidak bisa dipakai di panel customer. Untuk order sebagai customer, masuk dengan akun Google/Discord yang lain.");
+    if (/[?&]err=staff/.test(location.search)) aerr("Akun ini terdaftar sebagai tim NEXORA, jadi tidak bisa masuk lewat panel customer dan loginnya dibatalkan. Untuk order sebagai customer, masuk dengan akun Google/Discord yang lain.");
     if (/[?&]info=order/.test(location.search) && ae) { ae.textContent = "Masuk dulu untuk membuka ticket. Setelah login, kamu langsung diarahkan ke form buka ticket."; ae.classList.add("info"); ae.hidden = false; }
     if (/[?&]err=notstaff/.test(location.search)) aerr("Akun ini tidak terdaftar sebagai tim NEXORA. Minta Founder menambahkan akunmu.");
     function masuk(n, em, via) { ss("nx-via", via || "email"); ss("nx-role", mode === "alogin" ? "admin" : "cust"); ss("nx-name", n); ss("nx-email", em || ""); if (mode !== "alogin") ss("nx-arole", ""); go(mode === "alogin" ? "/nexora-admin" : "/dashboard"); }
