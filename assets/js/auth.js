@@ -272,6 +272,39 @@
     });
   };
 
+  /* ===== Foto profil customer: Storage bucket "avatar" + profiles.foto_url (lihat 017_foto_profil.sql) ===== */
+  function avPath(u) { var m = /\/storage\/v1\/object\/public\/avatar\/(.+)$/.exec(String(u || "")); return m ? decodeURIComponent(m[1]) : ""; }
+  function fotoErr(er) {
+    var m = String((er && (er.message || er.error)) || "");
+    if (/bucket not found|foto_url|row-level security|violates/i.test(m) && !/folder|akunmu/i.test(m)) return new Error("Foto profil belum bisa disimpan di database. Jalankan 017_foto_profil.sql di Supabase SQL Editor.");
+    try { fail(er); } catch (x) { return x; }
+    return new Error("Gagal menyimpan foto profil.");
+  }
+  function dropFoto(url) { var p0 = avPath(url); if (p0) sb.storage.from("avatar").remove([p0]).then(function () {}, function () {}); }
+  NX.setFoto = function (dataUrl) {
+    return Promise.resolve().then(function () {
+      if (!NX.user) throw new Error("Kamu harus login dulu.");
+      var b = dataToBlob(dataUrl), name = NX.user.id + "/" + Date.now().toString(36) + ".jpg", old = NX.profile && NX.profile.foto_url;
+      return sb.storage.from("avatar").upload(name, b, { contentType: "image/jpeg", cacheControl: "31536000", upsert: false }).then(function (r) {
+        if (r.error) throw fotoErr(r.error);
+        var url = sb.storage.from("avatar").getPublicUrl(name).data.publicUrl;
+        return sb.from("profiles").update({ foto_url: url }).eq("id", NX.user.id).select().then(function (q) {
+          if (q.error) { dropFoto(url); throw fotoErr(q.error); }
+          if (!q.data || !q.data.length) { dropFoto(url); throw new Error("Profil tidak ditemukan atau tidak diizinkan."); }
+          NX.profile = q.data[0]; dropFoto(old); return url;
+        });
+      });
+    });
+  };
+  NX.delFoto = function () {
+    var old = NX.profile && NX.profile.foto_url;
+    return sb.from("profiles").update({ foto_url: null }).eq("id", NX.user.id).select().then(function (q) {
+      if (q.error) throw fotoErr(q.error);
+      if (!q.data || !q.data.length) throw new Error("Profil tidak ditemukan atau tidak diizinkan.");
+      NX.profile = q.data[0]; dropFoto(old); return true;
+    });
+  };
+
   NX.link = function (provider) {
     /* kembali ke /dashboard atau /nexora-admin (alamat yang didaftarkan di Supabase); menu terakhir diingat lewat sessionStorage */
     var bs = /^\/nexora-admin(\/|$)/.test(location.pathname) ? "/nexora-admin" : "/dashboard";
@@ -507,41 +540,66 @@
   /* ===== Status online (Supabase Realtime Presence) =====
      Tiap akun mengumumkan keberadaannya di channel privat "nx-u:<id akun>" selama tabnya aktif.
      Tidak ada yang ditulis ke database kecuali pilihan show_online di profil. */
-  var PR = { own: null, ok: false, active: true, hid: 0, tm: 0 };
+  var PR = { own: null, ok: false, active: true, hid: 0, tm: 0, warned: false };
   function prWant() { return !!(NX.user && PR.active && !(NX.profile && NX.profile.show_online === false)); }
   function prApply() {
     if (!PR.own || !PR.ok) return;
-    try { if (prWant()) PR.own.track({ t: Date.now() }); else PR.own.untrack(); } catch (x) {}
+    try { if (prWant()) PR.own.track({ t: Date.now() }); else PR.own.untrack(); } catch (x) { try { console.warn("[NEXORA] status online:", x); } catch (y) {} }
+  }
+  /* channel privat butuh token login di koneksi realtime SEBELUM subscribe, kalau tidak ditolak (unauthorized) */
+  function prAuth() {
+    return sb.auth.getSession().then(function (r) {
+      var tk = r && r.data && r.data.session && r.data.session.access_token;
+      if (tk && sb.realtime && sb.realtime.setAuth) { try { return sb.realtime.setAuth(tk); } catch (x) {} }
+    }, function () {});
+  }
+  function prWarn(st, err) {
+    try { console.warn("[NEXORA] status online belum tersambung (" + st + ")" + (err && err.message ? ": " + err.message : "") + ". Pastikan 015_status_online.sql sudah dijalankan."); } catch (x) {}
+    if (!PR.warned && window.nxToast) { PR.warned = true; window.nxToast("Status online belum tersambung. Cek 015_status_online.sql di Supabase."); }
   }
   NX.presTrackOn = function () {
-    if (!NX.user || PR.own) { prApply(); return; }
-    try {
-      PR.own = sb.channel("nx-u:" + NX.user.id, { config: { private: true, presence: { key: NX.user.id } } });
-      PR.own.subscribe(function (st) { PR.ok = st === "SUBSCRIBED"; if (PR.ok) prApply(); });
-      document.addEventListener("visibilitychange", function () {
-        clearTimeout(PR.tm);
-        if (document.hidden) PR.tm = setTimeout(function () { PR.active = false; prApply(); }, 120000);
-        else { PR.active = true; prApply(); }
-      });
-      window.addEventListener("pagehide", function () { try { if (PR.own) PR.own.untrack(); } catch (x) {} });
-    } catch (x) {}
+    if (!NX.user) return;
+    if (PR.own) { prApply(); return; }
+    PR.own = {}; /* tandai sedang menyambung, cegah dobel */
+    prAuth().then(function () {
+      try {
+        var ch = sb.channel("nx-u:" + NX.user.id, { config: { private: true, presence: { key: NX.user.id } } });
+        PR.own = ch;
+        ch.subscribe(function (st, err) {
+          PR.ok = st === "SUBSCRIBED";
+          if (PR.ok) prApply(); else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") prWarn(st, err);
+        });
+        document.addEventListener("visibilitychange", function () {
+          clearTimeout(PR.tm);
+          if (document.hidden) PR.tm = setTimeout(function () { PR.active = false; prApply(); }, 120000);
+          else { PR.active = true; prApply(); }
+        });
+        window.addEventListener("pagehide", function () { try { ch.untrack(); } catch (x) {} });
+      } catch (x) { PR.own = null; prWarn("error", x); }
+    });
   };
   NX.setShowOnline = function (v) {
     return sb.from("profiles").update({ show_online: !!v }).eq("id", NX.user.id).select().then(function (r) {
-      if (r.error) fail(r.error);
+      if (r.error) {
+        if (/show_online/i.test(String(r.error.message || ""))) throw new Error("Fitur status online belum aktif di database. Jalankan 015_status_online.sql di Supabase SQL Editor.");
+        fail(r.error);
+      }
       if (!r.data || !r.data.length) throw new Error("Profil tidak ditemukan atau tidak diizinkan.");
       NX.profile = r.data[0]; prApply(); return NX.profile;
     });
   };
-  NX.presPref = function (uid) { return sb.rpc("online_pref", { p_user: uid }).then(function (r) { return r.error ? null : r.data; }, function () { return null; }); };
+  NX.presPref = function (uid) { return sb.rpc("online_pref", { p_user: uid }).then(function (r) { if (r.error) { try { console.warn("[NEXORA] online_pref:", r.error.message); } catch (x) {} return null; } return r.data; }, function () { return null; }); };
   NX.presWatch = function (uid, cb) {
-    var ch = null;
-    try {
-      ch = sb.channel("nx-u:" + uid, { config: { private: true } });
-      ch.on("presence", { event: "sync" }, function () { cb(Object.keys(ch.presenceState()).length > 0); })
-        .subscribe(function (st) { if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") cb(null); });
-    } catch (x) { cb(null); }
-    return function () { try { if (ch) sb.removeChannel(ch); } catch (x) {} };
+    var ch = null, dead = false;
+    prAuth().then(function () {
+      if (dead) return;
+      try {
+        ch = sb.channel("nx-u:" + uid, { config: { private: true } });
+        ch.on("presence", { event: "sync" }, function () { cb(Object.keys(ch.presenceState()).length > 0); })
+          .subscribe(function (st, err) { if (st === "CHANNEL_ERROR" || st === "TIMED_OUT" || st === "CLOSED") { cb(null); if (st !== "CLOSED") prWarn(st, err); } });
+      } catch (x) { cb(null); }
+    });
+    return function () { dead = true; try { if (ch) sb.removeChannel(ch); } catch (x) {} };
   };
 
   function startLive() {
