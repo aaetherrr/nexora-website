@@ -3885,3 +3885,27 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .tkx-tabs.ktb em{background:var(--accent-soft);color:var(--text);font-weight:600}
 .tkx-tabs.ktb button.att em{background:var(--accent);color:var(--on-accent)}
 .tkx-tabs.ktb button[aria-selected="true"]{font-weight:500}
+
+/* ===== v-tanya: halaman "Tanya teknisi" (Ticket bantuan) ===== */
+.tn{max-width:720px}
+.tn-f .fld>span{color:var(--text);font-weight:500}
+.tn-f .req{color:#e5534b;font-style:normal}
+.tn-s{margin:0 0 20px;padding:0;border:0;min-width:0}
+.tn-s legend{padding:0;margin-bottom:12px;font-size:.88rem;font-weight:500}
+.tn-o{display:inline-flex;align-items:center;gap:10px;margin:0 22px 10px 0;cursor:pointer;font-size:.95rem}
+.tn-o input{appearance:none;-webkit-appearance:none;flex:none;width:18px;height:18px;margin:0;border:1.5px solid var(--line);border-radius:50%;background:var(--bg);display:grid;place-items:center;cursor:pointer;transition:border-color .15s,background .15s}
+.tn-o input::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);transform:scale(0);transition:transform .15s}
+.tn-o input:checked{border-color:var(--accent)}
+.tn-o input:checked::after{transform:scale(1)}
+.tn-o input:hover{border-color:var(--accent)}
+.tn-o input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tn-g{margin-top:8px}
+.tn-g>b{display:block;margin-bottom:10px;font-size:.88rem;font-weight:500;color:var(--muted)}
+.tn-rs{display:flex;flex-wrap:wrap}
+.tn .txa{min-height:170px}
+.tn-c{justify-self:end}
+.tn-c.warn{color:#e5534b}
+.tn-e{margin:0 0 14px;color:#e5534b;font-size:.9rem}
+.tn-go{min-width:180px;justify-content:center}
+.tn-go.ok{pointer-events:none}
+@media (max-width:560px){.tn-go{width:100%}.tn-o{margin-right:16px}}

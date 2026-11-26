@@ -191,7 +191,7 @@
 
   function dashInit(adm, root) {
     var bcat = "semua", bpg = 0;
-    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", tnw = false, idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -754,6 +754,14 @@
       if (stabFor !== t.id) { stabFor = t.id; stab = cl(t) ? "selesai" : "aktif"; }
       return '<div class="tk-side tks"><div class="tk-tools"><label class="sbox"><i class="bi bi-search"></i><input class="inp" data-sq type="search" placeholder="Cari tiket atau pesan" value="' + e(kq) + '" autocomplete="off"></label><div class="tks-tabs" role="tablist" aria-label="Filter ticket"><button type="button" role="tab" data-stab="aktif" aria-selected="' + (stab !== "selesai") + '">Aktif</button><button type="button" role="tab" data-stab="selesai" aria-selected="' + (stab === "selesai") + '">Selesai</button></div></div><div class="tk-list tks-list">' + sideItems() + "</div></div>";
     }
+    function tanyaForm() {
+      var grp = JK().map(function (k) { return [JM(k).nama, JR(k)]; }).concat([["Hosting", JR("hosting")]]).filter(function (g) { return g[1] && g[1].length; });
+      return '<div class="tkx tn"><form class="tn-f" id="f-tanya" novalidate><label class="fld"><span>Judul <em class="req">*</em></span><input class="inp" name="subj" maxlength="120" placeholder="Contoh: Jasa apa yang cocok untuk server modpack?" autocomplete="off"></label>' +
+        '<fieldset class="tn-s"><legend>Server yang ditanyakan</legend><label class="tn-o"><input type="radio" name="srv" value="" checked><span>Belum tahu</span></label>' +
+        grp.map(function (g) { return '<div class="tn-g"><b>' + e(g[0]) + '</b><div class="tn-rs">' + g[1].map(function (x) { return '<label class="tn-o"><input type="radio" name="srv" value="' + e(x.nama) + '"><span>' + e(x.nama) + "</span></label>"; }).join("") + "</div></div>"; }).join("") + "</fieldset>" +
+        '<label class="fld"><span>Pertanyaan <em class="req">*</em></span><textarea class="txa" name="msg" maxlength="4000" placeholder="Jelaskan server dan hasil yang kamu mau. Jangan tulis password apa pun."></textarea><small class="hint tn-c"><span id="tn-cc">0</span> dari 4000</small></label>' +
+        '<p class="tn-e" id="tn-e" role="alert" hidden></p><button class="btn tn-go" type="submit"><i class="bi bi-send"></i> <span>Kirim pertanyaan</span></button></form></div>';
+    }
     function tkPanel() {
       if (!adm) {
         tg = "aktif";
@@ -761,7 +769,8 @@
         if (!cur.some(function (x) { return x.id === sel; })) sel = null;
         var t = cur.filter(function (x) { return x.id === sel; })[0];
         if (t && tv === "chat") return '<div class="tk adm cs chat tkx-chat tkx-two' + (kinfo ? " has-info" : "") + '">' + sidePane(t) + '<div class="tk-chat">' + thread(t, true) + "</div>" + tkInfo(t) + "</div>";
-        return '<div class="tkx"><button type="button" class="btn tkx-new" data-go="buka"><i class="bi bi-plus-circle"></i> Ticket baru</button>' + kShell() + "</div>";
+        if (tnw) return tanyaForm();
+        return '<div class="tkx"><button type="button" class="btn tkx-new" data-tnw><i class="bi bi-life-preserver"></i> Ticket bantuan</button>' + kShell() + "</div>";
       }
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
@@ -1653,6 +1662,7 @@
       var det = "";
       if (tab === "tiket" && sel && tv === "chat") { var tk0 = TK().filter(function (x) { return x.id === sel; })[0]; if (tk0) det = tk0.subj || tk0.id; }
       if (tab === "tagihan" && bnew) det = "Buat tagihan";
+      if (!adm && tab === "tiket" && tnw) det = "Tanya teknisi";
       if (det) its.push({ t: det });
       nv.hidden = false;
       nv.innerHTML = '<ol>' + its.map(function (x, i) {
@@ -1694,13 +1704,14 @@
     var BASE = adm ? "/nexora-admin" : "/dashboard", SLUG = adm ? { tiket: "ticket" } : { tiket: "ticket", tagihan: "invoice", profile: "akun" };
     function urlFor() {
       var u = BASE; if (tab && tab !== "ringkasan") u += "/" + (SLUG[tab] || tab);
-      if (tab === "tiket" && tv === "chat" && sel) u += "/" + encodeURIComponent(sel);
+      if (tab === "tiket" && !adm && tnw) u += "/bantuan";
+      else if (tab === "tiket" && tv === "chat" && sel) u += "/" + encodeURIComponent(sel);
       else if (tab === "tagihan" && adm && bnew) u += "/baru";
       else if (tab === "tagihan" && !adm && idet) u += "/" + encodeURIComponent(idet);
       return u;
     }
     function routeFrom(path) {
-      var r = { tab: "ringkasan", sel: null, bnew: false, inv: "" }, parts, TT = TITLES[adm ? "a" : "c"];
+      var r = { tab: "ringkasan", sel: null, bnew: false, inv: "", tnw: false }, parts, TT = TITLES[adm ? "a" : "c"];
       path = (path || "").replace(/\/+$/, "");
       if (path.indexOf(BASE) !== 0) return r;
       try { parts = path.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent); } catch (xr) { return r; }
@@ -1708,14 +1719,15 @@
       if (!k || !TT[k] || !PAN[k] || k === "buka") return r;
       if (adm && !can(k)) return r;
       r.tab = k;
+      if (k === "tiket" && !adm && parts[1] === "bantuan") { r.tnw = true; return r; }
       if (k === "tiket" && parts[1]) { var id = parts[1]; if ((adm ? TK() : mine()).some(function (x) { return x.id === id; })) r.sel = id; }
       if (k === "tagihan" && adm && parts[1] === "baru") r.bnew = true;
       if (k === "tagihan" && !adm && parts[1] && BL().some(function (x) { return x.id === parts[1] && bmine(x); })) r.inv = parts[1];
       return r;
     }
     function navPush() {
-      var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0) + "|" + (tab === "tagihan" && !adm ? idet : "");
-      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew, inv: tab === "tagihan" && !adm ? idet : "" }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
+      var nk = tab + "|" + (tv === "chat" && sel ? sel : "") + "|" + (bnew ? 1 : 0) + "|" + (tab === "tagihan" && !adm ? idet : "") + "|" + (tab === "tiket" && tnw ? 1 : 0);
+      if (!hRest && nk !== hNav) { try { var stt = { nx: 1, tab: tab, sel: tv === "chat" ? sel : null, bnew: !!bnew, tnw: tab === "tiket" && !!tnw, inv: tab === "tagihan" && !adm ? idet : "" }, uu = urlFor(); if (hNav) history.pushState(stt, "", uu); else history.replaceState(stt, "", uu); } catch (xh) {} }
       hNav = nk; hRest = false;
     }
     /* ===== Verifikasi 2 langkah (opsional) di tab Keamanan ===== */
@@ -1900,6 +1912,7 @@
       var P = ld("nx-prof", {}); P.foto = ""; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil dihapus"); pfSync(); }
     function draw() {
       if (adm && !can(tab)) tab = "ringkasan";
+      if (tab !== "tiket" || adm || (sel && tv === "chat")) tnw = false;
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
       $$(".dpanel", root).forEach(function (p) { p.hidden = p.id !== "p-" + tab; });
       var pn = $("#p-" + tab), sx = (lastTab === tab && pn) ? $$(".chips,.bchips,.tkpills,.tkx-tabs", pn).map(function (el) { return el.scrollLeft; }) : null;
@@ -1912,7 +1925,7 @@
         if (on) { var l = on.offsetLeft - el.offsetLeft; if (l < el.scrollLeft) el.scrollLeft = Math.max(0, l - 12); else if (l + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = l + on.offsetWidth - el.clientWidth + 12; }
       });
       lastTab = tab; allInd(); requestAnimationFrame(allInd); if (document.fonts && document.fonts.ready) document.fonts.ready.then(allInd); tkAr(); setTimeout(tkAr, 250); if (nfUp) nfUp();
-      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : (!adm && tab === "tagihan" && idet) ? idet : tt[0].replace("{n}", me());
+      var tt = TITLES[adm ? "a" : "c"][tab]; $("#ptitle").textContent = tt[0].replace("{n}", me()); $("#psub").textContent = tt[1]; $("#ptitle").hidden = tab === "ringkasan"; $("#psub").hidden = tab === "ringkasan" || !tt[1]; if (!adm && tab === "tiket" && tnw) { $("#ptitle").textContent = "Tanya teknisi"; $("#psub").textContent = "Ceritakan kebutuhanmu. Teknisi akan membalas di ticket ini, dan bisa mengirim invoice kalau ada jasa yang cocok."; $("#psub").hidden = false; } var tbs = $(".tb-sub"); if (tbs) tbs.textContent = tab === "ringkasan" ? (adm ? "Dashboard Admin" : "Dashboard") : (!adm && tab === "tagihan" && idet) ? idet : tt[0].replace("{n}", me());
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
       root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat"); root.classList.toggle("ivdet", !adm && tab === "tagihan" && !!idet);
       autoSide(root.classList.contains("chatv"));
@@ -1925,14 +1938,15 @@
       var st = ev.state;
       if (!st || !st.nx) { if (location.pathname.replace(/\/+$/, "") === urlFor()) return; var rr = routeFrom(location.pathname); st = { nx: 1, tab: rr.tab, sel: rr.sel, bnew: rr.bnew, inv: rr.inv }; }
       if (!PAN[st.tab]) return; if (adm && !can(st.tab)) return;
-      tab = st.tab; bnew = !!st.bnew; idet = st.tab === "tagihan" && st.inv ? st.inv : ""; if (st.sel) { sel = st.sel; tv = "chat"; } else { tv = "list"; if (isMob()) sel = null; }
+      tab = st.tab; bnew = !!st.bnew; tnw = !!st.tnw; idet = st.tab === "tagihan" && st.inv ? st.inv : ""; if (st.sel) { sel = st.sel; tv = "chat"; } else { tv = "list"; if (isMob()) sel = null; }
       aq = ""; setOpen(false); hRest = true; draw();
     });
     var nl = document.getElementById("nav-logout"); if (nl) nl.addEventListener("click", function (ev) { ev.preventDefault(); outAsk(); });
     root.addEventListener("click", function (ev) {
-      var t = ev.target.closest("[data-bc],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-sndp],[data-dnotif],[data-nprf],[data-sndm],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
+      var t = ev.target.closest("[data-bc],[data-tnw],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-sndp],[data-dnotif],[data-nprf],[data-sndm],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
+      if (d.tnw !== undefined) { if (actCount() >= MAXT) return limitModal(); if (needWa()) return waModal(); tnw = true; sel = null; tv = "list"; draw(); window.scrollTo(0, 0); var tf = $("#f-tanya [name=subj]"); if (tf && !isMob()) tf.focus(); return; }
       if (d.takeover) return takeModal(d.takeover);
       if (d.onl) return setOnl(!showOn());
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
@@ -1958,7 +1972,7 @@
       if (d.tm) return tmAct(d);
       if (t.id === "logout" || t.id === "logout2") return outAsk();
       if (t.id === "side-t") return setWide();
-      if (d.bc) { tab = d.bc; if (isMob()) sel = null; tv = "list"; bnew = false; aq = ""; setOpen(false); return draw(); }
+      if (d.bc) { tab = d.bc; if (isMob()) sel = null; tv = "list"; bnew = false; tnw = false; aq = ""; setOpen(false); return draw(); }
       if (d.ct) { ctab = d.ct; return draw(); }
       if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
       if (d.ptab) { if (d.ptab === ptab) return; ptab = d.ptab; pfSw = true; return draw(); }
@@ -2039,6 +2053,7 @@
       if (t.matches("[data-cq]")) { cq = t.value; $(".cu-grid", root).innerHTML = custCards(); return; }
       if (t.matches("[data-q]")) { aq = t.value; $(".tk-list", root).innerHTML = adm ? admList() : cList(); }
       if (t.matches(".cmp")) fitCmp(t);
+      if (t.closest && t.closest("#f-tanya")) { if (t.name === "msg") { var tcc = $("#tn-cc"); if (tcc) { tcc.textContent = t.value.length; tcc.parentNode.classList.toggle("warn", t.value.length > 3800); } } var tee = $("#tn-e"); if (tee) tee.hidden = true; }
       if (t.name === "msg" && $("#cc")) { $("#cc").textContent = t.value.length; var chn = $("#cc").parentNode; if (chn) chn.classList.toggle("warn", t.value.length >= 900); if (t.closest("#f-buka")) { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight + 2, 420) + "px"; } }
       if ((t.name === "subj" || t.name === "msg") && t.closest("#f-buka") && t.form.kat.value === "Bantuan") bukaSync();
       if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; tmpSync(); }
@@ -2103,6 +2118,19 @@
       }
       if (f.id === "f-mfa" || f.id === "f-mfaoff") return mfaSubmit(f);
       if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); var onm = me(); ss("nx-name", nm2); if (!(window.NX && NX.live)) sv("nx-cust", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || Object.assign({}, UU2[onm] || {}); nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); var wv9 = $("#wav"); if (wv9) setAv(wv9, me()); uSync(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
+      if (f.id === "f-tanya") {
+        var te = $("#tn-e"), sj = f.subj.value.trim(), ms = f.msg.value.trim(), tmsg = "";
+        if (actCount() >= MAXT) return limitModal();
+        if (needWa()) return waModal();
+        if (!sj) { tmsg = "Judul wajib diisi."; f.subj.focus(); } else if (!ms) { tmsg = "Pertanyaan wajib diisi."; f.msg.focus(); }
+        if (tmsg) { te.textContent = tmsg; te.hidden = false; return; }
+        if (f.dataset.busy) return; f.dataset.busy = "1"; te.hidden = true;
+        var tb = TK(), tid2 = nextTid(), sv2 = f.srv.value || "-";
+        tb.unshift({ id: tid2, subj: sj, kat: "Bantuan", paket: sv2, st: "Menunggu admin balas", tgl: "Hari ini", user: "__me", m: [nm({ w: "c", t: ms, d: "Baru saja", h: hm() })] }); sv("nx-tk", tb);
+        var tg2 = $(".tn-go", f); if (tg2) { tg2.disabled = true; tg2.classList.add("ok"); tg2.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>Pertanyaan terkirim</span>'; }
+        setTimeout(function () { tnw = false; sel = tid2; tg = "aktif"; tv = "chat"; tab = "tiket"; draw(); toast("Ticket " + tid2 + " dibuat. Teknisi akan membalas di sini."); }, 650);
+        return;
+      }
       if (f.id === "f-buka") {
         if (actCount() >= MAXT) return limitModal();
         if (needWa()) return waModal();
@@ -2130,7 +2158,7 @@
     window.nxDraw = draw; window.nxRemote = remote; window.nxToast = toast;
     var r0 = routeFrom(location.pathname), rt = ss("nx-ret");
     if (rt) { ss("nx-ret", ""); if (location.pathname.replace(/\/+$/, "") === BASE) r0 = routeFrom(rt); } /* balik dari tautkan akun Google/Discord */
-    tab = r0.tab; bnew = r0.bnew; idet = r0.inv || ""; if (r0.sel) { sel = r0.sel; tv = "chat"; }
+    tab = r0.tab; bnew = r0.bnew; tnw = !adm && !!r0.tnw; idet = r0.inv || ""; if (r0.sel) { sel = r0.sel; tv = "chat"; }
     draw();
     if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
   }
