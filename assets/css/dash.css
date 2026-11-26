@@ -3880,3 +3880,8 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .row.ot .bub{min-width:150px}
 .row.me .bub{min-width:100px}
 @media (max-width:560px){.row.ot .bub{min-width:128px}.row.me .bub{min-width:88px}}
+
+/* ===== Tab ticket customer: badge jumlah netral, yang butuh perhatian pakai warna aksen ===== */
+.tkx-tabs.ktb em{background:var(--accent-soft);color:var(--text);font-weight:600}
+.tkx-tabs.ktb button.att em{background:var(--accent);color:var(--on-accent)}
+.tkx-tabs.ktb button[aria-selected="true"]{font-weight:500}
