@@ -3867,8 +3867,10 @@ body.is-dash,body:has(.dash){background:var(--bg)}
 .lkr-bd{flex:none;padding:5px 12px;border-radius:99px;background:color-mix(in srgb,var(--text) 8%,transparent);font-size:.78rem;font-weight:600;white-space:nowrap}
 .lkr-b{flex:none;padding:10px 18px;border-radius:14px;font-size:.92rem;font-weight:600}
 @media (max-width:560px){
-  .lkr{flex-wrap:wrap;gap:12px 14px}
-  .lkr-t{flex:1 1 calc(100% - 70px)}
-  .lkr-bd,.lkr-b{margin-left:64px}
-  .lkr-b{padding:8px 16px;font-size:.88rem}
+  .lkr{flex-wrap:nowrap;gap:10px}
+  .lkr-i{width:38px;height:38px;border-radius:11px;font-size:1.25rem}
+  .lkr-i svg{width:19px;height:19px}
+  .lkr-t{flex:1 1 0;min-width:0}
+  .lkr-bd{margin-left:0;max-width:none;padding:4px 8px;white-space:nowrap;line-height:1.3;font-size:.66rem;letter-spacing:0}
+  .lkr-b{margin-left:0;padding:8px 14px;font-size:.86rem;border-radius:12px}
 }

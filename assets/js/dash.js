@@ -1600,7 +1600,7 @@
             '<small class="hint">Dipakai teknisi kalau perlu menghubungimu. Wajib diisi untuk membuka ticket.</small><input type="hidden" name="dc" value="' + e(P.discord || "") + '"><button class="btn pf-save" type="submit">Simpan profil</button></form>') + sec("Privasi", "Atur apakah admin yang menangani ticketmu bisa melihat kamu sedang online.", '<div class="pf-tg"><span class="pf-ti"><i class="bi bi-broadcast"></i></span><div><b>Tampilkan status online</b><small>Kalau dimatikan, admin tidak melihat status online atau offline-mu di chat ticket.</small></div><button type="button" class="swt" role="switch" aria-checked="' + showOn() + '" aria-label="Tampilkan status online" data-onl="1"></button></div>'),
           keamanan: '<section class="pf-sec tf-sec"><div class="pf-card tf-card"><div id="pf-2fa">' + mfaHtml() + "</div></div></section>",
           notif: sec("Suara", "Pilih suara untuk chat dan ticket. Suara diputar selama panel terbuka.", sndHtml()) + sec("Notifikasi perangkat", "Dapat kabar di HP atau komputer walau panel sedang ditutup.", '<div class="dn-row" id="dn-card">' + dnInner() + "</div>") + sec("Notifikasi", "Pilih kabar yang kamu terima lewat panel dan perangkat. Kabar keamanan akun selalu dikirim.", npHtml()),
-          akun: sec("Cara masuk", "Satu akun bisa dimasuki lewat beberapa cara. Setiap perubahan dikabarkan lewat email.", lkCard())
+          akun: sec("Cara masuk", "Satu akun bisa dimasuki lewat beberapa cara.", lkCard())
         };
         var pf0 = $("#p-profile .pfx");
         if (pfSw && pf0 && $(".tkx-tabs", pf0)) {
