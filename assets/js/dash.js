@@ -667,7 +667,7 @@
       });
     }
     /* Tab ticket customer: dikelompokkan menurut kebutuhan customer (bukan tahapan internal) */
-    var KTB = [["Semua", "Semua"], ["Perlu", "Perlu tindakanmu"], ["Menunggu", "Menunggu balasan"], ["Diproses", "Diproses"], ["Selesai", "Selesai"]];
+    var KTB = [["Semua", "Semua"], ["Perlu", "Bayar"], ["Menunggu", "Menunggu balasan"], ["Diproses", "Diproses"], ["Selesai", "Selesai"]];
     function kIn(x, f) {
       if (f === "Selesai") return cl(x) || x.st === "Orderan Selesai" || x.st === "Selesai";
       if (cl(x)) return false;
@@ -677,7 +677,7 @@
       if (f === "Diproses") return x.st === "Terhubung dengan admin" || x.st === "Pembayaran Dikonfirmasi" || x.st === "Pesanan Diproses" || x.st === "Diproses";
       return false;
     }
-    var KE = { Semua: ["Belum ada ticket aktif", "Buka ticket baru untuk order atau bertanya ke tim NEXORA."], Perlu: ["Tidak ada ticket yang perlu tindakanmu", "Ticket yang menunggu pembayaran akan muncul di sini."], Menunggu: ["Tidak ada ticket yang menunggu balasan", "Ticket yang baru dibuka dan belum dibalas tim NEXORA akan muncul di sini."], Diproses: ["Belum ada ticket yang sedang diproses", "Ticket yang sedang dikerjakan tim NEXORA akan muncul di sini."], Selesai: ["Belum ada ticket selesai", "Ticket yang sudah selesai atau ditutup akan muncul di sini."] };
+    var KE = { Semua: ["Belum ada ticket aktif", "Buka ticket baru untuk order atau bertanya ke tim NEXORA."], Perlu: ["Belum ada ticket yang perlu dibayar", "Ticket yang menunggu pembayaran akan muncul di sini."], Menunggu: ["Tidak ada ticket yang menunggu balasan", "Ticket yang baru dibuka dan belum dibalas tim NEXORA akan muncul di sini."], Diproses: ["Belum ada ticket yang sedang diproses", "Ticket yang sedang dikerjakan tim NEXORA akan muncul di sini."], Selesai: ["Belum ada ticket selesai", "Ticket yang sudah selesai atau ditutup akan muncul di sini."] };
     function kTabs() {
       var all = kSrc(), its = adm ? [["Aktif", "Semua"]].concat(ST.map(function (s2) { return [s2, SHORT[s2]]; })).concat([["Riwayat", "Riwayat"]]) : KTB;
       return '<div class="tkx-tw"><div class="tkx-tabs' + (adm ? "" : " ktb") + '" role="tablist" aria-label="Filter status ticket">' + its.map(function (it) {
