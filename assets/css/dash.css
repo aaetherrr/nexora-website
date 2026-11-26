@@ -3874,3 +3874,4 @@ body.is-dash,body:has(.dash){background:var(--bg)}
   .lkr-bd{margin-left:0;max-width:none;padding:4px 8px;white-space:nowrap;line-height:1.3;font-size:.66rem;letter-spacing:0}
   .lkr-b{margin-left:0;padding:8px 14px;font-size:.86rem;border-radius:12px}
 }
+.pf-ava.busy{opacity:.55;pointer-events:none;cursor:progress}

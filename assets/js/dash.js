@@ -53,12 +53,12 @@
     d.querySelector(".nxt-x").addEventListener("click", bye); d.querySelector(".nxt-p").addEventListener("animationend", bye);
     box.appendChild(d);
   }
-  var AVRE = /^https:\/\/(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)\/[^\s]{1,500}$/;
+  var AVRE = /^https:\/\/(lh[0-9]+\.googleusercontent\.com|cdn\.discordapp\.com)\/[^\s]{1,500}$|^https:\/\/[^\/\s]+\/storage\/v1\/object\/public\/avatar\/[0-9a-f-]{36}\/[A-Za-z0-9._-]+$/;
   function safeAv(u) { return u && AVRE.test(u) ? u : ""; }
   function avImg(u) { return '<img src="' + e(u) + '" alt="" referrerpolicy="no-referrer" loading="lazy">'; }
   function av(n, u) { u = safeAv(u); return u ? '<span class="av">' + avImg(u) + "</span>" : '<span class="av">' + e(String(n || "?").trim().charAt(0).toUpperCase()) + "</span>"; }
   function avh(u, cls, fb) { u = safeAv(u); return '<span class="av' + (cls ? " " + cls : "") + '">' + (u ? avImg(u) : fb) + "</span>"; }
-  function myFoto() { try { var d0 = document.querySelector(".dash"); if (!d0 || d0.dataset.dash !== "cust") return ""; var f = (JSON.parse(localStorage.getItem("nx-prof") || "{}") || {}).foto; return /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f || "") ? f : ""; } catch (x) { return ""; } }
+  function myFoto() { try { var d0 = document.querySelector(".dash"); if (!d0 || d0.dataset.dash !== "cust") return ""; if (window.NX && NX.live) return safeAv(NX.profile && NX.profile.foto_url); var f = (JSON.parse(localStorage.getItem("nx-prof") || "{}") || {}).foto; return /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f || "") ? f : ""; } catch (x) { return ""; } }
   function setAv(el, name) { var u = myFoto() || safeAv(ss("nx-avatar")); if (u) el.innerHTML = avImg(u); else el.textContent = String(name || "?").charAt(0).toUpperCase(); }
   var ST = ["Menunggu admin balas", "Terhubung dengan admin", "Menunggu pembayaran", "Pembayaran Dikonfirmasi", "Pesanan Diproses", "Orderan Selesai"];
   var SHORT = { "Menunggu admin balas": "Menunggu balas", "Terhubung dengan admin": "Terhubung", "Menunggu pembayaran": "Pembayaran", "Pembayaran Dikonfirmasi": "Dikonfirmasi", "Pesanan Diproses": "Diproses", "Orderan Selesai": "Order selesai" };
@@ -1868,10 +1868,19 @@
       if (!file) return;
       if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return toast("Format foto harus PNG, JPG, atau WebP");
       if (file.size > 20 * 1024 * 1024) return toast("Ukuran foto terlalu besar, maksimal 20 MB");
-      shrink(file, 320, "image/jpeg", function (d) { var P = ld("nx-prof", {}); P.foto = d; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil diganti"); pfSync(); });
+      shrink(file, 320, "image/jpeg", function (d) {
+        if (window.NX && NX.live) {
+          if (window.__pfBusy) return; window.__pfBusy = true; var pa = $(".pf-ava"); if (pa) pa.classList.add("busy");
+          NX.setFoto(d).then(function () { var wv0 = $("#wav"); if (wv0) setAv(wv0, me()); toast("Foto profil diganti"); pfSync(); }, function (er) { toast(liveMsg(er)); })
+            .then(function () { window.__pfBusy = false; var pa2 = $(".pf-ava"); if (pa2) pa2.classList.remove("busy"); });
+          return;
+        }
+        var P = ld("nx-prof", {}); P.foto = d; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil diganti"); pfSync(); });
     }
     function pfSync() { var a = $(".pf-ava"), pb = $(".pf-pb"); if (!a) return; var f = myFoto() || safeAv(ss("nx-avatar")); a.innerHTML = f ? avImg(f) : e(me().charAt(0).toUpperCase()); var rm = $("#pf-rm"); if (myFoto() && !rm && pb) pb.insertAdjacentHTML("beforeend", '<button type="button" class="btn ghost pf-up" id="pf-rm"><i class="bi bi-trash3"></i> Hapus</button>'); else if (!myFoto() && rm) rm.remove(); }
-    function pfHapus() { var P = ld("nx-prof", {}); P.foto = ""; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil dihapus"); pfSync(); }
+    function pfHapus() {
+      if (window.NX && NX.live) { NX.delFoto().then(function () { var wv1 = $("#wav"); if (wv1) setAv(wv1, me()); toast("Foto profil dihapus"); pfSync(); }, function (er) { toast(liveMsg(er)); }); return; }
+      var P = ld("nx-prof", {}); P.foto = ""; sv("nx-prof", P); var wv = $("#wav"); if (wv) setAv(wv, me()); toast("Foto profil dihapus"); pfSync(); }
     function draw() {
       if (adm && !can(tab)) tab = "ringkasan";
       $$(".stab[data-tab]", root).forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === tab); });
