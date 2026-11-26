@@ -13,6 +13,7 @@
   var QS = new URLSearchParams(location.search), HS = new URLSearchParams((location.hash || "").replace(/^#/, ""));
   function keepErr() { try { return !!sessionStorage.getItem("nx-autherr"); } catch (x) { return false; } }
   var BACKCODE = !!QS.get("code");
+  var LOGIN_TRY = !!QS.get("code") || !!HS.get("access_token");
   var OERR = QS.get("error_description") || HS.get("error_description") || QS.get("error") || HS.get("error") || "";
   var OCODE = QS.get("error_code") || HS.get("error_code") || "";
   if (OERR) {
@@ -92,6 +93,10 @@
       if (NX.staffBlock) {
         ["nx-role", "nx-arole", "nx-name", "nx-email", "nx-via", "nx-avatar"].forEach(function (k) { ssSet(k, ""); });
         NX.tk = []; NX.users = {}; NX.cat = null; NX.set = {};
+        /* Baru saja mencoba login customer (kembali dari Google/Discord) dengan akun tim: sesinya langsung dicabut,
+           supaya tidak ada sisa login (avatar/nama di navbar beranda). Kalau cuma membuka halaman customer saat
+           sudah login di panel admin, sesi dibiarkan agar panel admin tetap jalan. */
+        if (LOGIN_TRY) { return sb.auth.signOut({ scope: "local" }).then(clearSession, clearSession).then(function () { return null; }); }
         return null;
       }
       var P = NX.profile;
