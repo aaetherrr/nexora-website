@@ -667,7 +667,7 @@
       });
     }
     /* Tab ticket customer: dikelompokkan menurut kebutuhan customer (bukan tahapan internal) */
-    var KTB = [["Semua", "Semua"], ["Perlu", "Bayar"], ["Menunggu", "Menunggu balasan"], ["Diproses", "Diproses"], ["Selesai", "Selesai"]];
+    var KTB = [["Semua", "Semua"], ["Menunggu", "Menunggu balasan"], ["Perlu", "Bayar"], ["Diproses", "Diproses"], ["Selesai", "Selesai"]];
     function kIn(x, f) {
       if (f === "Selesai") return cl(x) || x.st === "Orderan Selesai" || x.st === "Selesai";
       if (cl(x)) return false;
