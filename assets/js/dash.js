@@ -64,7 +64,7 @@
   var SHORT = { "Menunggu admin balas": "Menunggu balas", "Terhubung dengan admin": "Terhubung", "Menunggu pembayaran": "Pembayaran", "Pembayaran Dikonfirmasi": "Dikonfirmasi", "Pesanan Diproses": "Diproses", "Orderan Selesai": "Order selesai" };
   var BC = { "Menunggu admin balas": "b1", "Terhubung dengan admin": "b2", "Menunggu pembayaran": "b3", "Pembayaran Dikonfirmasi": "b7", "Pesanan Diproses": "b8", "Orderan Selesai": "b4", Menunggu: "b3", Selesai: "b4", Diproses: "b8", Terbuka: "b1", "Belum dibayar": "b1", Terlambat: "b5", Lunas: "b4", Dibatalkan: "b6", Ditutup: "b6" };
   function bd(s, short) { return '<span class="bd ' + (BC[s] || "b1") + '">' + e(short && SHORT[s] ? SHORT[s] : s) + "</span>"; }
-  var MAXT = 3;
+  var MAXT = 1;
   function me() { return ss("nx-name") || "Customer"; }
   var ROLES = ["Founder", "Co-Founder", "Teknisi"];
   var PERM = {
@@ -191,7 +191,7 @@
 
   function dashInit(adm, root) {
     var bcat = "semua", bpg = 0;
-    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", tnw = false, idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", tnw = false, idet = "", isort = "desc", kinfo = false, limBn = "", kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -465,13 +465,21 @@
     function delBl(ids) { sv("nx-bill", BL().filter(function (b) { return ids.indexOf(b.id) < 0; })); audit("Hapus " + ids.length + " tagihan: " + ids.slice(0, 20).join(", ")); toast(ids.length + " tagihan dihapus"); draw(); }
     function tkHist() { var q = aq.toLowerCase(); return TK().filter(function (x) { return cl(x) && (x.subj + " " + uname(x) + " " + x.id).toLowerCase().indexOf(q) > -1; }); }
     function blHist() { return BL().filter(function (b) { return bfil === "Lunas" ? b.st === "Lunas" : bfil === "Dibatalkan" ? b.st === "Dibatalkan" : bfil === "semua" ? (b.st === "Lunas" || b.st === "Dibatalkan") : false; }); }
-    function actCount() { return mine().filter(function (x) { return !cl(x); }).length; }
-    function limitModal() {
-      modal('<div class="mbox sm warn" role="alertdialog" aria-modal="true" aria-labelledby="lm-t"><span class="warn-ic am"><i class="bi bi-exclamation-triangle"></i></span><div class="mb"><h3 id="lm-t">Batas ticket tercapai</h3><p>Kamu sudah mempunyai ' + MAXT + ' ticket aktif silahkan menutup 1 ticket untuk membuat ticket baru.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Mengerti</button><button type="button" class="btn" data-ok>Lihat ticket</button></div></div>', function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "tiket"; setOpen(false); draw(); });
-        $("[data-x].btn", m).focus();
-      });
+    /* "Ticket aktif" = belum ditutup dan belum berstatus Orderan Selesai. Batas: 1 (MAXT). */
+    function isAct(x) { return !cl(x) && x.st !== "Orderan Selesai"; }
+    function actCount() { return mine().filter(isAct).length; }
+    /* Customer yang sudah mencapai batas dan mau membuka ticket lagi langsung diarahkan ke chat ticket yang masih berjalan */
+    function goActive() {
+      var a = mine().filter(isAct);
+      tnw = false; setOpen(false); idet = ""; aq = ""; kf = "Semua"; tab = "tiket";
+      if (a.length === 1) { sel = a[0].id; tv = "chat"; limBn = a[0].id; toast("Kamu masih punya 1 ticket aktif (" + a[0].id + "). Lanjutkan chat di sini."); }
+      else { sel = null; tv = "list"; limBn = ""; toast("Kamu masih punya ticket aktif. Selesaikan dulu untuk membuka ticket baru."); }
+      draw(); window.scrollTo(0, 0);
     }
+    function limBar(t) {
+      return !adm && limBn === t.id ? '<div class="limbn" role="status"><i class="bi bi-info-circle"></i><span><b>Kamu hanya bisa punya 1 ticket aktif</b><small>Selesaikan ticket ini dulu untuk membuka ticket baru.</small></span><button type="button" class="ib" data-limx aria-label="Tutup pemberitahuan"><i class="bi bi-x-lg"></i></button></div>' : "";
+    }
+    root.addEventListener("click", function (ev) { var x = ev.target.closest && ev.target.closest("[data-limx]"); if (x) { limBn = ""; var bn = x.closest(".limbn"); if (bn) bn.remove(); } });
     function syncOrd(x) {
       var o = OR(), ch = false;
       o.forEach(function (r) { if (r.tk === x.id) { var n = x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu"; if (r.st !== n) { r.st = n; ch = true; } } });
@@ -627,7 +635,7 @@
       var act = lk0 ? bd(t.st) + '<span class="st-lk hd" title="Status hanya bisa diubah admin yang menangani ticket"><i class="bi bi-lock-fill"></i> Ditangani ' + e(t.hd.n) + "</span>" + ibtn : adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : bd(t.st)) + stMenu(t, lockC) + ibtn) : bd(t.st) + cbd + ibtn;
       var chd = !adm && t.hd ? t.hd : null, ttl = chd ? chd.n : t.subj, sub = t.id + (adm ? " · " + uname(t) : chd ? " · " + (chd.r || "Admin") : "");
       return '<div class="th"><div class="th-h">' + (adm || chd ? '<span class="th-aw">' + (adm ? av(uname(t), t.cav) : av(chd.n, chd.a)) + '<i class="pdot" hidden></i></span>' : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(ttl) + '" data-tipw="t">' + e(ttl) + '</b><small data-tip="' + e(sub) + '" data-tipw="t">' + e(sub) + '<span class="pst" hidden></span></small></div><div class="th-a">' + act + "</div></div>" + info +
-        pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
+        limBar(t) + pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : lk0 ? '<div class="th-lock" role="group" aria-label="Ticket sedang ditangani admin lain"><p><i class="bi bi-lock-fill"></i><span>Ticket ini sedang ditangani <b>' + e(t.hd.n) + "</b> (" + e(t.hd.r) + '). Kamu tidak bisa membalas chat.</span></p><button type="button" class="btn" data-takeover="' + e(t.id) + '"><i class="bi bi-arrow-left-right"></i> Apakah kamu ingin mengambil alih ticket ini?</button></div>' : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
     }
     function admList() {
@@ -770,7 +778,7 @@
         var t = cur.filter(function (x) { return x.id === sel; })[0];
         if (t && tv === "chat") return '<div class="tk adm cs chat tkx-chat tkx-two' + (kinfo ? " has-info" : "") + '">' + sidePane(t) + '<div class="tk-chat">' + thread(t, true) + "</div>" + tkInfo(t) + "</div>";
         if (tnw) return tanyaForm();
-        return '<div class="tkx"><button type="button" class="btn tkx-new" data-tnw>Ticket bantuan</button>' + kShell() + "</div>";
+        return '<div class="tkx"><button type="button" class="btn tkx-new" data-tnw>' + (actCount() >= MAXT ? "Lanjutkan ticket" : "Ticket bantuan") + '</button>' + kShell() + "</div>";
       }
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
@@ -2080,6 +2088,7 @@
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
       root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat"); root.classList.toggle("ivdet", !adm && tab === "tagihan" && !!idet);
       autoSide(root.classList.contains("chatv"));
+      if (tv !== "chat" || sel !== limBn) limBn = "";
       var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Menunggu admin balas" && !cl(x); }) : mine().filter(function (x) { return !cl(x); })).length; ct.textContent = cc; ct.hidden = !cc; }
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
       crumb(); navPush();
@@ -2097,7 +2106,7 @@
       var t = ev.target.closest("[data-bc],[data-tnw],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-sndp],[data-dnotif],[data-nprf],[data-sndm],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
-      if (d.tnw !== undefined) { if (actCount() >= MAXT) return limitModal(); tnw = true; sel = null; tv = "list"; draw(); window.scrollTo(0, 0); var tf = $("#f-tanya [name=subj]"); if (tf && !isMob()) tf.focus(); return; }
+      if (d.tnw !== undefined) { if (actCount() >= MAXT) return goActive(); tnw = true; sel = null; tv = "list"; draw(); window.scrollTo(0, 0); var tf = $("#f-tanya [name=subj]"); if (tf && !isMob()) tf.focus(); return; }
       if (d.takeover) return takeModal(d.takeover);
       if (d.onl) return setOnl(!showOn());
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
@@ -2125,7 +2134,7 @@
       if (t.id === "side-t") return setWide();
       if (d.bc) { tab = d.bc; if (isMob()) sel = null; tv = "list"; bnew = false; tnw = false; aq = ""; setOpen(false); return draw(); }
       if (d.ct) { ctab = d.ct; return draw(); }
-      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return limitModal(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tiket" && !adm && tnw) { tnw = false; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
+      if (d.tab || d.go) { var ntb = d.tab || d.go; if (!adm && ntb === "buka" && actCount() >= MAXT) { setOpen(false); return goActive(); } if (!adm && ntb === "buka" && needWa()) { setOpen(false); return waModal(); } if (ntb !== tab) { idet = ""; aq = ""; tv = "list"; } else if (ntb === "tiket" && tv === "chat" && sel) { tv = "list"; aq = ""; } else if (ntb === "tiket" && !adm && tnw) { tnw = false; } else if (ntb === "tagihan" && !adm && idet) { idet = ""; } tab = ntb; setOpen(false); draw(); if (d.kat) { var kr = $('input[name="kat"][value="' + d.kat + '"]'); if (kr) { kr.checked = true; bukaSync(); } } return; }
       if (d.ptab) { if (d.ptab === ptab) return; ptab = d.ptab; pfSw = true; return draw(); }
       if (t.id === "pf-rm") return pfHapus();
       if (t.id === "mfa-on") return mfaStart();
@@ -2271,7 +2280,7 @@
       if (f.id === "f-prof" || f.id === "f-dc") { var wc = f.wa ? waCheck(f.wa.value) : null; if (wc && !wc.ok) { waErr(f, wc.msg); f.wa.focus(); return; } if (wc) waErr(f, ""); var P0 = ld("nx-prof", {}), nm2 = f.nama ? f.nama.value.trim() : me(), dc2 = f.dc ? f.dc.value.trim() : (P0.discord || ""), wa2 = wc ? wc.val : (P0.wa || ""); var onm = me(); ss("nx-name", nm2); if (!(window.NX && NX.live)) sv("nx-cust", nm2); var P2 = ld("nx-prof", {}); P2.discord = dc2; P2.wa = wa2; if (f.kota) P2.kota = f.kota.value.trim(); sv("nx-prof", P2); var UU2 = USR(), nu2 = UU2[me()] || Object.assign({}, UU2[onm] || {}); nu2.discord = P2.discord; nu2.wa = P2.wa; UU2[me()] = nu2; sv("nx-users", UU2); $("#who").textContent = me(); var wv9 = $("#wav"); if (wv9) setAv(wv9, me()); uSync(); if (window.NX && NX.live) { NX.saveProfile({ nama: nm2, discord_username: dc2, whatsapp: wa2 }).then(function () { toast("Profil tersimpan"); draw(); }, function (er) { toast(er.message); }); return; } toast("Profil tersimpan"); return draw(); }
       if (f.id === "f-tanya") {
         var te = $("#tn-e"), sj = f.subj.value.trim(), ms = f.msg.value.trim(), tmsg = "";
-        if (actCount() >= MAXT) return limitModal();
+        if (actCount() >= MAXT) return goActive();
         if (!sj) { tmsg = "Judul wajib diisi."; f.subj.focus(); } else if (!ms) { tmsg = "Pertanyaan wajib diisi."; f.msg.focus(); }
         if (tmsg) { te.textContent = tmsg; te.hidden = false; return; }
         if (f.dataset.busy) return; f.dataset.busy = "1"; te.hidden = true;
@@ -2282,7 +2291,7 @@
         return;
       }
       if (f.id === "f-buka") {
-        if (actCount() >= MAXT) return limitModal();
+        if (actCount() >= MAXT) return goActive();
         if (needWa()) return waModal();
         if (f.kat.value === "Order baru" && !f.paket.value) { var ob = $("#ord"); if (ob && ob.scrollIntoView) ob.scrollIntoView({ block: "center", behavior: "smooth" }); return toast("Pilih layanan dan paket dulu ya."); }
         if (f.dataset.busy) return; f.dataset.busy = "1";
@@ -2310,7 +2319,7 @@
     if (rt) { ss("nx-ret", ""); if (location.pathname.replace(/\/+$/, "") === BASE) r0 = routeFrom(rt); } /* balik dari tautkan akun Google/Discord */
     tab = r0.tab; bnew = r0.bnew; tnw = !adm && !!r0.tnw; idet = r0.inv || ""; if (r0.sel) { sel = r0.sel; tv = "chat"; }
     draw();
-    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { limitModal(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
+    if (!adm && ss("nx-next") === "buka") { ss("nx-next", ""); var pk = ss("nx-pkg"); ss("nx-pkg", ""); if (actCount() >= MAXT) { goActive(); } else if (needWa()) { waModal(); } else { tab = "buka"; draw(); pilihPaket(pk); } }
   }
 
   function boot(root, m) {
