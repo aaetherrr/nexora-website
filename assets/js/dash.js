@@ -830,7 +830,7 @@
       var pct = Math.round(c.n / c.t * 100), TX = { "Nama akun": "Isi nama akun di profil", "Nomor WhatsApp": "Isi nomor WhatsApp supaya teknisi gampang menghubungimu", "Akun Google": "Hubungkan akun Google", "Akun Discord": "Hubungkan akun Discord" }, nx = -1;
       c.it.forEach(function (x, i) { if (!x[2] && nx < 0) nx = i; });
       return '<section class="pcb" aria-label="Kelengkapan akun"><div class="pcb-r" style="--p:' + pct + '" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><b>' + pct + '%</b></div><div class="pcb-m"><h3>Lengkapi akunmu</h3><ul class="pcb-l">' +
-        c.it.map(function (x, i) { return '<li class="' + (x[2] ? "ok" : i === nx ? "next" : "") + '">' + (x[2] ? '<i class="bi bi-check-circle pcb-s"></i>' : '<span class="pcb-d" aria-hidden="true"></span>') + '<span class="pcb-n">' + e(TX[x[1]] || x[1]) + "</span>" + (i === nx ? '<button type="button" class="btn pcb-b" data-go="profile">' + (/^Akun /.test(x[1]) ? "Hubungkan" : "Isi profil") + "</button>" : "") + "</li>"; }).join("") + "</ul></div></section>";
+        c.it.map(function (x, i) { return '<li class="' + (x[2] ? "ok" : i === nx ? "next" : "") + '">' + (x[2] ? '<i class="bi bi-check-circle pcb-s"></i>' : '<span class="pcb-d" aria-hidden="true"></span>') + '<span class="pcb-n">' + e(TX[x[1]] || x[1]) + "</span>" + (i === nx ? '<button type="button" class="btn pcb-b" ' + (x[1] === "Nomor WhatsApp" ? "data-wafill" : 'data-lkgo="' + (x[1] === "Akun Google" ? "google" : "discord") + '"') + ">" + (/^Akun /.test(x[1]) ? "Hubungkan" : "Isi profil") + "</button>" : "") + "</li>"; }).join("") + "</ul></div></section>";
     }
     function lkCard() {
       var k = LK(), ids = (window.NX && NX.identities) || [], cnt = (k.g ? 1 : 0) + (k.d ? 1 : 0),
@@ -1665,7 +1665,10 @@
     }
     function needWa() { var P = ld("nx-prof", {}); return !P.wa; }
     function goAkun() { tnw = false; tab = "profile"; ptab = "profil"; setOpen(false); draw(); }
-    function goWa() { tnw = false; tab = "profile"; ptab = "profil"; setOpen(false); draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); }
+    function flashEl(el) { if (!el) return; el.classList.add("hl"); setTimeout(function () { el.classList.remove("hl"); }, 1800); }
+    function goWa() { tnw = false; tab = "profile"; ptab = "profil"; setOpen(false); draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); flashEl(i.closest(".fld") || i); } }, 80); }
+    function goLk(key) { tnw = false; tab = "profile"; ptab = "akun"; setOpen(false); draw(); setTimeout(function () { var b = $('#p-profile [data-lk="' + key + '"]', root); if (b) { b.focus(); b.scrollIntoView({ block: "center" }); flashEl(b.closest(".lkr")); } }, 80); }
+    root.addEventListener("click", function (ev) { var g = ev.target.closest && ev.target.closest("[data-lkgo]"); if (g) goLk(g.dataset.lkgo); });
     root.addEventListener("click", function (ev) { if (ev.target.closest && ev.target.closest("[data-wafill]")) goWa(); });
     function waModal() {
       return modal('<div class="mbox sm warn wam" role="alertdialog" aria-modal="true" aria-labelledby="wm-t"><button type="button" class="ib wam-x" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button><span class="warn-ic gr"><i class="bi bi-whatsapp"></i></span><div class="mb"><h3 id="wm-t">Isi nomor WhatsApp dulu</h3><p>Untuk membuka ticket, kami butuh nomor WhatsApp kamu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-person-gear"></i> Isi di Profil</button></div></div>', function (m, close) {
