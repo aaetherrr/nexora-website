@@ -231,7 +231,7 @@
       w.insertBefore(tl, nr); root.insertBefore(hd, $(".dmain", root));
       var un = ss("nx-name") || (adm ? "Admin" : "Customer"), em = ss("nx-email") || "-", AVU = safeAv(ss("nx-avatar"));
       var uw = document.createElement("div"); uw.className = "uwrap";
-      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><div class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></div>' + (adm ? '<div class="um-sep"></div><button type="button" class="ux-tg" role="switch" aria-checked="' + showOn() + '"><i class="bi bi-broadcast" aria-hidden="true"></i><span>Status online</span><span class="swt" aria-hidden="true"></span></button>' : "") + '<div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
+      uw.innerHTML = '<button type="button" class="uchip" aria-haspopup="true" aria-expanded="false">' + avh(AVU, "", '<i class="bi bi-person-fill"></i>') + '<span class="un">' + e(un.split(" ")[0]) + '</span><i class="bi bi-chevron-down chv"></i></button><div class="umenu" hidden><' + (adm ? 'div' : 'button type="button" data-akun') + ' class="ux-id"><span class="ux-ic" aria-hidden="true"><i class="bi bi-person"></i></span><div class="ux-tx"><b>' + e(un) + '</b><small class="ux-em">' + e(em) + '</small>' + (adm && arole() ? '<span class="ux-role">' + rbd(arole()) + '</span>' : '') + '</div></' + (adm ? 'div' : 'button') + '>' + (adm ? '<div class="um-sep"></div><button type="button" class="ux-tg" role="switch" aria-checked="' + showOn() + '"><i class="bi bi-broadcast" aria-hidden="true"></i><span>Status online</span><span class="swt" aria-hidden="true"></span></button>' : "") + '<div class="um-sep"></div><button type="button" class="ux-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Keluar</span></button></div>';
       nr.appendChild(uw); uSync();
       if (!adm) {
         var nw = document.createElement("div"); nw.className = "nwrap";
@@ -271,6 +271,7 @@
       var utg = $(".ux-tg", uw); if (utg) utg.addEventListener("click", function (ev) { ev.stopPropagation(); setOnl(!showOn()); });
       function uOpen(o) { um.hidden = !o; uc.setAttribute("aria-expanded", String(o)); }
       uc.addEventListener("click", function (ev) { ev.stopPropagation(); if (nfClose) nfClose(); uOpen(um.hidden); });
+      var uid = $("[data-akun]", uw); if (uid) uid.addEventListener("click", function () { uOpen(false); goAkun(); });
       $(".ux-out", uw).addEventListener("click", function () { uOpen(false); outAsk(); });
       $$(".um-a", uw).forEach(function (b) { b.addEventListener("click", function () { uOpen(false); }); });
       document.addEventListener("click", function (ev) { if (!uw.contains(ev.target)) uOpen(false); });
@@ -756,7 +757,7 @@
     }
     function tanyaForm() {
       var tp = [["", "Belum tahu"], ["Jasa setup", "Jasa setup"], ["Hosting", "Hosting"], ["Masalah teknis", "Masalah teknis"], ["Pembayaran", "Pembayaran"], ["Lainnya", "Lainnya"]];
-      return '<div class="tkx tn"><form class="tn-f" id="f-tanya" novalidate><label class="fld"><span>Judul <em class="req">*</em></span><input class="inp" name="subj" maxlength="120" placeholder="Contoh: Server tidak bisa dimasuki pemain" autocomplete="off"></label>' +
+      return '<div class="tkx tn"><form class="tn-f" id="f-tanya" novalidate>' + (needWa() ? '<p class="tn-tip"><i class="bi bi-lightbulb"></i><span>Tips: isi nomor WhatsApp di <button type="button" class="lnk" data-wafill>Profil</button> supaya tim NEXORA bisa menghubungimu lebih cepat kalau ada kendala.</span></p>' : "") + '<label class="fld"><span>Judul <em class="req">*</em></span><input class="inp" name="subj" maxlength="120" placeholder="Contoh: Server tidak bisa dimasuki pemain" autocomplete="off"></label>' +
         '<fieldset class="tn-s"><legend>Soal apa?</legend><div class="tn-rs">' + tp.map(function (x, i) { return '<label class="tn-o"><input type="radio" name="srv" value="' + e(x[0]) + '"' + (i ? "" : " checked") + "><span>" + e(x[1]) + "</span></label>"; }).join("") + "</div></fieldset>" +
         '<label class="fld"><span>Pertanyaan <em class="req">*</em></span><textarea class="txa" name="msg" maxlength="4000" placeholder="Ceritakan pertanyaan atau masalahmu sejelas mungkin. Jangan tulis password apa pun."></textarea><small class="hint tn-c"><span id="tn-cc">0</span> dari 4000</small></label>' +
         '<p class="tn-e" id="tn-e" role="alert" hidden></p><button class="btn tn-go" type="submit"><i class="bi bi-send"></i> <span>Kirim pertanyaan</span></button></form></div>';
@@ -769,7 +770,7 @@
         var t = cur.filter(function (x) { return x.id === sel; })[0];
         if (t && tv === "chat") return '<div class="tk adm cs chat tkx-chat tkx-two' + (kinfo ? " has-info" : "") + '">' + sidePane(t) + '<div class="tk-chat">' + thread(t, true) + "</div>" + tkInfo(t) + "</div>";
         if (tnw) return tanyaForm();
-        return '<div class="tkx"><button type="button" class="btn tkx-new" data-tnw><i class="bi bi-life-preserver"></i> Ticket bantuan</button>' + kShell() + "</div>";
+        return '<div class="tkx"><button type="button" class="btn tkx-new" data-tnw>Ticket bantuan</button>' + kShell() + "</div>";
       }
       var all = TK();
       if (!all.some(function (x) { return x.id === sel; })) sel = null;
@@ -1258,7 +1259,20 @@
         '<button type="button" class="ix-x" data-dpx aria-label="Hapus filter tanggal"' + (id1 || id2 ? "" : " hidden") + '><i class="bi bi-x-lg"></i></button></div>' +
         '<div class="dp-pop" role="dialog" aria-label="Pilih tanggal"' + (dpOn ? "" : " hidden") + ">" + (dpOn ? dpPop() : "") + "</div></div>";
     }
-    function dpRender(fs) { var w = $(".ix-dtw", root); if (!w) return; w.outerHTML = dtBox(); if (fs) { var f = $(fs, root); if (f) f.focus(); } }
+    /* Kalender selalu muat di layar: buka ke bawah kalau lega, kalau tidak buka ke atas (sama seperti dropdown Jenis), dan digeser kalau mepet tepi kanan */
+    function dpFit() {
+      var w = $(".ix-dtw", root), p = w && $(".dp-pop:not([hidden])", w), b = w && $(".ix-dt", w); if (!p || !b) return;
+      p.style.top = ""; p.style.bottom = ""; p.style.left = ""; p.style.maxHeight = ""; p.style.overflowY = ""; p.style.transformOrigin = "";
+      var r = b.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight, vw = window.innerWidth || document.documentElement.clientWidth,
+        gap = 8, h = p.offsetHeight, below = vh - r.bottom - 12 - gap, above = r.top - 12 - gap, up = below < h && above > below, room = up ? above : below;
+      if (up) { p.style.top = "auto"; p.style.bottom = "calc(100% + " + gap + "px)"; p.style.transformOrigin = "bottom left"; }
+      if (room < h) { p.style.maxHeight = Math.max(160, room) + "px"; p.style.overflowY = "auto"; }
+      var pr = p.getBoundingClientRect(), dx = 0;
+      if (pr.right > vw - 8) dx = vw - 8 - pr.right; if (pr.left + dx < 8) dx = 8 - pr.left;
+      if (dx) p.style.left = dx + "px";
+    }
+    function dpRender(fs) { var w = $(".ix-dtw", root); if (!w) return; w.outerHTML = dtBox(); if (dpOn) dpFit(); if (fs) { var f = $(fs, root); if (f) f.focus(); } }
+    window.addEventListener("resize", function () { if (dpOn) dpFit(); }); window.addEventListener("scroll", function () { if (dpOn) dpFit(); }, true);
     function dpApply() { ipg = 1; iopen = ""; var r = $(".ix-res", root); if (r) r.innerHTML = iBody(); }
     function dpPick(k) {
       if (dpStep === 1) { id1 = k; if (id2 && id2 < k) id2 = ""; dpStep = 2; }
@@ -1518,9 +1532,12 @@
       x.role = t.value; saveStaff(S, x.nama + " sekarang " + t.value);
     }
     function needWa() { var P = ld("nx-prof", {}); return !P.wa; }
+    function goAkun() { tnw = false; tab = "profile"; ptab = "profil"; setOpen(false); draw(); }
+    function goWa() { tnw = false; tab = "profile"; ptab = "profil"; setOpen(false); draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); }
+    root.addEventListener("click", function (ev) { if (ev.target.closest && ev.target.closest("[data-wafill]")) goWa(); });
     function waModal() {
-      return modal('<div class="mbox sm"><div class="mh"><b>Isi nomor WhatsApp dulu</b><button type="button" class="ib" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button></div><div class="mb"><p>Untuk membuka ticket, kami butuh nomor WhatsApp-mu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-whatsapp"></i> Isi di Profil</button></div></div>', function (m, close) {
-        $("[data-ok]", m).addEventListener("click", function () { close(); tab = "profile"; ptab = "profil"; draw(); setTimeout(function () { var i = $('#p-profile [name="wa"]', root); if (i) { i.focus(); i.scrollIntoView({ block: "center" }); } }, 80); });
+      return modal('<div class="mbox sm warn wam" role="alertdialog" aria-modal="true" aria-labelledby="wm-t"><button type="button" class="ib wam-x" data-x aria-label="Tutup"><i class="bi bi-x-lg"></i></button><span class="warn-ic gr"><i class="bi bi-whatsapp"></i></span><div class="mb"><h3 id="wm-t">Isi nomor WhatsApp dulu</h3><p>Untuk membuka ticket, kami butuh nomor WhatsApp kamu supaya tim NEXORA bisa menghubungimu kalau ada kendala.</p></div><div class="mf"><button type="button" class="btn ghost" data-x>Nanti</button><button type="button" class="btn" data-ok><i class="bi bi-person-gear"></i> Isi di Profil</button></div></div>', function (m, close) {
+        $("[data-ok]", m).addEventListener("click", function () { close(); goWa(); });
       });
     }
     function tmAct(d) {
@@ -1782,7 +1799,7 @@
       if (up) { mn.style.top = "auto"; mn.style.bottom = "calc(100% + " + gap + "px)"; mn.style.transformOrigin = "bottom left"; }
       else { mn.style.top = ""; mn.style.bottom = ""; mn.style.transformOrigin = ""; }
     }
-    function sndRefit() { var mn = document.querySelector(".snd-dd .dd-menu:not([hidden])"); if (mn && mn.previousElementSibling) sndFit(mn.previousElementSibling, mn); }
+    function sndRefit() { var mn = document.querySelector(".snd-dd .dd-menu:not([hidden]),.tkx-kd .dd-menu:not([hidden])"); if (mn && mn.previousElementSibling) sndFit(mn.previousElementSibling, mn); }
     window.addEventListener("resize", sndRefit); window.addEventListener("scroll", sndRefit, true);
     function sndDd(k, label, cur) {
       var last = "";
@@ -1945,7 +1962,7 @@
       var t = ev.target.closest("[data-bc],[data-tnw],[data-takeover],[data-onl],[data-tab],[data-go],[data-kr],[data-kf],[data-kpg],[data-ifl],[data-io],[data-ipg],[data-idp],[data-kinfo],[data-kcopy],[data-kcp],.tk-item,.tk-pill,[data-svc],[data-pk],[data-pkc],[data-pkpg],[data-sndp],[data-dnotif],[data-nprf],[data-sndm],[data-tg],[data-gt],[data-stab],[data-af],[data-back],[data-close],[data-hs],[data-pg],[data-close-lock],[data-rvfil],[data-rvt],[data-jadd],[data-jedit],[data-jdel],[data-add],[data-edit],[data-del],#logout,#side-t,[data-exp],[data-ct],#sv-tmp,#rs-tmp,.dd-btn,.dd-opt,[data-bx],[data-ed],[data-hc],[data-pf],[data-lk],[data-ptab],#pf-rm,#mfa-on,#mfa-cancel,#mfa-off,#mfa-offc,#mfa-copy,#mfa-retry,[data-cu],[data-tm],[data-rlt],[data-tdel],[data-tdelall],[data-bdelall],#logout2"); if (!t) return;
       var d = t.dataset;
       if (d.kinfo !== undefined) { kinfo = !kinfo; var cw = t.closest(".tkx-chat"); if (cw) cw.classList.toggle("has-info", kinfo); var tpx = kinfo ? "Sembunyikan detail" : "Tampilkan detail"; $$(".th-info", root).forEach(function (b) { b.classList.toggle("on", kinfo); b.setAttribute("aria-pressed", kinfo); b.setAttribute("aria-label", tpx); var tic = $("i", b); if (tic) tic.className = "bi bi-layout-sidebar-inset" + (kinfo ? "-reverse" : ""); b.setAttribute("data-tip", tpx); }); var hb = $(".th-info:hover", root); if (hb && tipEl && tipEl.classList.contains("on")) tipShow(hb); return; }
-      if (d.tnw !== undefined) { if (actCount() >= MAXT) return limitModal(); if (needWa()) return waModal(); tnw = true; sel = null; tv = "list"; draw(); window.scrollTo(0, 0); var tf = $("#f-tanya [name=subj]"); if (tf && !isMob()) tf.focus(); return; }
+      if (d.tnw !== undefined) { if (actCount() >= MAXT) return limitModal(); tnw = true; sel = null; tv = "list"; draw(); window.scrollTo(0, 0); var tf = $("#f-tanya [name=subj]"); if (tf && !isMob()) tf.focus(); return; }
       if (d.takeover) return takeModal(d.takeover);
       if (d.onl) return setOnl(!showOn());
       if (d.kcp) { cpy(d.kcp); return toast("Disalin"); }
@@ -1956,7 +1973,7 @@
       if (d.kr) { sel = d.kr; tv = "chat"; return draw(); }
       if (d.kf !== undefined) { if (adm) af = d.kf; else kf = d.kf; kpg = 1; $$("[data-kf]", root).forEach(function (b) { b.setAttribute("aria-selected", b === t); }); if (!adm) tabInd(t.closest(".tkx-tabs"), true); $(".tkx-res", root).innerHTML = kBody(); return; }
       if (d.kpg) { kpg += d.kpg === "next" ? 1 : -1; $(".tkx-res", root).innerHTML = kBody(); return; }
-      if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { if (t.closest(".snd-dd")) sndFit(t, mn); var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
+      if (t.classList.contains("dd-btn")) { var mn = t.nextElementSibling, op = mn.hidden; ddClose(); mn.hidden = !op; t.setAttribute("aria-expanded", op); if (op) { if (t.closest(".snd-dd,.tkx-kd")) sndFit(t, mn); var cs = $('[aria-selected="true"]', mn); if (cs) cs.scrollIntoView({ block: "nearest" }); } return; }
       if (t.classList.contains("dd-opt")) { var dd = t.closest(".dd"); ddClose();
         if (dd.hasAttribute("data-kkd")) { kk = d.v; kpg = 1; $(".dd-val", dd).textContent = kk; $$(".dd-opt", dd).forEach(function (o) { o.setAttribute("aria-selected", o.dataset.v === kk); }); $(".tkx-res", root).innerHTML = kBody(); return; }
         if (dd.hasAttribute("data-sdd")) { sndSave(dd.dataset.sdd, d.v); $(".dd-val", dd).textContent = sndName(d.v); $$(".dd-opt", dd).forEach(function (o) { o.setAttribute("aria-selected", o.dataset.v === d.v); }); var sp2 = sndPrefs(); if (!sp2.mute) sndPlay(d.v, sp2.vol); return; }
@@ -2120,7 +2137,6 @@
       if (f.id === "f-tanya") {
         var te = $("#tn-e"), sj = f.subj.value.trim(), ms = f.msg.value.trim(), tmsg = "";
         if (actCount() >= MAXT) return limitModal();
-        if (needWa()) return waModal();
         if (!sj) { tmsg = "Judul wajib diisi."; f.subj.focus(); } else if (!ms) { tmsg = "Pertanyaan wajib diisi."; f.msg.focus(); }
         if (tmsg) { te.textContent = tmsg; te.hidden = false; return; }
         if (f.dataset.busy) return; f.dataset.busy = "1"; te.hidden = true;
