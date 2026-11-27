@@ -472,8 +472,8 @@
     function goActive() {
       var a = mine().filter(isAct);
       tnw = false; setOpen(false); idet = ""; aq = ""; kf = "Semua"; tab = "tiket";
-      if (a.length === 1) { sel = a[0].id; tv = "chat"; toast("Kamu masih punya 1 ticket aktif (" + a[0].id + "). Lanjutkan chat di sini."); }
-      else { sel = null; tv = "list"; toast("Kamu masih punya ticket aktif. Selesaikan dulu untuk membuka ticket baru."); }
+      if (a.length) { sel = a[0].id; tv = "chat"; toast(a.length === 1 ? "Kamu masih punya 1 ticket aktif (" + a[0].id + "). Lanjutkan chat di sini." : "Kamu masih punya " + a.length + " ticket aktif. Membuka ticket teratas (" + a[0].id + "), selesaikan dulu semuanya untuk membuka ticket baru."); }
+      else { sel = null; tv = "list"; }
       draw(); window.scrollTo(0, 0);
     }
     function syncOrd(x) {
