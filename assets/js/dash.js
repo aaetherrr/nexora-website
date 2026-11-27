@@ -191,7 +191,7 @@
 
   function dashInit(adm, root) {
     var bcat = "semua", bpg = 0;
-    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", tnw = false, idet = "", isort = "desc", kinfo = false, limBn = "", kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
+    var pfSw = false, mfaSt = null, mfaEn = null, mfaOff = false, mfaBusy = false, ifl = "Semua", iq = "", id1 = "", id2 = "", dpOn = false, dpStep = 1, dpY = 0, dpM = 0, ipg = 1, iopen = "", tnw = false, idet = "", isort = "desc", kinfo = false, kf = "Semua", kk = "Semua", kq = "", stab = "aktif", stabFor = "", kpg = 1, rlOpen = false, ctab = "aktif", ptab = "profil", tab = "ringkasan", sel = null, tg = "aktif", hs = "minecraft", tv = "list", af = "Aktif", aq = "", foto = "", bsv = "minecraft", bfil = "semua", bnew = false, BF = {}, lastTab = "", lastSg = "", hcat = {}, cq = "";
     document.body.classList.add("is-dash");
     var scrim = document.createElement("div"); scrim.className = "side-scrim"; document.body.appendChild(scrim);
     function isMob() { return window.matchMedia("(max-width:820px)").matches; }
@@ -472,14 +472,10 @@
     function goActive() {
       var a = mine().filter(isAct);
       tnw = false; setOpen(false); idet = ""; aq = ""; kf = "Semua"; tab = "tiket";
-      if (a.length === 1) { sel = a[0].id; tv = "chat"; limBn = a[0].id; toast("Kamu masih punya 1 ticket aktif (" + a[0].id + "). Lanjutkan chat di sini."); }
-      else { sel = null; tv = "list"; limBn = ""; toast("Kamu masih punya ticket aktif. Selesaikan dulu untuk membuka ticket baru."); }
+      if (a.length === 1) { sel = a[0].id; tv = "chat"; toast("Kamu masih punya 1 ticket aktif (" + a[0].id + "). Lanjutkan chat di sini."); }
+      else { sel = null; tv = "list"; toast("Kamu masih punya ticket aktif. Selesaikan dulu untuk membuka ticket baru."); }
       draw(); window.scrollTo(0, 0);
     }
-    function limBar(t) {
-      return !adm && limBn === t.id ? '<div class="limbn" role="status"><i class="bi bi-info-circle"></i><span><b>Kamu hanya bisa punya 1 ticket aktif</b><small>Selesaikan ticket ini dulu untuk membuka ticket baru.</small></span><button type="button" class="ib" data-limx aria-label="Tutup pemberitahuan"><i class="bi bi-x-lg"></i></button></div>' : "";
-    }
-    root.addEventListener("click", function (ev) { var x = ev.target.closest && ev.target.closest("[data-limx]"); if (x) { limBn = ""; var bn = x.closest(".limbn"); if (bn) bn.remove(); } });
     function syncOrd(x) {
       var o = OR(), ch = false;
       o.forEach(function (r) { if (r.tk === x.id) { var n = x.st === "Pesanan Diproses" ? "Diproses" : x.st === "Orderan Selesai" ? "Selesai" : "Menunggu"; if (r.st !== n) { r.st = n; ch = true; } } });
@@ -635,7 +631,7 @@
       var act = lk0 ? bd(t.st) + '<span class="st-lk hd" title="Status hanya bisa diubah admin yang menangani ticket"><i class="bi bi-lock-fill"></i> Ditangani ' + e(t.hd.n) + "</span>" + ibtn : adm ? (closed ? bd(t.st) + cbd + (isF() ? '<button class="btn dng sm" type="button" data-tdel aria-label="Hapus ticket" data-tip="Hapus ticket" data-tipw="i"><i class="bi bi-trash3"></i> Hapus</button>' : "") + ibtn : (t.st === "Orderan Selesai" ? '<span class="st-lk" title="Status final, tidak bisa diubah lagi"><i class="bi bi-lock-fill"></i> Orderan Selesai</span>' : bd(t.st)) + stMenu(t, lockC) + ibtn) : bd(t.st) + cbd + ibtn;
       var chd = !adm && t.hd ? t.hd : null, ttl = chd ? chd.n : t.subj, sub = t.id + (adm ? " · " + uname(t) : chd ? " · " + (chd.r || "Admin") : "");
       return '<div class="th"><div class="th-h">' + (adm || chd ? '<span class="th-aw">' + (adm ? av(uname(t), t.cav) : av(chd.n, chd.a)) + '<i class="pdot" hidden></i></span>' : '<span class="th-ic"><i class="bi bi-' + (t.kat === "Order baru" ? "receipt" : t.kat === "Pembayaran" ? "wallet2" : "chat-dots") + '"></i></span>') + '<div class="th-t"><b data-tip="' + e(ttl) + '" data-tipw="t">' + e(ttl) + '</b><small data-tip="' + e(sub) + '" data-tipw="t">' + e(sub) + '<span class="pst" hidden></span></small></div><div class="th-a">' + act + "</div></div>" + info +
-        limBar(t) + pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
+        pinBar(t) + '<div class="th-m">' + body + "</div>" + (lk0 ? "" : rpBar(t)) +
         (closed ? '<p class="muted done"><i class="bi bi-chat-dots"></i> Ticket ini sudah ditutup, chat tidak bisa dikirim lagi.' + (adm ? "" : " Buka ticket baru kalau masih butuh bantuan.") + "</p>" : lk0 ? '<div class="th-lock" role="group" aria-label="Ticket sedang ditangani admin lain"><p><i class="bi bi-lock-fill"></i><span>Ticket ini sedang ditangani <b>' + e(t.hd.n) + "</b> (" + e(t.hd.r) + '). Kamu tidak bisa membalas chat.</span></p><button type="button" class="btn" data-takeover="' + e(t.id) + '"><i class="bi bi-arrow-left-right"></i> Apakah kamu ingin mengambil alih ticket ini?</button></div>' : '<form class="th-f" data-rep><textarea class="cmp" rows="1" placeholder="Tulis pesan…" enterkeyhint="send" required></textarea><button class="send" type="submit" aria-label="Kirim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12.5a.6.6 0 0 0 0-1.1L3.4 3.6a.6.6 0 0 0-.84.55L2.5 9.7c0 .3.2.55.5.6L14 12 3 13.7a.6.6 0 0 0-.5.6l.06 5.55c0 .45.45.75.84.55z"/></svg></button></form>') + "</div>";
     }
     function admList() {
@@ -2088,7 +2084,6 @@
       var tm = $(".th-m", root); if (tm) tm.scrollTop = tm.scrollHeight; markRd();
       root.classList.toggle("chatv", !!sel && tab === "tiket" && tv === "chat"); root.classList.toggle("ivdet", !adm && tab === "tagihan" && !!idet);
       autoSide(root.classList.contains("chatv"));
-      if (tv !== "chat" || sel !== limBn) limBn = "";
       var ct = $("#c-tiket"); if (ct) { var cc = (adm ? TK().filter(function (x) { return x.st === "Menunggu admin balas" && !cl(x); }) : mine().filter(function (x) { return !cl(x); })).length; ct.textContent = cc; ct.hidden = !cc; }
       var cb = $("#c-tagihan"); if (cb) { var nb = BL().filter(function (b) { return b.st === "Belum dibayar" && (adm ? dleft(b.jatuh) < 0 : bmine(b)); }).length; cb.textContent = nb; cb.hidden = !nb; }
       crumb(); navPush();
