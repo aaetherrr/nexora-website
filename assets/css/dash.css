@@ -3961,3 +3961,96 @@ button.ux-id:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .dp-hint{font-size:.74rem}
 .dp-fa button{padding:4px 8px;font-size:.8rem}
 @media (max-width:720px){.dp-pop{width:min(280px,calc(100vw - 24px))}}
+
+/* ===== Filter tanggal invoice: satu kolom rentang yang bisa diketik + kalender ringkas ===== */
+.ix-dt{display:flex;align-items:center;gap:4px;min-width:300px;height:44px;padding:0 6px 0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);transition:border-color .15s,box-shadow .15s}
+.ix-dt:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.ix-dt:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ix-dt.bad,.ix-dt.bad:focus-within{border-color:var(--err,#e5484d);box-shadow:0 0 0 3px color-mix(in srgb,var(--err,#e5484d) 18%,transparent)}
+.dq-g{display:inline-flex;align-items:center;gap:1px}
+.dq-g i,.dq-m{font-style:normal;color:var(--muted)}
+.dq-m{margin:0 4px}
+.ix-dt .dq{width:2.1ch;min-width:0;padding:2px 1px;border:0;border-radius:5px;background:transparent;color:var(--text);font:inherit;font-size:.92rem;text-align:center;outline:0;caret-color:var(--accent)}
+.ix-dt .dq.y{width:4.1ch;padding:2px 0 2px 2px;text-align:left}
+.dq::placeholder{color:var(--muted);opacity:1}
+.dq:focus{background:var(--accent-soft);color:var(--text)}
+.dq:focus::placeholder{color:transparent}
+.ix-x{display:grid;place-items:center;flex:none;width:28px;height:28px;margin:0 0 0 auto;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer}
+.ix-x:hover{background:var(--accent-soft);color:var(--accent)}
+.ix-x[hidden]{display:none}
+.ix-x+.ix-cal{margin-left:0}
+.dq-m~.ix-cal,.dq-g~.ix-cal{margin-left:auto}
+.ix-x:not([hidden])~.ix-cal{margin-left:0}
+.ix-cal{display:grid;place-items:center;flex:none;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;transition:background .15s,color .15s}
+.ix-cal:hover,.ix-cal.on{background:var(--accent-soft);color:var(--accent)}
+.ix-cal:focus-visible,.ix-x:focus-visible,.dp-t:focus-visible,.dp-y:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.dp-pop{padding:10px}
+.dp-h{gap:6px}
+.dp-t{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:.9rem;font-weight:600;cursor:pointer}
+.dp-t i{color:var(--accent);font-size:.7rem}
+.dp-t:hover{background:var(--accent-soft)}
+.dp-nv{display:inline-flex;gap:2px;margin-left:auto}
+.dp-d{height:34px;border-radius:50%;width:34px;justify-self:center}
+.dp-d.out{background:transparent!important;box-shadow:none!important;pointer-events:auto}
+.dp-d.in{width:100%;border-radius:0;background:var(--accent-soft)}
+.dp-d.s,.dp-d.e{border-radius:50%}
+.dp-g.rg .dp-d.s,.dp-g.rg .dp-d.e{width:34px;border-radius:50%}
+.dp-d.today:not(.s):not(.e){background:var(--accent-soft);box-shadow:none;color:var(--accent);font-weight:600}
+.dp-ys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;max-height:214px;overflow-y:auto;scrollbar-width:thin;padding-right:2px}
+.dp-y{height:34px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--text);font:inherit;font-size:.86rem;cursor:pointer}
+.dp-y:hover{background:var(--accent-soft)}
+.dp-y.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+@media (max-width:720px){
+  .ix-dt{min-width:0;width:100%;display:flex}
+}
+
+/* Segmen tanggal: tersorot utuh saat diklik, placeholder tetap terlihat, tanpa kursor berkedip */
+.ix-dt .dq{caret-color:transparent;cursor:text}
+.ix-dt .dq:focus{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.ix-dt .dq:focus::placeholder{color:var(--accent);opacity:1}
+.ix-dt .dq::selection{background:var(--accent);color:var(--on-accent)}
+
+/* Lebar segmen mengikuti isinya, jadi sorotan saat diklik tidak kepanjangan */
+@supports (field-sizing:content){
+  .ix-dt .dq,.ix-dt .dq.y{field-sizing:content;width:auto;min-width:1.2ch;padding:2px 2px}
+}
+
+/* Kalender: animasi halus (buka, tutup, ganti bulan/tahun), tidak diputar ulang tiap klik */
+.dp-pop{animation:none;transition:none;will-change:opacity,transform}
+.dp-pop.in{animation:dpIn .2s cubic-bezier(.2,.75,.25,1) both}
+.dp-pop.out{animation:dpOut .14s ease-in both;pointer-events:none}
+.dp-c.fd{animation:dpFd .16s ease-out both}
+.dp-d,.dp-y,.dp-n,.dp-t{transition:background .14s ease,color .14s ease,box-shadow .14s ease}
+@keyframes dpIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes dpOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px) scale(.98)}}
+@keyframes dpFd{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.dp-pop.in,.dp-pop.out,.dp-c.fd{animation:none}}
+.dp-pop.up.in{animation-name:dpInUp}
+.dp-pop.up.out{animation-name:dpOutUp}
+@keyframes dpInUp{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes dpOutUp{from{opacity:1;transform:none}to{opacity:0;transform:translateY(4px) scale(.98)}}
+
+/* Hari di kalender: lingkaran (::after) + pita rentang (::before), semuanya bertransisi halus */
+.dp-pop .dp-d{position:relative;isolation:isolate;width:100%;height:34px;border-radius:0;background:transparent;box-shadow:none;justify-self:stretch;cursor:pointer;transition:color .14s ease}
+.dp-pop .dp-d:hover,.dp-pop .dp-d.in{background:transparent}
+.dp-pop .dp-d::before,.dp-pop .dp-d::after{content:"";position:absolute;pointer-events:none}
+.dp-pop .dp-d::before{z-index:-2;top:3px;bottom:3px;left:0;right:0;background:var(--accent-soft);opacity:0;transition:opacity .18s ease}
+.dp-pop .dp-d::after{z-index:-1;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:transparent;transform:scale(1);transition:background .15s ease,transform .2s cubic-bezier(.3,1.4,.5,1)}
+.dp-pop .dp-d.bd::before{opacity:1}
+.dp-pop .dp-d.bs::before{left:50%}
+.dp-pop .dp-d.be::before{right:50%}
+.dp-pop .dp-d.bl::before{border-radius:17px 0 0 17px}
+.dp-pop .dp-d.br::before{border-radius:0 17px 17px 0}
+.dp-pop .dp-d.bl.br::before{border-radius:17px}
+.dp-pop .dp-d.bs.bl::before,.dp-pop .dp-d.be.br::before{border-radius:0}
+.dp-pop .dp-d:not(.out):not(.s):not(.e):hover::after{background:var(--accent-soft)}
+.dp-pop .dp-d.bd:not(.s):not(.e):hover::after{background:color-mix(in srgb,var(--accent) 28%,var(--accent-soft))}
+.dp-pop .dp-d.today:not(.s):not(.e){background:transparent;box-shadow:none;color:var(--accent);font-weight:600}
+.dp-pop .dp-d.today:not(.s):not(.e)::after{box-shadow:inset 0 0 0 1px var(--accent)}
+.dp-pop .dp-d.s,.dp-pop .dp-d.e{background:transparent;box-shadow:none;color:var(--on-accent);font-weight:600}
+.dp-pop .dp-d.s::after,.dp-pop .dp-d.e::after{background:var(--accent);box-shadow:none}
+.dp-pop .dp-d.pop::after{animation:dpPop .26s cubic-bezier(.3,1.5,.5,1) both}
+.dp-pop .dp-d.out::before,.dp-pop .dp-d.out::after{display:none}
+.dp-pop .dp-g{row-gap:2px}
+@keyframes dpPop{from{transform:scale(.55)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.dp-pop .dp-d::before,.dp-pop .dp-d::after{transition:none}.dp-pop .dp-d.pop::after{animation:none}}

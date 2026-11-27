@@ -1236,68 +1236,200 @@
       return '<div class="ix-scr"><div class="ix-sin"><div class="ix-h"><span>Invoice</span><span>Jumlah</span><span class="ix-sw"><button type="button" class="ix-sort" data-isort aria-label="Urutkan tanggal terbit: ' + (isort === "asc" ? "terlama" : "terbaru") + ' dulu" title="' + (isort === "asc" ? "Terlama dulu" : "Terbaru dulu") + '">Tanggal Terbit<span class="srt" aria-hidden="true"><i class="bi bi-chevron-' + (isort === "asc" ? "up" : "down") + '"></i></span></button></span><span>Jatuh Tempo</span><span>Status</span><span></span></div><div class="ix-list">' + list + "</div></div></div>" +
         (np > 1 ? '<div class="tkx-foot"><span class="tkx-rg">' + (a + 1) + "–" + (a + pg.length) + " dari " + tot + '</span><button type="button" class="tkx-pb" data-ipg="prev" aria-label="Halaman sebelumnya"' + (ipg <= 1 ? " disabled" : "") + '><i class="bi bi-chevron-left"></i></button><button type="button" class="tkx-pb" data-ipg="next" aria-label="Halaman berikutnya"' + (ipg >= np ? " disabled" : "") + '><i class="bi bi-chevron-right"></i></button></div>' : "");
     }
-    /* ===== Filter tanggal invoice: kalender buatan sendiri (bukan bawaan browser) ===== */
-    var DPW = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+    /* ===== Filter tanggal invoice: satu kolom rentang (bisa diketik) + kalender ringkas ===== */
+    var DPW = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"], DPS = 0, dq = ["", "", "", "", "", ""], dpBad = false, dpYv = false, dpAni = "", dpT = 0, DPY0 = 1990, DPY1 = 2100;
+    function dpDim(y, m) { return new Date(y, m, 0).getDate(); }
+    /* Satu sisi tanggal (hh/bb/tttt) -> "yyyy-mm-dd", atau "" kalau belum lengkap / tidak valid. Tidak pernah melempar error. */
+    function dqIso(s) {
+      var d = dq[s * 3], m = dq[s * 3 + 1], y = dq[s * 3 + 2];
+      if (d.length < 1 || m.length < 1 || y.length !== 4) return "";
+      var dn = +d, mn = +m, yn = +y;
+      if (!(yn >= 1900 && yn <= DPY1 && mn >= 1 && mn <= 12 && dn >= 1 && dn <= dpDim(yn, mn))) return "";
+      return yn + "-" + pad(mn) + "-" + pad(dn);
+    }
+    function dqFull(s) { return dq[s * 3].length > 0 && dq[s * 3 + 1].length > 0 && dq[s * 3 + 2].length === 4; }
+    function dqSet(s, k) { var a = k ? k.split("-") : ["", "", ""]; dq[s * 3] = k ? pad(+a[2]) : ""; dq[s * 3 + 1] = k ? pad(+a[1]) : ""; dq[s * 3 + 2] = k ? a[0] : ""; }
+    /* Hitung ulang filter dari isi kolom. Kolom yang masih diketik setengah jalan tidak memfilter apa pun. */
+    function dqCommit() {
+      var a = dqIso(0), b = dqIso(1);
+      dpBad = (dqFull(0) && !a) || (dqFull(1) && !b) || !!(a && b && b < a);
+      id1 = dpBad ? "" : a; id2 = dpBad ? "" : b;
+      dpApply();
+    }
+    function dpAnchor() { return id1 || id2 || iso(t0()); }
     function dpGrid() {
-      var lead = (new Date(dpY, dpM, 1).getDay() + 6) % 7, td = iso(t0()), rg = id1 && id2 && id1 !== id2, out = "";
+      var lead = (new Date(dpY, dpM, 1).getDay() - DPS + 7) % 7, td = iso(t0()), out = "";
       for (var i = 0; i < 42; i++) {
-        var d = new Date(dpY, dpM, 1 - lead + i), k = iso(d), c = "dp-d" + (d.getMonth() !== dpM ? " out" : "") + (k === td ? " today" : "") + (id1 && k === id1 ? " s" : "") + (id2 && k === id2 ? " e" : "") + (rg && k > id1 && k < id2 ? " in" : "");
-        out += '<button type="button" class="' + c + '" data-dpd="' + k + '" aria-label="' + d.getDate() + " " + BMF[d.getMonth()] + " " + d.getFullYear() + '" aria-pressed="' + (k === id1 || k === id2) + '">' + d.getDate() + "</button>";
+        var d = new Date(dpY, dpM, 1 - lead + i), k = iso(d), o = d.getMonth() !== dpM;
+        if (i >= 35 && o) break;
+        out += '<button type="button" class="dp-d' + (o ? " out" : "") + (!o && k === td ? " today" : "") + '" data-dpd="' + k + '" aria-label="' + d.getDate() + " " + BMF[d.getMonth()] + " " + d.getFullYear() + '"' + (o ? ' tabindex="-1"' : "") + ">" + d.getDate() + "</button>";
       }
-      return '<div class="dp-g' + (rg ? " rg" : "") + '">' + out + "</div>";
+      return '<div class="dp-g">' + out + "</div>";
+    }
+    /* Warnai kalender menurut rentang lo..hi (rentang terpilih, atau pratinjau saat kursor bergerak). Hanya mengganti class, jadi transisinya halus. */
+    function dpPaint(lo, hi) {
+      var cs = $$(".dp-pop .dp-d"); if (!cs.length) return;
+      if (lo && hi && hi < lo) { var tmp = lo; lo = hi; hi = tmp; } if (hi === lo) hi = "";
+      var inb = cs.map(function (el) { var k = el.dataset.dpd; return !el.classList.contains("out") && !!lo && !!hi && k >= lo && k <= hi; });
+      cs.forEach(function (el, i) {
+        var k = el.dataset.dpd, o = el.classList.contains("out"), col = i % 7, c = el.classList, s1 = !o && !!lo && k === lo, e1 = !o && !!hi && k === hi;
+        c.toggle("s", s1); c.toggle("e", e1); c.toggle("bd", inb[i]);
+        c.toggle("bs", inb[i] && k === lo); c.toggle("be", inb[i] && k === hi);
+        c.toggle("bl", inb[i] && (col === 0 || !inb[i - 1])); c.toggle("br", inb[i] && (col === 6 || !inb[i + 1]));
+        el.setAttribute("aria-pressed", String(s1 || e1));
+      });
     }
     function dpPop() {
-      return '<div class="dp-h"><button type="button" class="dp-n" data-dpn="-1" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></button><b aria-live="polite">' + BMF[dpM] + " " + dpY + '</b><button type="button" class="dp-n" data-dpn="1" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></button></div>' +
-        '<div class="dp-w">' + DPW.map(function (x) { return "<span>" + x + "</span>"; }).join("") + "</div>" + dpGrid() +
-        '<div class="dp-f"><span class="dp-hint">' + (dpStep === 1 ? "Pilih tanggal awal" : "Pilih tanggal akhir") + '</span><span class="dp-fa"><button type="button" data-dpq="today">Hari ini</button><button type="button" data-dpq="clear">Hapus</button></span></div>';
+      var ttl = '<button type="button" class="dp-t" data-dpt aria-expanded="' + dpYv + '">' + BMF[dpM] + " " + dpY + '<i class="bi bi-chevron-' + (dpYv ? "up" : "down") + '"></i></button>';
+      if (dpYv) {
+        var ys = ""; for (var y = DPY0; y <= DPY1; y++) ys += '<button type="button" class="dp-y' + (y === dpY ? " on" : "") + '" data-dpy="' + y + '">' + y + "</button>";
+        return '<div class="dp-h">' + ttl + '</div><div class="dp-ys">' + ys + "</div>";
+      }
+      return '<div class="dp-h">' + ttl + '<span class="dp-nv"><button type="button" class="dp-n" data-dpn="-1" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></button><button type="button" class="dp-n" data-dpn="1" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></button></span></div>' +
+        '<div class="dp-w">' + DPW.map(function (x) { return "<span>" + x + "</span>"; }).join("") + "</div>" + dpGrid();
+    }
+    function dqSeg(i) {
+      var y = i % 3 === 2, nm = ["hh", "bb", "tttt"][i % 3];
+      return '<input class="dq' + (y ? " y" : "") + '" data-dq="' + i + '" type="text" inputmode="numeric" autocomplete="off" maxlength="' + (y ? 4 : 2) + '" placeholder="' + nm + '" value="' + dq[i] + '" aria-label="' + (i < 3 ? "Dari " : "Sampai ") + ["tanggal", "bulan", "tahun"][i % 3] + '">';
     }
     function dtBox() {
-      return '<div class="ix-dtw"><div class="ix-dt">' +
-        '<button type="button" class="ix-df' + (dpOn && dpStep === 1 ? " on" : "") + '" data-dpf="1" aria-haspopup="dialog" aria-expanded="' + dpOn + '"><i class="bi bi-calendar3"></i><span class="' + (id1 ? "v" : "ph") + '">' + (id1 ? fdt(id1) : "Dari tanggal") + "</span></button>" +
-        '<span class="ix-ar" aria-hidden="true"></span>' +
-        '<button type="button" class="ix-df' + (dpOn && dpStep === 2 ? " on" : "") + '" data-dpf="2" aria-haspopup="dialog" aria-expanded="' + dpOn + '"><i class="bi bi-calendar3"></i><span class="' + (id2 ? "v" : "ph") + '">' + (id2 ? fdt(id2) : "Sampai tanggal") + "</span></button>" +
-        '<button type="button" class="ix-x" data-dpx aria-label="Hapus filter tanggal"' + (id1 || id2 ? "" : " hidden") + '><i class="bi bi-x-lg"></i></button></div>' +
-        '<div class="dp-pop" role="dialog" aria-label="Pilih tanggal"' + (dpOn ? "" : " hidden") + ">" + (dpOn ? dpPop() : "") + "</div></div>";
+      var has = dq.join("") !== "";
+      return '<div class="ix-dtw"><div class="ix-dt' + (dpBad ? " bad" : "") + '" role="group" aria-label="Filter tanggal">' +
+        '<span class="dq-g">' + dqSeg(0) + '<i>/</i>' + dqSeg(1) + '<i>/</i>' + dqSeg(2) + '</span><i class="dq-m">-</i><span class="dq-g">' + dqSeg(3) + '<i>/</i>' + dqSeg(4) + '<i>/</i>' + dqSeg(5) + "</span>" +
+        '<button type="button" class="ix-x" data-dpx aria-label="Hapus filter tanggal"' + (has ? "" : " hidden") + '><i class="bi bi-x-lg"></i></button>' +
+        '<button type="button" class="ix-cal' + (dpOn ? " on" : "") + '" data-dpf aria-haspopup="dialog" aria-expanded="' + dpOn + '" aria-label="Buka kalender"><i class="bi bi-calendar3"></i></button></div>' +
+        '<div class="dp-pop' + (dpAni === "in" ? " in" : "") + '" role="dialog" aria-label="Pilih tanggal"' + (dpOn ? "" : " hidden") + ">" + (dpOn ? '<div class="dp-c">' + dpPop() + "</div>" : "") + "</div></div>";
     }
-    /* Kalender selalu muat di layar: buka ke bawah kalau lega, kalau tidak buka ke atas (sama seperti dropdown Jenis), dan digeser kalau mepet tepi kanan */
+    /* Kalender selalu muat di layar: buka ke bawah kalau lega, kalau tidak buka ke atas (sama seperti dropdown Jenis), dan digeser kalau mepet tepi layar */
     function dpFit() {
       var w = $(".ix-dtw", root), p = w && $(".dp-pop:not([hidden])", w), b = w && $(".ix-dt", w); if (!p || !b) return;
       p.style.top = ""; p.style.bottom = ""; p.style.left = ""; p.style.maxHeight = ""; p.style.overflowY = ""; p.style.transformOrigin = "";
       var r = b.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight, vw = window.innerWidth || document.documentElement.clientWidth,
         gap = 8, h = p.offsetHeight, below = vh - r.bottom - 12 - gap, above = r.top - 12 - gap, up = below < h && above > below, room = up ? above : below;
+      p.classList.toggle("up", up);
       if (up) { p.style.top = "auto"; p.style.bottom = "calc(100% + " + gap + "px)"; p.style.transformOrigin = "bottom left"; }
       if (room < h) { p.style.maxHeight = Math.max(160, room) + "px"; p.style.overflowY = "auto"; }
       var pr = p.getBoundingClientRect(), dx = 0;
       if (pr.right > vw - 8) dx = vw - 8 - pr.right; if (pr.left + dx < 8) dx = 8 - pr.left;
       if (dx) p.style.left = dx + "px";
     }
-    function dpRender(fs) { var w = $(".ix-dtw", root); if (!w) return; w.outerHTML = dtBox(); if (dpOn) dpFit(); if (fs) { var f = $(fs, root); if (f) f.focus(); } }
+    /* Cadangan untuk browser yang belum mendukung field-sizing: lebar segmen diukur dari isi/placeholder */
+    var dqCv = null;
+    function dqFitAll() {
+      if (window.CSS && CSS.supports && CSS.supports("field-sizing", "content")) return;
+      $$("[data-dq]").forEach(function (el) {
+        try {
+          dqCv = dqCv || document.createElement("canvas").getContext("2d"); var cs = getComputedStyle(el);
+          dqCv.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+          var w = Math.max(dqCv.measureText(el.placeholder).width, dqCv.measureText(el.value || "").width);
+          el.style.width = Math.ceil(w + 6) + "px"; el.style.minWidth = "0";
+        } catch (x) {}
+      });
+    }
+    if (window.MutationObserver && !(window.CSS && CSS.supports && CSS.supports("field-sizing", "content"))) new MutationObserver(function () { dqFitAll(); }).observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("input", function (ev) { if (ev.target && ev.target.matches && ev.target.matches("[data-dq]")) dqFitAll(); });
+    function dpYScroll() { var on = $(".dp-ys .dp-y.on", root), bx = $(".dp-ys", root); if (on && bx) bx.scrollTop = on.offsetTop - bx.clientHeight / 2 + on.offsetHeight / 2; }
+    function dpRender(fs) { var w = $(".ix-dtw", root); if (!w) return; w.outerHTML = dtBox(); dpAni = ""; if (dpOn) { dpPaint(id1, id2); dpFit(); if (dpYv) dpYScroll(); } if (fs) { var f = $(fs, root); if (f) f.focus(); } }
+    /* Sinkronkan kolom (isi, tombol X, status merah) tanpa membongkar elemennya, supaya fokus dan animasi tidak putus */
+    function dpSyncField() {
+      var w = $(".ix-dtw", root); if (!w) return;
+      var x = $(".ix-dt", w), c = $("[data-dpx]", w);
+      if (x) x.classList.toggle("bad", dpBad); if (c) c.hidden = dq.join("") === "";
+      $$("[data-dq]", w).forEach(function (el) { var v = dq[Number(el.dataset.dq)]; if (el.value !== v) el.value = v; });
+    }
+    /* Ganti isi popup saja (bulan/tahun/pilihan), tanpa membangun ulang popup, jadi tidak kedip. fade = transisi halus saat ganti bulan/tahun */
+    function dpPopUpdate(fade, fs) {
+      var w = $(".ix-dtw", root), p = w && $(".dp-pop:not([hidden])", w); if (!p) return dpRender(fs);
+      dpSyncField(); p.classList.remove("in");
+      p.innerHTML = '<div class="dp-c' + (fade ? " fd" : "") + '">' + dpPop() + "</div>"; if (!dpYv) dpPaint(id1, id2); dpFit(); if (dpYv) dpYScroll();
+      if (fs) { var f = $(fs, p); if (f) f.focus(); }
+    }
+    function dpRefresh() { dpSyncField(); var p = $(".ix-dtw .dp-pop:not([hidden])", root); if (dpOn && p) dpPopUpdate(false); }
+    /* Tutup dengan animasi halus, tanpa membongkar kolom */
+    function dpClose(fs) {
+      dpOn = false; dpYv = false; var w = $(".ix-dtw", root); if (!w) return;
+      var p = $(".dp-pop", w), c = $("[data-dpf]", w);
+      if (c) { c.classList.remove("on"); c.setAttribute("aria-expanded", "false"); }
+      dpSyncField(); if (fs) { var f = $(fs, root); if (f) f.focus(); }
+      if (!p || p.hidden) return;
+      p.classList.remove("in"); p.classList.add("out"); clearTimeout(dpT);
+      dpT = setTimeout(function () { if (!dpOn) { p.hidden = true; p.innerHTML = ""; p.classList.remove("out"); } }, 140);
+    }
     window.addEventListener("resize", function () { if (dpOn) dpFit(); }); window.addEventListener("scroll", function () { if (dpOn) dpFit(); }, true);
     function dpApply() { ipg = 1; iopen = ""; var r = $(".ix-res", root); if (r) r.innerHTML = iBody(); }
+    var dpLock = false;
+    function dpPop3(k) { var el = $('.dp-pop [data-dpd="' + k + '"]'); if (el) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); } }
     function dpPick(k) {
-      if (dpStep === 1) { id1 = k; if (id2 && id2 < k) id2 = ""; dpStep = 2; }
-      else { if (id1 && k < id1) { id2 = id1; id1 = k; } else id2 = k; dpOn = false; }
-      var d = pdt(k); dpY = d.getFullYear(); dpM = d.getMonth();
-      dpApply(); dpRender(dpOn ? '[data-dpd="' + k + '"]' : "[data-dpf]");
+      if (dpLock) return;
+      var fresh = !id1 || (id1 && id2) || dpStep === 1, fin = false;
+      if (fresh) { id1 = k; id2 = ""; dpStep = 2; dqSet(0, k); dqSet(1, ""); }
+      else { if (k < id1) { id2 = id1; id1 = k; } else id2 = k; dqSet(0, id1); dqSet(1, id2); dpStep = 1; fin = true; }
+      dpBad = false; var d = pdt(k), nm = dpY !== d.getFullYear() || dpM !== d.getMonth(); dpY = d.getFullYear(); dpM = d.getMonth();
+      dpApply();
+      if (!fin) { dpPopUpdate(nm, '[data-dpd="' + k + '"]'); dpPop3(k); return; }
+      dpLock = true; dpSyncField(); dpPaint(id1, id2); dpPop3(k);
+      setTimeout(function () { dpLock = false; if (dpOn) dpClose("[data-dpf]"); }, 260);
     }
+    /* Pratinjau rentang: setelah tanggal awal dipilih, pita mengikuti kursor */
+    document.addEventListener("mouseover", function (ev) {
+      if (!dpOn || dpStep !== 2 || !id1 || id2 || dpLock) return;
+      var t = ev.target; if (!t || !t.closest || !$(".ix-dtw .dp-pop", root)) return;
+      var c = t.closest(".dp-d:not(.out)");
+      if (c) dpPaint(id1, c.dataset.dpd); else if (!t.closest(".dp-g")) dpPaint(id1, "");
+    });
+    document.addEventListener("mouseout", function (ev) {
+      if (!dpOn || dpStep !== 2 || !id1 || id2 || dpLock) return;
+      var t = ev.target, rt = ev.relatedTarget; if (!t || !t.closest || !t.closest(".dp-g")) return;
+      if (!rt || !rt.closest || !rt.closest(".dp-g")) dpPaint(id1, "");
+    });
+    function dqFocus(i) { var f = $('[data-dq="' + i + '"]', root); if (f) { f.focus(); f.select(); } }
+    document.addEventListener("input", function (ev) {
+      var t = ev.target; if (!t || !t.matches || !t.matches("[data-dq]")) return;
+      var i = Number(t.dataset.dq), y = i % 3 === 2, mx = y ? 4 : 2, v = t.value.replace(/\D/g, "").slice(0, mx), adv = false;
+      if (!y && v.length === 1 && +v > (i % 3 === 0 ? 3 : 1)) { v = "0" + v; adv = true; }
+      if (v.length === mx) adv = true;
+      t.value = v; dq[i] = v; dqCommit(); dpRefresh();
+      if (adv && i < 5) dqFocus(i + 1);
+    });
+    document.addEventListener("keydown", function (ev) {
+      var t = ev.target; if (!t || !t.matches || !t.matches("[data-dq]")) return;
+      var i = Number(t.dataset.dq), k = ev.key;
+      if (k === "Backspace" && !t.value && i > 0) { ev.preventDefault(); dqFocus(i - 1); }
+      else if (k === "ArrowLeft" && t.selectionStart === 0 && i > 0) { ev.preventDefault(); dqFocus(i - 1); }
+      else if (k === "ArrowRight" && t.selectionEnd === t.value.length && i < 5) { ev.preventDefault(); dqFocus(i + 1); }
+      else if ((k === "/" || k === "-" || k === ".") && i < 5) { ev.preventDefault(); if (t.value) { if (t.value.length === 1 && i % 3 !== 2) { t.value = "0" + t.value; dq[i] = t.value; dqCommit(); dpRefresh(); } dqFocus(i + 1); } }
+    });
+    document.addEventListener("paste", function (ev) {
+      var t = ev.target; if (!t || !t.matches || !t.matches("[data-dq]")) return;
+      var m = String((ev.clipboardData || window.clipboardData).getData("text") || "").match(/(\d{1,2})\D+(\d{1,2})\D+(\d{4})/); if (!m) return;
+      ev.preventDefault(); var s = Number(t.dataset.dq) < 3 ? 0 : 1; dq[s * 3] = pad(+m[1]); dq[s * 3 + 1] = pad(+m[2]); dq[s * 3 + 2] = m[3];
+      dqCommit(); var k = dqIso(s); if (k) { var d = pdt(k); dpY = d.getFullYear(); dpM = d.getMonth(); } dpRender();
+    });
+    /* Klik kolom = satu segmen tersorot utuh (seperti input tanggal bawaan). Klik di celah / garis miring = segmen terdekat. */
+    document.addEventListener("focusin", function (ev) { var t = ev.target; if (t && t.matches && t.matches("[data-dq]")) { try { t.select(); } catch (x) {} } });
+    document.addEventListener("mouseup", function (ev) { var t = ev.target; if (t && t.matches && t.matches("[data-dq]")) ev.preventDefault(); });
     document.addEventListener("click", function (ev) {
       var w = $(".ix-dtw", root), tg = ev.target; if (!w || !tg || !tg.closest) return;
-      var f = tg.closest("[data-dpf]");
-      if (f) {
-        var st = Number(f.dataset.dpf);
-        if (dpOn && dpStep === st) { dpOn = false; return dpRender(); }
-        dpOn = true; dpStep = st === 2 && id1 ? 2 : 1;
-        var d = pdt((st === 2 && id2) ? id2 : (id1 || id2 || iso(t0()))); dpY = d.getFullYear(); dpM = d.getMonth();
+      var fl = tg.closest(".ix-dt");
+      if (fl && !tg.closest("button") && !tg.matches("[data-dq]")) {
+        var segs = $$("[data-dq]", fl), bi = null, bd = 1e9;
+        segs.forEach(function (sg) { var r = sg.getBoundingClientRect(), d = Math.abs(ev.clientX - (r.left + r.width / 2)); if (d < bd) { bd = d; bi = sg; } });
+        if (bi) { bi.focus(); return; }
+      }
+      if (tg.closest("[data-dpf]")) {
+        if (dpOn) return dpClose();
+        clearTimeout(dpT); dpOn = true; dpYv = false; dpStep = id1 && !id2 ? 2 : 1; dpAni = "in";
+        var d = pdt(dpAnchor()); dpY = d.getFullYear(); dpM = d.getMonth();
         return dpRender();
       }
+      if (tg.closest("[data-dpt]")) { dpYv = !dpYv; return dpPopUpdate(true, "[data-dpt]"); }
+      var yy = tg.closest("[data-dpy]"); if (yy) { dpY = Number(yy.dataset.dpy); dpYv = false; return dpPopUpdate(true, "[data-dpt]"); }
       var dd = tg.closest("[data-dpd]"); if (dd) return dpPick(dd.dataset.dpd);
-      var nv = tg.closest("[data-dpn]"); if (nv) { dpM += Number(nv.dataset.dpn); if (dpM < 0) { dpM = 11; dpY--; } else if (dpM > 11) { dpM = 0; dpY++; } return dpRender('[data-dpn="' + nv.dataset.dpn + '"]'); }
-      var q = tg.closest("[data-dpq]");
-      if (q) { if (q.dataset.dpq === "today") return dpPick(iso(t0())); id1 = ""; id2 = ""; dpStep = 1; dpApply(); return dpRender('[data-dpq="clear"]'); }
-      if (tg.closest("[data-dpx]")) { id1 = ""; id2 = ""; dpOn = false; dpStep = 1; dpApply(); return dpRender("[data-dpf]"); }
-      if (dpOn && !tg.closest(".dp-pop")) { dpOn = false; dpRender(); }
+      var nv = tg.closest("[data-dpn]"); if (nv) { dpM += Number(nv.dataset.dpn); if (dpM < 0) { dpM = 11; dpY--; } else if (dpM > 11) { dpM = 0; dpY++; } return dpPopUpdate(true, '[data-dpn="' + nv.dataset.dpn + '"]'); }
+      if (tg.closest("[data-dpx]")) { dq = ["", "", "", "", "", ""]; id1 = ""; id2 = ""; dpBad = false; dpOn = false; dpYv = false; dpStep = 1; dpApply(); return dpRender("[data-dq=\"0\"]"); }
+      if (dpOn && !tg.closest(".dp-pop")) dpClose();
     });
-    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && dpOn && $(".ix-dtw", root)) { dpOn = false; dpRender("[data-dpf]"); } });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && dpOn && $(".ix-dtw", root)) dpClose("[data-dpf]"); });
     /* ===== Invoice: detail halaman, menu titik tiga, unduh PDF ===== */
     function iLbl(b) { return b.st === "Belum dibayar" && dleft(b.jatuh) < 0 ? "Kedaluwarsa" : b.st; }
     function iAdj(b) { var x = Math.round(Number(b.total || 0) - Number(b.dasar || 0) - Number(b.kode || 0)); return b.adj && b.adj !== "none" && x !== 0 ? x : 0; }
@@ -2058,7 +2190,7 @@
       if (t.id === "sv-tmp") { var nmS = String(root._T.nama || "").trim(); if (!nmS) return toast("Nama situs tidak boleh kosong"); root._T.nama = nmS; var inpS = $("[data-t=nama]", root); if (inpS) inpS.value = nmS; sv("nx-tampilan", root._T); root._T0 = JSON.stringify(root._T); tmpSync(); return toast("Nama situs tersimpan" + DEMOTXT); }
       if (t.id === "rs-tmp") { root._T = JSON.parse(root._T0 || "{}"); var inpR = $("[data-t=nama]", root); if (inpR) inpR.value = root._T.nama || ""; tmpSync(); return toast("Perubahan dibatalkan, kembali ke yang tersimpan"); }
     });
-    root.addEventListener("input", function (ev) {
+    document.addEventListener("input", function (ev) {
       var t = ev.target;
       if (t.name === "wa" && t.closest("#f-prof")) { var cl0 = t.value.replace(/[^\d+\s().-]/g, ""); if (cl0 !== t.value) t.value = cl0; waErr(t.form, ""); }
       if (t.dataset.bf) { BF[t.dataset.bf] = t.value; updSum(); }
@@ -2074,7 +2206,7 @@
       if ((t.name === "subj" || t.name === "msg") && t.closest("#f-buka") && t.form.kat.value === "Bantuan") bukaSync();
       if (t.dataset.t && root._T) { root._T[t.dataset.t] = t.value; tmpSync(); }
     });
-    root.addEventListener("keydown", function (ev) {
+    document.addEventListener("keydown", function (ev) {
       var dd = ev.target.closest && ev.target.closest(".dd");
       if (dd) {
         var mn = $(".dd-menu", dd), ops = $$(".dd-opt", mn);
@@ -2101,7 +2233,7 @@
     root.addEventListener("dragleave", function (ev) { var b = ev.target.closest(".pf-ava"); if (b) b.classList.remove("drag"); });
     root.addEventListener("drop", function (ev) { var b = ev.target.closest(".pf-ava"); if (!b) return; ev.preventDefault(); b.classList.remove("drag"); pfFoto(ev.dataTransfer && ev.dataTransfer.files[0]); });
     root.addEventListener("mousedown", function (ev) { if (ev.target.closest && ev.target.closest(".rvin label")) ev.preventDefault(); });
-    root.addEventListener("input", function (ev) {
+    document.addEventListener("input", function (ev) {
       var f = ev.target.closest("[data-rvsend]"); if (!f) return;
       if (ev.target.name === "bintang") { var l = $("[data-rvl]", f); l.textContent = RVL[Number(ev.target.value)] + " · " + ev.target.value + " dari 5"; l.classList.add("on"); $("[data-rve]", f).hidden = true; }
       if (ev.target.name === "teks") $("[data-rvc]", f).textContent = ev.target.value.length;
