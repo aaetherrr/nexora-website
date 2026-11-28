@@ -358,7 +358,7 @@
     });
     var by = {}; ms.forEach(function (o) { by[o.mid] = o; });
     ms.forEach(function (o) { if (o.rpid && by[o.rpid]) { var q = by[o.rpid]; o.rp = { mid: q.mid, w: q.w, n: q.n || "", t: q.t }; } delete o.rpid; });
-    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", cid: r.customer_id || "", hd: r.handler_nama ? { id: r.handler_id || "", n: r.handler_nama, r: r.handler_role || "Admin", a: r.handler_av || "", me: !!(NX.user && r.handler_id && r.handler_id === NX.user.id) } : null, m: ms };
+    return { id: r.id, subj: r.subj, kat: r.kat, paket: r.paket, st: r.st, closed: !!r.closed, noauto: !!r.jangan_tutup_otomatis, cby: r.closed_by || "", tgl: new Date(r.dibuat).toLocaleDateString("id-ID", FULLF), user: asCust && mine ? "__me" : (r.cust_nama || "Customer"), cav: r.cust_avatar || "", cid: r.customer_id || "", hd: r.handler_nama ? { id: r.handler_id || "", n: r.handler_nama, r: r.handler_role || "Admin", a: r.handler_av || "", me: !!(NX.user && r.handler_id && r.handler_id === NX.user.id) } : null, m: ms };
   }
   NX.tkReload = function () {
     return sb.from("tickets").select("*, ticket_messages(*)").order("dibuat", { ascending: false }).then(function (r) {
@@ -386,6 +386,7 @@
         return;
       }
       x.m.slice(o.m.length).forEach(function (m) { ops.push(function () { return sb.from("ticket_messages").insert({ ticket_id: x.id, w: m.w, t: m.t, reply_to: m.rp && /^\d+$/.test(String(m.rp.mid)) ? Number(m.rp.mid) : null }).then(function (q) { if (q.error) fail(q.error); }); }); });
+      if (!!x.noauto !== !!o.noauto && !x.closed) ops.push(function () { return sb.rpc("atur_tutup_otomatis", { p_ticket: x.id, p_off: !!x.noauto }).then(function (q) { if (q.error) fail(q.error); }); });
       if (x.st !== o.st || !!x.closed !== !!o.closed) ops.push(function () { return sb.from("tickets").update({ st: x.st, closed: !!x.closed }).eq("id", x.id).select("id").then(oneErr); });
     });
     NX.tk.forEach(function (o) { if (!seen[o.id]) ops.push(function () { return sb.from("tickets").delete().eq("id", o.id).select("id").then(oneErr); }); });
