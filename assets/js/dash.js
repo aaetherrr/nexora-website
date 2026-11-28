@@ -439,6 +439,41 @@
       if (extra) Object.keys(extra).forEach(function (k) { o[k] = extra[k]; });
       a.unshift(o); sv("nx-notif", a.slice(0, 60));
     }
+    /* ===== Tutup ticket otomatis: 3 hari tanpa aktivitas chat =====
+       Mode demo dikerjakan di sini (dicek tiap menit). Versi live dikerjakan database (supabase/021_tutup_ticket_otomatis.sql).
+       Aturan: hanya status "Terhubung dengan admin", "Menunggu pembayaran", "Orderan Selesai"; kecuali Orderan Selesai, pesan terakhir harus dari admin
+       (giliran customer yang membalas); peringatan 24 jam sebelum ditutup; admin bisa mematikannya per ticket. */
+    var IDLE_DAYS = 3, IDLE_ST = ["Terhubung dengan admin", "Menunggu pembayaran", "Orderan Selesai"];
+    var IDLE_WARN = "Ticket ini akan ditutup otomatis dalam 24 jam jika tidak ada balasan.";
+    var IDLE_BYE = "Ticket ditutup otomatis karena tidak ada aktivitas selama " + IDLE_DAYS + " hari. Kamu bisa membuka ticket baru kapan saja.";
+    function idleMs() { var h = parseFloat(localStorage.getItem("nx-idle-hours")); return (h > 0 ? h : IDLE_DAYS * 24) * 3600000; }   /* nx-idle-hours: hanya untuk uji coba di demo */
+    function idleSweep() {
+      if (window.NX && NX.live) return;
+      var a = TK(), lim = idleMs(), now = Date.now(), ch = false;
+      a.forEach(function (x) {
+        if (cl(x) || x.noauto || IDLE_ST.indexOf(x.st) < 0) return;
+        var real = x.m.filter(function (m) { return m.w === "c" || m.w === "a"; }), l = real[real.length - 1];
+        if (!l || !l.ts) return;                                   /* data lama tanpa waktu tidak disentuh */
+        if (x.st !== "Orderan Selesai" && l.w !== "a") return;     /* pesan terakhir dari customer = admin yang belum membalas */
+        var idle = now - l.ts;
+        if (idle >= lim) {
+          x.m.push(nm({ w: "s", t: IDLE_BYE, d: "Baru saja", h: hm() })); x.closed = true; x.cby = "Sistem"; ch = true;
+          nt(x, "tk", "Ticket ditutup otomatis", "Ticket " + x.id + " ditutup karena tidak ada aktivitas selama " + IDLE_DAYS + " hari.", "closed");
+          toast("Ticket " + x.id + " ditutup otomatis karena tidak ada aktivitas.");
+        } else if (idle >= lim * 2 / 3 && !x.m.slice(x.m.indexOf(l) + 1).some(function (m) { return m.w === "s" && m.t === IDLE_WARN; })) {
+          x.m.push(nm({ w: "s", t: IDLE_WARN, d: "Baru saja", h: hm() })); ch = true;
+          nt(x, "tk", "Ticket akan ditutup", "Ticket " + x.id + " akan ditutup otomatis dalam 24 jam jika tidak ada balasan.", "status");
+        }
+      });
+      if (ch) { sv("nx-tk", a); draw(); }
+    }
+    setTimeout(idleSweep, 1200); setInterval(idleSweep, 60000);
+    root.addEventListener("click", function (ev) {
+      var b = ev.target.closest && ev.target.closest("[data-noauto]"); if (!b) return;
+      var a = TK(), c = a.filter(function (x) { return x.id === b.dataset.noauto; })[0]; if (!c || cl(c)) return;
+      c.noauto = !c.noauto; sv("nx-tk", a); b.setAttribute("aria-checked", String(!c.noauto));
+      toast(c.noauto ? "Tutup otomatis dimatikan untuk ticket " + c.id : "Tutup otomatis diaktifkan untuk ticket " + c.id);
+    });
     /* Pengingat otomatis untuk customer: tagihan perpanjangan yang jatuh tempo dalam 3 hari */
     function nExp() {
       if (adm) return; var a = nfAll(), ch = false;
@@ -495,6 +530,7 @@
       TK().forEach(function (x) { var s = snap[x.id], l = last(x);
         if (!s) { if (adm) toast("Ticket baru: " + x.id); return; }
         if (x.m.length > s[0] && l.w !== mw && l.w !== "s") { toast("Pesan baru di " + x.id); sn = (sel === x.id && tab === "tiket" && tv === "chat") ? "recv" : (sn === "recv" ? sn : "other"); }
+        else if (x.m.length > s[0] && l.w === "s") { if (/^Ticket ini akan ditutup otomatis/.test(l.t)) toast("Ticket " + x.id + " akan ditutup otomatis dalam 24 jam jika tidak ada balasan."); else if (/^Ticket ditutup otomatis/.test(l.t)) toast("Ticket " + x.id + " ditutup otomatis karena tidak ada aktivitas."); }
         if (x.hd && s[4] && s[4] !== x.hd.n) { if (adm && s[5] && !hdMe(x)) toast("Ticket " + x.id + " diambil alih oleh " + x.hd.n); else if (!adm) toast("Ticket kamu diambil alih oleh " + x.hd.n); }
         if (!adm && !s[2] && cl(x)) toast("Ticket " + x.id + " ditutup oleh admin"); else if (!adm && s[1] !== x.st) toast("Status " + x.id + ": " + x.st); });
       draw(); if (sn) sndEv(sn); cm = $(".cmp", root); if (cm && val) { cm.value = val; fitCmp(cm); if (foc) cm.focus(); }
@@ -743,6 +779,7 @@
       }).join("");
       var dib = t.tgl + (t.m[0] && t.m[0].h ? ", " + t.m[0].h : "");
       var row = function (l, v) { return '<div class="ti-r"><span>' + l + "</span><span>" + v + "</span></div>"; };
+      var autoRow = adm && !closed ? row("Tutup otomatis", '<button type="button" class="swt" role="switch" aria-checked="' + !t.noauto + '" data-noauto="' + e(t.id) + '" aria-label="Tutup otomatis setelah ' + IDLE_DAYS + ' hari tanpa aktivitas" title="Ticket ditutup sendiri setelah ' + IDLE_DAYS + ' hari tanpa aktivitas"></button>') : (closed && /^Sistem/.test(t.cby || "") ? row("Ditutup", "Otomatis, tidak ada aktivitas " + IDLE_DAYS + " hari") : "");
       var cb = "";
       if (adm) {
         var cu = custInfo(uname(t)), none = '<span class="ti-none">Belum diisi</span>';
@@ -753,7 +790,7 @@
         '<h4>Orang di ticket ini</h4><div class="ti-pl">' + (adm ? hand + cust : hand) + "</div>" +
         '<h4>Tahapan</h4><ol class="ti-hs ph' + ph + '">' + hs + "</ol>" +
         '<h4>Tentang ticket</h4><div class="ti-ab">' + row("Nomor", '<code class="ti-id">' + e(t.id) + '</code><button type="button" class="ti-cp" data-kcopy="' + e(t.id) + '" aria-label="Salin nomor ticket" title="Salin nomor"><i class="bi bi-copy"></i></button>') +
-        row("Dibuat", e(dib)) + "</div>" + cb + "</div></aside>";
+        row("Dibuat", e(dib)) + autoRow + "</div>" + cb + "</div></aside>";
     }
     function sidePane(t) {
       if (stabFor !== t.id) { stabFor = t.id; stab = cl(t) ? "selesai" : "aktif"; }
